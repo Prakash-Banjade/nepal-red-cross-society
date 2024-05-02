@@ -39,7 +39,8 @@ export class UsersService {
     // TODO: finalize how to store image
 
     Object.assign(existingUser, {
-      name: updateUserDto.name,
+      firstName: updateUserDto.lastName,
+      lastName: updateUserDto.lastName,
       email: updateUserDto.email,
       // image: updateUserDto.image
     });

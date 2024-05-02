@@ -1,26 +1,57 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateVolunteerDto } from './dto/create-volunteer.dto';
 import { UpdateVolunteerDto } from './dto/update-volunteer.dto';
+import { Volunteer } from './entities/volunteer.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { DonationEvent } from 'src/donation_events/entities/donation_event.entity';
 
 @Injectable()
 export class VolunteersService {
-  create(createVolunteerDto: CreateVolunteerDto) {
-    return 'This action adds a new volunteer';
+  constructor(
+    @InjectRepository(Volunteer)
+    private volunteerRepo: Repository<Volunteer>,
+    @InjectRepository(DonationEvent)
+    private donationEventRepo: Repository<DonationEvent>,
+  ) { }
+
+  async create(createVolunteerDto: CreateVolunteerDto) {
+    const volunteer = this.volunteerRepo.create(createVolunteerDto);
+
+    return await this.volunteerRepo.save(volunteer);
   }
 
-  findAll() {
-    return `This action returns all volunteers`;
+  async findAll() {
+    return await this.volunteerRepo.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} volunteer`;
+  async findOne(id: string) {
+    const existingVolunteer = await this.volunteerRepo.findOneBy({ id });
+    if (!existingVolunteer) throw new NotFoundException('Volunteer not found');
+
+    return existingVolunteer;
   }
 
-  update(id: number, updateVolunteerDto: UpdateVolunteerDto) {
-    return `This action updates a #${id} volunteer`;
+  async update(id: string, updateVolunteerDto: UpdateVolunteerDto) {
+    const existingVolunteer = await this.findOne(id);
+
+    const donationEvent = updateVolunteerDto.donationEvent ? await this.donationEventRepo.findOneBy({ id: updateVolunteerDto.donationEvent }) : null;
+
+    Object.assign(existingVolunteer, {
+      ...updateVolunteerDto,
+      donationEvent,
+    })
+
+    return await this.volunteerRepo.save(existingVolunteer);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} volunteer`;
+  async remove(id: string) {
+    const existingVolunteer = await this.findOne(id);
+    await this.volunteerRepo.softRemove(existingVolunteer);
+
+    return {
+      success: true,
+      message: 'Volunteer deleted successfully',
+    }
   }
 }

@@ -13,6 +13,8 @@ export class Volunteer extends BaseEntity {
   @Column({ type: 'varchar' })
   role: string;
 
-  @ManyToOne(() => DonationEvent, (donationEvent) => donationEvent.volunteers)
+  @ManyToOne(() => DonationEvent, (donationEvent) => donationEvent.volunteers, {
+    nullable: true,
+  })
   donationEvent: DonationEvent;
 }

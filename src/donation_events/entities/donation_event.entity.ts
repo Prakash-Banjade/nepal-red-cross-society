@@ -1,12 +1,14 @@
 import { Donation } from 'src/donations/entities/donation.entity';
 import { BaseEntity } from 'src/entities/base.entity';
 import { Volunteer } from 'src/volunteers/entities/volunteer.entity';
-import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
 
 @Entity()
 export class DonationEvent extends BaseEntity {
   // donations
-  @OneToMany(() => Donation, (donation) => donation.donation_event)
+  @OneToMany(() => Donation, (donation) => donation.donation_event, {
+    nullable: true,
+  })
   donations: Donation[];
 
   @Column({ type: 'date', nullable: false })

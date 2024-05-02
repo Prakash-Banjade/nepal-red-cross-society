@@ -3,10 +3,15 @@ import { IsEmail, IsOptional, IsString } from 'class-validator';
 import { MemoryStoredFile } from 'nestjs-form-data';
 
 export class UpdateUserDto {
-    @ApiPropertyOptional({ type: 'string', description: 'Name' })
+    @ApiPropertyOptional({ type: 'string', description: 'firstName' })
     @IsString()
     @IsOptional()
-    name: string;
+    firstName: string;
+
+    @ApiPropertyOptional({ type: 'string', description: 'lastName' })
+    @IsString()
+    @IsOptional()
+    lastName: string;
 
     @ApiPropertyOptional({ type: 'string', description: 'Email' })
     @IsEmail()
