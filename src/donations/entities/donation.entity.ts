@@ -15,7 +15,7 @@ export class Donation extends BaseEntity {
     @ManyToOne(() => DonationEvent, donation_event => donation_event.donations)
     donation_event: DonationEvent;
 
-    @OneToOne(() => Certificate, certificate => certificate.donation)
+    @OneToOne(() => Certificate, certificate => certificate.donation, { nullable: true })
     certificate: Certificate;
 
     @Column({ type: 'enum', enum: DonationType })
@@ -28,7 +28,7 @@ export class Donation extends BaseEntity {
     @Column({ type: "varchar" })
     bloodBagNo: string;
 
-    @Column({ type: "enum", enum: DonationStatus })
+    @Column({ type: "enum", enum: DonationStatus, default: DonationStatus.PENDING })
     status: DonationStatus
 
     // donation with failed status will have failedReason
@@ -38,6 +38,6 @@ export class Donation extends BaseEntity {
     @Column({ type: "varchar" })
     verifiedBy: string
 
-    @OneToOne(() => LabReport, lab_report => lab_report.donation)
+    @OneToOne(() => LabReport, lab_report => lab_report.donation, { nullable: true })
     labReport: LabReport
 }

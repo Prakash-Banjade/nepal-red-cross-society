@@ -1,26 +1,51 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCertificateDto } from './dto/create-certificate.dto';
 import { UpdateCertificateDto } from './dto/update-certificate.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Certificate } from './entities/certificate.entity';
+import { Repository } from 'typeorm';
+import { Donation } from 'src/donations/entities/donation.entity';
 
 @Injectable()
 export class CertificateService {
-  create(createCertificateDto: CreateCertificateDto) {
-    return 'This action adds a new certificate';
+
+  constructor(
+    @InjectRepository(Certificate) private certificateRepo: Repository<Certificate>,
+    @InjectRepository(Donation) private donationRepo: Repository<Donation>,
+  ) { }
+
+  async create(createCertificateDto: CreateCertificateDto) {
+    const certificate = this.certificateRepo.create(createCertificateDto);
+    return this.certificateRepo.save(certificate);
   }
 
-  findAll() {
-    return `This action returns all certificate`;
+  async findAll() {
+    return this.certificateRepo.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} certificate`;
+  async findOne(id: string) {
+    const foundCertificate = await this.certificateRepo.findOneBy({ id });
+    if (!foundCertificate) throw new NotFoundException('Certificate not found');
+
+    return foundCertificate;
   }
 
-  update(id: number, updateCertificateDto: UpdateCertificateDto) {
-    return `This action updates a #${id} certificate`;
+  async update(id: string, updateCertificateDto: UpdateCertificateDto) {
+    const foundCertificate = await this.findOne(id);
+
+    // retrieving donation
+    const donation = updateCertificateDto.donation ? await this.donationRepo.findOneBy({ id: updateCertificateDto.donation }) : null;
+
+    Object.assign(foundCertificate, {
+      ...updateCertificateDto,
+      donation,
+    })
+
+    return await this.certificateRepo.save(foundCertificate);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} certificate`;
+  async remove(id: string) {
+    const foundCertificate = await this.findOne(id);
+    return await this.certificateRepo.softRemove(foundCertificate);
   }
 }

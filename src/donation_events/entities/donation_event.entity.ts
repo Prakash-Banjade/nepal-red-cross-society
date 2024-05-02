@@ -11,7 +11,7 @@ export class DonationEvent extends BaseEntity {
   })
   donations: Donation[];
 
-  @Column({ type: 'date', nullable: false })
+  @Column({ type: 'datetime', nullable: false })
   date: string;
 
   @Column({ nullable: true })

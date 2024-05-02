@@ -32,7 +32,8 @@ export class Donor extends BaseEntity {
     @Column({ type: 'enum', enum: BloodGroup })
     bloodGroup: BloodGroup;
 
-    @OneToMany(() => Donation, (donation) => donation.donor)
+    // circular dependencies
+    @OneToMany(() => Donation, (donation) => donation.donor, { nullable: true })
     donations: Donation[];
 
     @OneToOne(() => DonorCard, (donorCard) => donorCard.donor, { nullable: true })

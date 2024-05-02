@@ -7,6 +7,6 @@ export class Certificate extends BaseEntity {
     @Column()
     certificateId: number;
 
-    @OneToOne(() => Donation, (donation) => donation.certificate)
+    @OneToOne(() => Donation, (donation) => donation.certificate, { nullable: true })
     donation: Donation;
 }

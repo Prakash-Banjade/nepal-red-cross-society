@@ -1,26 +1,57 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Organization } from './entities/organization.entity';
+import { In, Repository } from 'typeorm';
+import { Donation } from 'src/donations/entities/donation.entity';
 
 @Injectable()
 export class OrganizationsService {
-  create(createOrganizationDto: CreateOrganizationDto) {
-    return 'This action adds a new organization';
+  constructor(
+    @InjectRepository(Organization) private organizationRepo: Repository<Organization>,
+    @InjectRepository(Donation) private donationRepo: Repository<Donation>,
+  ) { }
+
+  async create(createOrganizationDto: CreateOrganizationDto) {
+    const foundOrganizationWithSameName = await this.organizationRepo.findOne({ where: { name: createOrganizationDto.name } });
+    if (!foundOrganizationWithSameName) throw new BadRequestException('Organization with this name already exists');
+
+    const createdOrganization = this.organizationRepo.create(createOrganizationDto);
+
+    return await this.organizationRepo.save(createdOrganization);
   }
 
-  findAll() {
-    return `This action returns all organizations`;
+  async findAll() {
+    return await this.organizationRepo.find();
   }
 
-  findOne(id: string) {
-    return `This action returns a #${id} organization`;
+  async findOne(id: string) {
+    const foundOrganization = await this.organizationRepo.findOneBy({ id });
+    if (!foundOrganization) throw new BadRequestException('Organization not found');
+    return foundOrganization;
   }
 
-  update(id: string, updateOrganizationDto: UpdateOrganizationDto) {
-    return `This action updates a #${id} organization`;
+  async update(id: string, updateOrganizationDto: UpdateOrganizationDto) {
+    const foundOrganization = await this.findOne(id);
+
+    // retrieving donations
+    const donations = updateOrganizationDto.donations.length ? await this.donationRepo.find({
+      where: {
+        id: In(updateOrganizationDto.donations)
+      }
+    }) : null;
+
+    Object.assign(foundOrganization, {
+      ...updateOrganizationDto,
+      donations
+    })
+
+    return await this.organizationRepo.save(foundOrganization);
   }
 
-  remove(id: string) {
-    return `This action removes a #${id} organization`;
+  async remove(id: string) {
+    const foundOrganization = await this.findOne(id);
+    return await this.organizationRepo.softRemove(foundOrganization);
   }
 }

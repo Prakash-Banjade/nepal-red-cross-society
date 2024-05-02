@@ -15,6 +15,7 @@ export class DonationEventsService {
   ) {}
 
   async create(createDonationEventDto: CreateDonationEventDto) {
+    // retrieving volunteers
     const volunteers = await this.volunteersRepo.find({
       where: {
         id: In(createDonationEventDto.volunteers),

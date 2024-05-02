@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
 
 export class CreateDonationEventDto {
   @ApiProperty({ type: 'string', description: 'Event host name' })
@@ -28,7 +28,8 @@ export class CreateDonationEventDto {
     description: 'Event volunteers',
   })
   @IsString({ each: true })
-  @IsNotEmpty()
+  @IsNotEmpty({ each: true })
+  @IsUUID('4', { each: true })
   volunteers: string[];
 
   @ApiProperty({ type: 'string', description: 'Event date' })
