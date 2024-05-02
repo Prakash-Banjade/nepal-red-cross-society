@@ -6,23 +6,23 @@ import { Repository } from 'typeorm';
 
 @Injectable()
 export class UsersService {
-
   constructor(
-    @InjectRepository(User) private usersRepository: Repository<User>
-  ) { }
+    @InjectRepository(User) private usersRepository: Repository<User>,
+  ) {}
 
   async findAll() {
     return await this.usersRepository.find({
       select: {
         id: true,
-        name: true,
+        firstName: true,
+        lastName: true,
         email: true,
         role: true,
         image: true,
         isDonor: true,
         createdAt: true,
         updatedAt: true,
-      }
+      },
     });
   }
 
@@ -55,7 +55,7 @@ export class UsersService {
       message: 'User removed',
       user: {
         email: existingUser.email,
-      }
-    }
+      },
+    };
   }
 }

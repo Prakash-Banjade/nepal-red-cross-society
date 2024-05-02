@@ -6,7 +6,8 @@ import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
-const PORT = process.env.PORT || 3000;
+import { OrganizationsModule } from './organizations/organizations.module';
+const PORT = process.env.PORT || 3001;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -42,7 +43,7 @@ async function bootstrap() {
 
   // swagger
   const document = SwaggerModule.createDocument(app, config, {
-    include: [AuthModule, UsersModule],
+    include: [AuthModule, UsersModule, OrganizationsModule],
   });
   SwaggerModule.setup('api', app, document, {
     customSiteTitle: 'Blood Bank API Docs',

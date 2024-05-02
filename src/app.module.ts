@@ -10,6 +10,15 @@ import { CaslModule } from './casl/casl.module';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './auth/guards/auth.guard';
 import { AbilitiesGuard } from './casl/guards/abilities.guard';
+import { DonorsModule } from './donors/donors.module';
+import { DonationsModule } from './donations/donations.module';
+import { DonationEventsModule } from './donation_events/donation_events.module';
+import { CertificateModule } from './certificate/certificate.module';
+import { VolunteersModule } from './volunteers/volunteers.module';
+import { LabReportsModule } from './lab_reports/lab_reports.module';
+import { TestCasesModule } from './test_cases/test_cases.module';
+import { DonorCardModule } from './donor_card/donor_card.module';
+import { OrganizationsModule } from './organizations/organizations.module';
 
 @Module({
   imports: [
@@ -23,18 +32,27 @@ import { AbilitiesGuard } from './casl/guards/abilities.guard';
     UsersModule,
     AuthModule,
     CaslModule,
+    DonorsModule,
+    DonationsModule,
+    DonationEventsModule,
+    CertificateModule,
+    VolunteersModule,
+    LabReportsModule,
+    TestCasesModule,
+    DonorCardModule,
+    OrganizationsModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
-    {
-      provide: APP_GUARD,
-      useClass: AuthGuard,
-    },
-    {
-      provide: APP_GUARD,
-      useClass: AbilitiesGuard, // global
-    }
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: AuthGuard,
+    // },
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: AbilitiesGuard, // global
+    // }
   ],
 })
 export class AppModule { }

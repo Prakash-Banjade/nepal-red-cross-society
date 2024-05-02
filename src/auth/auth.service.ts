@@ -43,7 +43,7 @@ export class AuthService {
     const payload = {
       email: foundUser.email,
       userId: foundUser.id,
-      name: foundUser.name,
+      name: foundUser.firstName + ' ' + foundUser.lastName,
       role: foundUser.role,
     };
 
@@ -90,7 +90,7 @@ export class AuthService {
       user: {
         id: createdUser.id,
         email: createdUser.email,
-        name: createdUser.name,
+        name: createdUser.firstName + ' ' + createdUser.lastName,
       },
     };
   }
@@ -115,7 +115,7 @@ export class AuthService {
     const payload = {
       email: foundUser.email,
       userId: foundUser.id,
-      name: foundUser.name,
+      name: foundUser.firstName + ' ' + foundUser.lastName,
       role: foundUser.role,
     };
 
