@@ -1,9 +1,9 @@
+import { Address } from "src/address/entities/address.entity";
 import { Donation } from "src/donations/entities/donation.entity";
 import { DonorCard } from "src/donor_card/entities/donor_card.entity";
 import { BaseEntity } from "src/entities/base.entity";
-import { Organization } from "src/organizations/entities/organization.entity";
-import { BloodGroup, Cast, DonationType, Gender, Race } from "src/types/global.types";
-import { Column, Entity, ManyToOne, OneToMany, OneToOne } from "typeorm";
+import { BloodGroup, Cast, Gender, Race } from "src/types/global.types";
+import { Column, Entity, OneToMany, OneToOne } from "typeorm";
 
 @Entity()
 export class Donor extends BaseEntity {
@@ -25,9 +25,8 @@ export class Donor extends BaseEntity {
     @Column({ type: 'date' })
     dob: string;
 
-    // TODO: add address entity
-    // @Column({ type: 'json' })
-    // address: object;
+    @OneToOne(() => Address, (address) => address.donor, { nullable: true })
+    address: Address
 
     @Column({ type: 'enum', enum: BloodGroup })
     bloodGroup: BloodGroup;

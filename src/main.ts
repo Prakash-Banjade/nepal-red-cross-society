@@ -7,6 +7,10 @@ import cookieParser from 'cookie-parser';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { OrganizationsModule } from './organizations/organizations.module';
+import { DonationsModule } from './donations/donations.module';
+import { DonationEventsModule } from './donation_events/donation_events.module';
+import { CertificateModule } from './certificate/certificate.module';
+import { DonorsModule } from './donors/donors.module';
 const PORT = process.env.PORT || 3001;
 
 async function bootstrap() {
@@ -43,7 +47,15 @@ async function bootstrap() {
 
   // swagger
   const document = SwaggerModule.createDocument(app, config, {
-    include: [AuthModule, UsersModule, OrganizationsModule],
+    include: [
+      AuthModule,
+      UsersModule,
+      OrganizationsModule,
+      DonationsModule,
+      DonationEventsModule,
+      CertificateModule,
+      DonorsModule,
+    ],
   });
   SwaggerModule.setup('api', app, document, {
     customSiteTitle: 'Blood Bank API Docs',

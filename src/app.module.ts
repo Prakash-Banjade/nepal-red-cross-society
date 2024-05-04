@@ -19,6 +19,7 @@ import { LabReportsModule } from './lab_reports/lab_reports.module';
 import { TestCasesModule } from './test_cases/test_cases.module';
 import { DonorCardModule } from './donor_card/donor_card.module';
 import { OrganizationsModule } from './organizations/organizations.module';
+import { AddressModule } from './address/address.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { OrganizationsModule } from './organizations/organizations.module';
     TestCasesModule,
     DonorCardModule,
     OrganizationsModule,
+    AddressModule,
   ],
   controllers: [AppController],
   providers: [
