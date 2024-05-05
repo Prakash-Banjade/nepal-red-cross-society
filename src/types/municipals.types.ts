@@ -35,7 +35,7 @@ export enum Municipal {
     
     // Jhapa
     KAMAL = "Kamal",
-    JHAPA = "Jhapa",
+    JHAPA_RURAL = "Jhapa Rural",
     KACHANKAWAL = "Kachankawal",
     GAURIGANJ = "Gauriganj",
     BARHADASHI = "Barhadashi",

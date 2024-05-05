@@ -1,3 +1,5 @@
+import { Municipal } from "./municipals.types"
+
 export enum Province {
     KOSHI = 'koshi',
     MADHESH = 'madhesh',
@@ -105,7 +107,7 @@ export interface Address {
     province: Province,
     districts: {
         name: District,
-        municipals: string[]
+        municipals: Municipal[]
     }[]
 }
 
@@ -115,59 +117,210 @@ export const addresses: Address[] = [
         districts: [
             {
                 name: District.BHOJPUR,
-                municipals: []
+                municipals: [
+                    Municipal.ARUN,
+                    Municipal.AAMCHOWK,
+                    Municipal.HATUWAGADHI,
+                    Municipal.PAUWADUNGMA,
+                    Municipal.TEMKEMAIYUNG,
+                    Municipal.SALPASILICHHO,
+                    Municipal.RAMPRASADRAI,
+                    Municipal.SHADANANDA,
+                    Municipal.BHOJPUR,
+                ]
             },
             {
                 name: District.DHANKUTA,
-                municipals: []
+                municipals: [
+                    Municipal.CHAUBISE,
+                    Municipal.SHAIDBHUMI,
+                    Municipal.SANGURIGADHI,
+                    Municipal.CHHATHARJORPATI,
+                    Municipal.PAKHRIBAS,
+                    Municipal.MAHALAXMI,
+                    Municipal.DHANKUTA,
+                ]
             },
             {
                 name: District.ILAM,
-                municipals: []
+                municipals: [
+                    Municipal.RONG,
+                    Municipal.MANGSEBUNG,
+                    Municipal.CHULACHULI,
+                    Municipal.SANDAKPUR,
+                    Municipal.FAKPHOKTHUM,
+                    Municipal.MAIJOGMAI,
+                    Municipal.ILLAM,
+                    Municipal.MAI,
+                    Municipal.DEUMAI,
+                    Municipal.SURYODAYA,
+                ]
             },
             {
                 name: District.JHAPA,
-                municipals: []
+                municipals: [
+                    Municipal.KAMAL,
+                    Municipal.JHAPA_RURAL,
+                    Municipal.KACHANKAWAL,
+                    Municipal.GAURIGANJ,
+                    Municipal.BARHADASHI,
+                    Municipal.HALDIBARI,
+                    Municipal.BUDDHASHANTI,
+                    Municipal.SHIVASATAXI,
+                    Municipal.BHADRAPUR,
+                    Municipal.KANKAI,
+                    Municipal.BIRTAMOD,
+                    Municipal.MECHINAGAR,
+                    Municipal.DAMAK,
+                    Municipal.ARJUNDHARA,
+                    Municipal.GAURADHAHA,
+                ]
             },
             {
                 name: District.KHOTANG,
-                municipals: []
+                municipals: [
+                    Municipal.SAKELA,
+                    Municipal.KHOTEHANG,
+                    Municipal.BARAHAPOKHARI,
+                    Municipal.AINSELUKHARK,
+                    Municipal.RAWABESI,
+                    Municipal.KEPILASAGADHI,
+                    Municipal.JANTEDHUNGA,
+                    Municipal.DIPRUNGCHUICHUMMA,
+                    Municipal.HALESITUWACHUNG,
+                    Municipal.DIKTELRUPAKOTMAJHUWAGADHI,
+                ]
             },
             {
                 name: District.MORANG,
-                municipals: []
+                municipals: [
+                    Municipal.JAHADA,
+                    Municipal.KATAHARI,
+                    Municipal.GRAMTHAN,
+                    Municipal.DHANPALTHAN,
+                    Municipal.KERABARI,
+                    Municipal.BUDHIGANGA,
+                    Municipal.KANEPOKHARI,
+                    Municipal.MIKLAJUNG,
+                    Municipal.LETANG,
+                    Municipal.SUNWARSHI,
+                    Municipal.RANGELI,
+                    Municipal.PATAHRISHANISHCHARE,
+                    Municipal.BIRATNAGAR,
+                    Municipal.URALABARI,
+                    Municipal.BELBARI,
+                    Municipal.SUNDARHARAICHA,
+                    Municipal.RATUWAMAI,
+                ]
             },
             {
                 name: District.OKHALDHUNGA,
-                municipals: []
+                municipals: [
+                    Municipal.LIKHU,
+                    Municipal.MOLUNG,
+                    Municipal.SUNKOSHI,
+                    Municipal.CHAMPADEVI,
+                    Municipal.CHISANKHUGADHI,
+                    Municipal.KHIJIDEMBA,
+                    Municipal.MANEBHANJYANG,
+                    Municipal.SIDDHICHARAN,
+                ]
             },
             {
                 name: District.PANCHTHAR,
-                municipals: []
+                municipals: [
+                    Municipal.YANGWARAK,
+                    Municipal.HILIHANG,
+                    Municipal.FALELUNG,
+                    Municipal.TUMBWEWA,
+                    Municipal.KUMMAYAK,
+                    Municipal.MIKLAJUNG_1,
+                    Municipal.FALGUNANDA,
+                    Municipal.PHIDIM,
+                ]
             },
             {
                 name: District.SANKHUWASABHA,
-                municipals: []
+                municipals: [
+                    Municipal.MAKALU,
+                    Municipal.CHICHILA,
+                    Municipal.SILICHONG,
+                    Municipal.BHOTKHOLA,
+                    Municipal.SABHAPOKHARI,
+                    Municipal.DHARMADEVI,
+                    Municipal.MADI,
+                    Municipal.PANCHAKHAPAN,
+                    Municipal.CHAINPUR,
+                    Municipal.KHANDBARI,
+                ]
             },
             {
                 name: District.SOLUKHUMBU,
-                municipals: []
+                municipals: [
+                    Municipal.SOTANG,
+                    Municipal.MAHAKULUNG,
+                    Municipal.LIKHUPIKE,
+                    Municipal.NECHASALYAN,
+                    Municipal.THULUNG_DUDHKOSHI,
+                    Municipal.MAAPYA_DUDHKOSHI,
+                    Municipal.KHUMBUPASANGLAHMU,
+                    Municipal.SOLUDUDHAKUNDA,
+                ]
             },
             {
                 name: District.SUNSARI,
-                municipals: []
+                municipals: [
+                    Municipal.GADHI,
+                    Municipal.KOSHI,
+                    Municipal.BARJU,
+                    Municipal.HARINAGAR,
+                    Municipal.DEWANGANJ,
+                    Municipal.BHOKRAHA_NARSING,
+                    Municipal.RAMDHUNI,
+                    Municipal.BARAHCHHETRA,
+                    Municipal.DUHABI,
+                    Municipal.INARUWA,
+                    Municipal.DHARAN,
+                    Municipal.ITAHARI,
+                ]
             },
             {
                 name: District.TAPLEJUNG,
-                municipals: []
+                municipals: [
+                    Municipal.SIDINGBA,
+                    Municipal.MERINGDEN,
+                    Municipal.MAIWAKHOLA,
+                    Municipal.PHAKTANGLUNG,
+                    Municipal.SIRIJANGHA,
+                    Municipal.MIKWAKHOLA,
+                    Municipal.AATHRAI_TRIBENI,
+                    Municipal.PATHIVARA_YANGWARAK,
+                    Municipal.PHUNGLING,
+                ]
             },
             {
                 name: District.TEHRATHUM,
-                municipals: []
+                municipals: [
+                    Municipal.CHHATHAR,
+                    Municipal.PHEDAP,
+                    Municipal.AATHRAI,
+                    Municipal.MENCHAYAM,
+                    Municipal.LALIGURANS,
+                    Municipal.MYANGLUNG,
+                ]
             },
             {
                 name: District.UDAYAPUR,
-                municipals: []
+                municipals: [
+                    Municipal.TAPLI,
+                    Municipal.RAUTAMAI,
+                    Municipal.UDAYAPURGADHI,
+                    Municipal.LIMCHUNGBUNG,
+                    Municipal.CHAUDANDIGADHI,
+                    Municipal.TRIYUGA,
+                    Municipal.KATARI,
+                    Municipal.BELAKA,
+                ]
             }
 
         ]
@@ -177,35 +330,179 @@ export const addresses: Address[] = [
         districts: [
             {
                 name: District.SARLAHI,
-                municipals: []
+                municipals: [
+                    Municipal.DHANKAUL,
+                    Municipal.PARSA,
+                    Municipal.BISHNU,
+                    Municipal.RAMNAGAR,
+                    Municipal.KAUDENA,
+                    Municipal.BASBARIYA,
+                    Municipal.CHANDRANAGAR,
+                    Municipal.CHAKRAGHATTA,
+                    Municipal.BRAMHAPURI,
+                    Municipal.BARAHATHAWA,
+                    Municipal.HARIPUR,
+                    Municipal.ISHWORPUR,
+                    Municipal.LALBANDI,
+                    Municipal.MALANGAWA,
+                    Municipal.KABILASI,
+                    Municipal.BAGMATI,
+                    Municipal.HARIWAN,
+                    Municipal.BALARA,
+                    Municipal.HARIPURWA,
+                    Municipal.GODAITA,
+                ]
             },
             {
                 name: District.DHANUSHA,
-                municipals: []
+                municipals: [
+                    Municipal.AAURAHI,
+                    Municipal.DHANAUJI,
+                    Municipal.BATESHWOR,
+                    Municipal.JANAKNANDANI,
+                    Municipal.LAKSHMINIYA,
+                    Municipal.MUKHIYAPATTI_MUSARMIYA,
+                    Municipal.MITHILA_BIHARI,
+                    Municipal.KAMALA,
+                    Municipal.NAGARAIN,
+                    Municipal.GANESHMAN_CHARNATH,
+                    Municipal.MITHILA,
+                    Municipal.DHANUSADHAM,
+                    Municipal.BIDEHA,
+                    Municipal.SABAILA,
+                    Municipal.HANSAPUR,
+                    Municipal.JANAKPURDHAM_SUB_METROPOLITIAN,
+                    Municipal.SAHIDNAGAR,
+                    Municipal.CHHIRESHWORNATH,
+                ]
             },
             {
                 name: District.BARA,
-                municipals: []
+                municipals: [
+                    Municipal.PHETA,
+                    Municipal.DEVTAL,
+                    Municipal.PRASAUNI,
+                    Municipal.SUWARNA,
+                    Municipal.BARAGADHI,
+                    Municipal.KARAIYAMAI,
+                    Municipal.PARWANIPUR,
+                    Municipal.BISHRAMPUR,
+                    Municipal.ADARSHKOTWAL,
+                    Municipal.JITPUR_SIMARA_SUB_METROPOLITIAN,
+                    Municipal.KALAIYA_SUB_METROPOLITIAN,
+                    Municipal.PACHARAUTA,
+                    Municipal.NIJGADH,
+                    Municipal.SIMRAUNGADH,
+                    Municipal.MAHAGADHIMAI,
+                    Municipal.KOLHABI,
+                ]
             },
             {
                 name: District.RAUTAHAT,
-                municipals: []
+                municipals: [
+                    Municipal.YEMUNAMAI,
+                    Municipal.DURGA_BHAGWATI,
+                    Municipal.KATAHARIYA,
+                    Municipal.MAULAPUR,
+                    Municipal.MADHAV_NARAYAN,
+                    Municipal.GAUR,
+                    Municipal.GUJARA,
+                    Municipal.GARUDA,
+                    Municipal.ISHANATH,
+                    Municipal.CHANDRAPUR,
+                    Municipal.DEWAHHI_GONAHI,
+                    Municipal.BRINDABAN,
+                    Municipal.RAJPUR,
+                    Municipal.RAJDEVI,
+                    Municipal.GADHIMAI,
+                    Municipal.PHATUWA_BIJAYAPUR,
+                    Municipal.BAUDHIMAI,
+                    Municipal.PAROHA,
+                ]
             },
             {
                 name: District.SAPTARI,
-                municipals: []
+                municipals: [
+                    Municipal.RAJGADH,
+                    Municipal.RUPANI,
+                    Municipal.TIRAHIUT,
+                    Municipal.MAHADEVA,
+                    Municipal.BISHNUPUR_RURAL,
+                    Municipal.CHHINNAMASTA,
+                    Municipal.BALAN_BIHUL,
+                    Municipal.TILATHI_KOILADI,
+                    Municipal.AGNISAIR_KRISHNA_SAVARAN,
+                    Municipal.HANUMANNAGAR_KANKALINI,
+                    Municipal.KANCHANRUP,
+                    Municipal.RAJBIRAJ,
+                    Municipal.KHADAK,
+                    Municipal.DAKNESHWORI,
+                    Municipal.SAPTAKOSHI,
+                    Municipal.SURUNGA,
+                    Municipal.SHAMBHUNATH,
+                    Municipal.BODE_BARSAIN,
+                ]
             },
             {
                 name: District.SIRAHA,
-                municipals: []
+                municipals: [
+                    Municipal.AURAHI_Rural,
+                    Municipal.NARAHA,
+                    Municipal.ARNAMA,
+                    Municipal.BHAGAWANPUR,
+                    Municipal.NAWARAJPUR,
+                    Municipal.BISHNUPUR,
+                    Municipal.BARIYARPATTI,
+                    Municipal.LAXMIPUR_PATARI,
+                    Municipal.SAKHUWANANKARKATTI,
+                    Municipal.MIRCHAIYA,
+                    Municipal.LAHAN,
+                    Municipal.SIRAHA,
+                    Municipal.DHANGADHIMAI,
+                    Municipal.KALYANPUR,
+                    Municipal.KARJANHA,
+                    Municipal.GOLBAZAR,
+                    Municipal.SUKHIPUR,
+                ]
             },
             {
                 name: District.MAHOTTARI,
-                municipals: []
+                municipals: [
+                    Municipal.PIPRA,
+                    Municipal.SONAMA,
+                    Municipal.SAMSI,
+                    Municipal.EKDANRA,
+                    Municipal.MAHOTTARI,
+                    Municipal.GAUSHALA,
+                    Municipal.RAMGOPALPUR,
+                    Municipal.AURAHI,
+                    Municipal.BARDIBAS,
+                    Municipal.BHANGAHA,
+                    Municipal.JALESWOR,
+                    Municipal.BALWA,
+                    Municipal.MANRA_SISWA,
+                    Municipal.MATIHANI,
+                    Municipal.LOHARPATTI,
+                ]
             },
             {
                 name: District.PARSA,
-                municipals: []
+                municipals: [
+                    Municipal.THORI,
+                    Municipal.DHOBINI,
+                    Municipal.CHHIPAHARMAI,
+                    Municipal.JIRABHAWANI,
+                    Municipal.JAGARNATHPUR,
+                    Municipal.KALIKAMAI,
+                    Municipal.BINDABASINI,
+                    Municipal.PAKAHAMAINPUR,
+                    Municipal.SAKHUWAPRASAUNI,
+                    Municipal.PATERWASUGAULI,
+                    Municipal.BIRGUNJ_METROPOLITIAN_CITY,
+                    Municipal.BAHUDARAMAI,
+                    Municipal.POKHARIYA,
+                    Municipal.PARSAGADHI,
+                ]
             }
         ]
     }
