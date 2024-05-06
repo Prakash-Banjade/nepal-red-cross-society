@@ -11,7 +11,7 @@ import {
 import { VolunteersService } from './volunteers.service';
 import { CreateVolunteerDto } from './dto/create-volunteer.dto';
 import { UpdateVolunteerDto } from './dto/update-volunteer.dto';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
 
 @ApiBearerAuth()
 @ApiTags('Volunteers')
@@ -20,6 +20,7 @@ export class VolunteersController {
   constructor(private readonly volunteersService: VolunteersService) {}
 
   @Post()
+  @ApiConsumes('multipart/form-data')
   create(@Body() createVolunteerDto: CreateVolunteerDto) {
     return this.volunteersService.create(createVolunteerDto);
   }
@@ -35,6 +36,7 @@ export class VolunteersController {
   }
 
   @Patch(':id')
+  @ApiConsumes('multipart/form-data')
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateVolunteerDto: UpdateVolunteerDto,
