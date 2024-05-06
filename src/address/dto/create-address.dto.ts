@@ -14,20 +14,20 @@ export class CreateAddressDto {
     @IsEnum(Province, { message: 'Invalid province. Province must be either Koshi, Madhesh, Bagmati, Gandaki, Lumbini, Karnali, Sudurpashchim.' })
     province: Province;
 
-    @ApiProperty({ type: 'enum', enum: District, description: 'Donor district' })
+    @ApiProperty({ type: 'enum', enum: District, description: 'District' })
     @IsEnum(District, { message: 'Invalid district.' })
     district: District;
 
-    @ApiProperty({ type: 'enum', enum: Municipal, description: 'Donor municipality' })
+    @ApiProperty({ type: 'enum', enum: Municipal, description: 'Municipality' })
     @IsEnum(Municipal, { message: 'Invalid municipality.' })
     municipality: Municipal;
 
-    @ApiProperty({ description: 'Donor ward number' })
+    @ApiProperty({ description: 'Ward number' })
     @IsInt()
     @Min(1)
     ward: number;
 
-    @ApiProperty({ description: 'Donor street name' })
+    @ApiProperty({ description: 'Street name' })
     @IsString()
     @IsNotEmpty()
     street: string;
