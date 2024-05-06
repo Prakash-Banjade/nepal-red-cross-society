@@ -1,8 +1,13 @@
 import { IsEnum, IsInt, IsNotEmpty, IsString, Min } from "class-validator";
 import { District, Province } from "src/types/address.types";
+import { Country } from "src/types/country.types";
 import { Municipal } from "src/types/municipals.types";
 
 export class CreateAddressDto {
+    @IsEnum(Country)
+    @IsNotEmpty()
+    country: Country
+    
     @IsEnum(Province)
     @IsNotEmpty()
     province: Province

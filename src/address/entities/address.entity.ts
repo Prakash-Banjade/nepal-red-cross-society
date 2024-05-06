@@ -1,11 +1,15 @@
 import { Donor } from "src/donors/entities/donor.entity";
 import { BaseEntity } from "src/entities/base.entity";
 import { District, Province, addresses } from "src/types/address.types";
+import { Country } from "src/types/country.types";
 import { Municipal } from "src/types/municipals.types";
 import { BeforeInsert, BeforeUpdate, Column, Entity, OneToOne } from "typeorm";
 
 @Entity()
 export class Address extends BaseEntity {
+    @Column({ type: 'enum', enum: Country })
+    country: Country;
+
     @Column({ type: 'enum', enum: Province })
     province: Province;
 
@@ -23,6 +27,7 @@ export class Address extends BaseEntity {
 
     @OneToOne(() => Donor, (donor) => donor.address)
     donor: Donor
+
 
     @BeforeInsert()
     @BeforeUpdate()

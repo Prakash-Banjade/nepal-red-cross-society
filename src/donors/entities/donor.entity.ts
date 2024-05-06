@@ -13,6 +13,9 @@ export class Donor extends BaseEntity {
     @Column({ type: 'enum', enum: Gender })
     gender: Gender;
 
+    @Column({ type: 'varchar' })
+    email: string;
+
     @Column({ type: 'enum', enum: Race })
     race: Race;
 
@@ -22,10 +25,11 @@ export class Donor extends BaseEntity {
     @Column({ type: 'varchar', length: 10 })
     phone: string;
 
-    @Column({ type: 'date' })
+    @Column({ type: 'datetime' })
     dob: string;
 
-    @OneToOne(() => Address, (address) => address.donor, { nullable: true })
+    // circular dependency
+    @OneToOne(() => Address, (address) => address.donor)
     address: Address
 
     @Column({ type: 'enum', enum: BloodGroup })
