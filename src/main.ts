@@ -11,6 +11,11 @@ import { DonationsModule } from './donations/donations.module';
 import { DonationEventsModule } from './donation_events/donation_events.module';
 import { CertificateModule } from './certificate/certificate.module';
 import { DonorsModule } from './donors/donors.module';
+import { AddressModule } from './address/address.module';
+import { DonorCardModule } from './donor_card/donor_card.module';
+import { LabReportsModule } from './lab_reports/lab_reports.module';
+import { TestCasesModule } from './test_cases/test_cases.module';
+import { VolunteersModule } from './volunteers/volunteers.module';
 const PORT = process.env.PORT || 3001;
 
 async function bootstrap() {
@@ -55,6 +60,11 @@ async function bootstrap() {
       DonationEventsModule,
       CertificateModule,
       DonorsModule,
+      AddressModule,
+      DonorCardModule,
+      LabReportsModule,
+      TestCasesModule,
+      VolunteersModule,
     ],
   });
   SwaggerModule.setup('api', app, document, {
