@@ -10,6 +10,6 @@ export class TestCase extends BaseEntity {
     @Column({ type: 'varchar' })
     desiredResult: string;
 
-    @ManyToOne(() => LabReport, (labReport) => labReport.testCases)
+    @ManyToOne(() => LabReport, (labReport) => labReport.testCases, { nullable: true })
     labReport: LabReport;
 }

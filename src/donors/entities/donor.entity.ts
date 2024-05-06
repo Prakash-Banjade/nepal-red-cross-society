@@ -3,7 +3,7 @@ import { Donation } from "src/donations/entities/donation.entity";
 import { DonorCard } from "src/donor_card/entities/donor_card.entity";
 import { BaseEntity } from "src/entities/base.entity";
 import { BloodGroup, Cast, Gender, Race } from "src/types/global.types";
-import { Column, Entity, OneToMany, OneToOne } from "typeorm";
+import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany, OneToOne } from "typeorm";
 
 @Entity()
 export class Donor extends BaseEntity {
@@ -41,4 +41,10 @@ export class Donor extends BaseEntity {
 
     @OneToOne(() => DonorCard, (donorCard) => donorCard.donor, { nullable: true })
     donorCard: DonorCard
+
+    @BeforeInsert()
+    @BeforeUpdate()
+    checkIfEligibleForDonorCard(){
+        if (this.donations.length < 3) this.donorCard = null
+    }
 }

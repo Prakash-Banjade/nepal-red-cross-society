@@ -3,6 +3,7 @@ import { BaseEntity } from "src/entities/base.entity";
 import { District, Province, addresses } from "src/types/address.types";
 import { Country } from "src/types/country.types";
 import { Municipal } from "src/types/municipals.types";
+import { Volunteer } from "src/volunteers/entities/volunteer.entity";
 import { BeforeInsert, BeforeUpdate, Column, Entity, OneToOne } from "typeorm";
 
 @Entity()
@@ -25,8 +26,11 @@ export class Address extends BaseEntity {
     @Column({ type: 'varchar' })
     street: string;
 
-    @OneToOne(() => Donor, (donor) => donor.address)
+    @OneToOne(() => Donor, (donor) => donor.address, { nullable: true })
     donor: Donor
+
+    @OneToOne(() => Volunteer, (volunteer) => volunteer.address, { nullable: true })
+    volunteer: Volunteer
 
 
     @BeforeInsert()

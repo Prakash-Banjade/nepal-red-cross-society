@@ -5,6 +5,7 @@ import { Volunteer } from './entities/volunteer.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DonationEvent } from 'src/donation_events/entities/donation_event.entity';
+import { Address } from 'src/address/entities/address.entity';
 
 @Injectable()
 export class VolunteersService {
@@ -13,10 +14,22 @@ export class VolunteersService {
     private volunteerRepo: Repository<Volunteer>,
     @InjectRepository(DonationEvent)
     private donationEventRepo: Repository<DonationEvent>,
+    @InjectRepository(Address)
+    private addressRepo: Repository<Address>,
   ) { }
 
   async create(createVolunteerDto: CreateVolunteerDto) {
-    const volunteer = this.volunteerRepo.create(createVolunteerDto);
+    // evaluate address
+    const { province, district, municipality, ward, street } = createVolunteerDto;
+    const address = this.addressRepo.create({ province, district, municipality, ward, street });
+
+    const volunteer = this.volunteerRepo.create({
+      ...createVolunteerDto,
+      address,
+    });
+
+    address.volunteer = volunteer;
+    await this.addressRepo.save(address);
 
     return await this.volunteerRepo.save(volunteer);
   }

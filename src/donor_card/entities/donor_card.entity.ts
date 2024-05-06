@@ -1,6 +1,6 @@
 import { Donor } from "src/donors/entities/donor.entity";
 import { BaseEntity } from "src/entities/base.entity";
-import { Column, Entity, OneToOne } from "typeorm";
+import { BeforeUpdate, Column, Entity, OneToOne } from "typeorm";
 
 @Entity()
 export class DonorCard extends BaseEntity {
