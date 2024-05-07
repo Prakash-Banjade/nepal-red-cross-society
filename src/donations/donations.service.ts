@@ -8,6 +8,7 @@ import { Donor } from 'src/donors/entities/donor.entity';
 import { Organization } from 'src/organizations/entities/organization.entity';
 import { DonationEvent } from 'src/donation_events/entities/donation_event.entity';
 import { Certificate } from 'src/certificate/entities/certificate.entity';
+import { LabReport } from 'src/lab_reports/entities/lab_report.entity';
 
 @Injectable()
 export class DonationsService {
@@ -18,6 +19,7 @@ export class DonationsService {
     @InjectRepository(Organization) private organizationRepo: Repository<Organization>,
     @InjectRepository(DonationEvent) private donationEventRepo: Repository<DonationEvent>,
     @InjectRepository(Certificate) private certificateRepo: Repository<Certificate>,
+    @InjectRepository(LabReport) private labReportRepo: Repository<LabReport>,
   ) { }
 
   async create(createDonationDto: CreateDonationDto) {
@@ -42,16 +44,34 @@ export class DonationsService {
 
   async findOne(id: string) {
     const foundDonation = await this.donationRepo.findOneBy({ id });
+    if (!foundDonation) throw new BadRequestException('Donation not found');
+
+    return foundDonation;
   }
 
   async update(id: string, updateDonationDto: UpdateDonationDto) {
     const foundDonation = await this.findOne(id);
 
     // retrieving dependent entities
+    const dependentColumns = await this.retrieveUpdateDependencies(updateDonationDto);
+
+    // update donation
+    Object.assign(foundDonation, {
+      ...updateDonationDto,
+      ...dependentColumns,
+    })
+
+    return await this.donationRepo.save(foundDonation);
   }
 
   async remove(id: string) {
-    return `This action removes a #${id} donation`;
+    const foundDonation = await this.findOne(id);
+    await this.donationRepo.softRemove(foundDonation);
+
+    return {
+      success: true,
+      message: 'Donation deleted successfully',
+    }
   }
 
   private async retrieveCreateDependencies(createDonationDto: CreateDonationDto) {
@@ -67,8 +87,8 @@ export class DonationsService {
     const organization = updateDonationDto.organization ? await this.organizationRepo.findOneBy({ id: updateDonationDto.organization }) : null;
     const donationEvent = updateDonationDto.donation_event ? await this.donationEventRepo.findOneBy({ id: updateDonationDto.donation_event }) : null;
     const certificate = updateDonationDto.certificate ? await this.certificateRepo.findOneBy({ id: updateDonationDto.certificate }) : null;
-    // const labReport = 
+    const labReport = updateDonationDto.labReport ? await this.labReportRepo.findOneBy({ id: updateDonationDto.labReport }) : null;
 
-    return { donor, organization, donation_event: donationEvent, certificate };
+    return { donor, organization, donation_event: donationEvent, certificate, labReport };
   }
 }

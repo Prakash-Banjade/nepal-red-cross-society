@@ -6,10 +6,15 @@ import { BloodGroup, Cast, Gender, Race } from "src/types/global.types";
 import { Municipal } from "src/types/municipals.types";
 
 export class CreateDonorDto extends CreateAddressDto {
-    @ApiProperty({ description: 'Donor name' })
+    @ApiProperty({ description: 'Donor first name' })
     @IsString()
-    @Length(3, 50)
-    name: string;
+    @Length(3, 20)
+    firstName: string;
+
+    @ApiProperty({ description: 'Donor last name' })
+    @IsString()
+    @Length(3, 20)
+    lastName: string;
 
     @ApiProperty({ type: 'enum', enum: Gender, description: 'Donor gender' })
     @IsEnum(Gender, { message: 'Invalid gender. Gender must be either male or female or other.' })
@@ -19,6 +24,11 @@ export class CreateDonorDto extends CreateAddressDto {
     @IsEmail()
     @IsNotEmpty()
     email: string;
+
+    @ApiProperty({ description: 'Donor account password' })
+    @IsEmail()
+    @IsNotEmpty()
+    password: string;
 
     @ApiProperty({ type: 'enum', enum: Race, description: 'Donor race' })
     @IsEnum(Race, { message: 'Invalid race. Race must be either mahila, janajati, adiwashi, dalit.' })

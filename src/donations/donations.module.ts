@@ -7,6 +7,7 @@ import { Donor } from 'src/donors/entities/donor.entity';
 import { Organization } from 'src/organizations/entities/organization.entity';
 import { Certificate } from 'crypto';
 import { DonationEvent } from 'src/donation_events/entities/donation_event.entity';
+import { LabReport } from 'src/lab_reports/entities/lab_report.entity';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { DonationEvent } from 'src/donation_events/entities/donation_event.entit
       Organization,
       Certificate,
       DonationEvent,
+      LabReport,
     ]),
   ],
   controllers: [DonationsController],

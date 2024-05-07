@@ -1,3 +1,4 @@
+import { PaginateConfig } from "nestjs-paginate";
 import { Certificate } from "src/certificate/entities/certificate.entity";
 import { DonationEvent } from "src/donation_events/entities/donation_event.entity";
 import { Donor } from "src/donors/entities/donor.entity";
@@ -5,7 +6,7 @@ import { BaseEntity } from "src/entities/base.entity";
 import { LabReport } from "src/lab_reports/entities/lab_report.entity";
 import { Organization } from "src/organizations/entities/organization.entity";
 import { DonationStatus, DonationType } from "src/types/global.types";
-import { Column, Entity, ManyToOne, OneToOne } from "typeorm";
+import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne, OneToOne } from "typeorm";
 
 @Entity()
 export class Donation extends BaseEntity {
@@ -40,4 +41,21 @@ export class Donation extends BaseEntity {
 
     @OneToOne(() => LabReport, lab_report => lab_report.donation, { nullable: true })
     labReport: LabReport
+
+    @BeforeInsert()
+    @BeforeUpdate()
+    async validate() {
+        if (this.donationType === DonationType.INDIVIDUAL) {
+            this.organization = null;
+        }
+    }
+}
+
+export const DONATION_PAGINATION_CONFIG: PaginateConfig<Donation> = {
+    relations: ['donor', 'donation_event', 'certificate', 'labReport', 'organization'],
+    sortableColumns: ['id', 'createdAt', 'donor.firstName', 'donor.lastName', 'donation_event', 'status', 'bloodBagNo', 'organization.name', 'verifiedBy'],
+    defaultSortBy: [['createdAt', 'DESC']],
+    searchableColumns: ['donor', 'donation_event', 'status'],
+    select: ['id', 'certificate', 'bloodBagNo', 'status', 'failedReason', 'verifiedBy', 'donationType', 'createdAt', 'updatedAt'],
+    defaultLimit: 10,
 }

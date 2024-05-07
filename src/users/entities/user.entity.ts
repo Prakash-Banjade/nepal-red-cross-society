@@ -2,6 +2,7 @@ import { BaseEntity } from "src/entities/base.entity";
 import { BeforeInsert, BeforeUpdate, Column, Entity } from "typeorm";
 import * as bcrypt from 'bcrypt';
 import { Roles } from "src/types/global.types";
+import { FilterOperator, FilterSuffix, PaginateConfig } from "nestjs-paginate";
 
 @Entity()
 export class User extends BaseEntity {
@@ -23,11 +24,6 @@ export class User extends BaseEntity {
     @Column({ type: 'varchar', nullable: true })
     image: string;
 
-    @Column({ type: 'boolean', default: false })
-    isDonor: boolean;
-
-    // TODO: Define donor
-
     @Column({ type: 'varchar', nullable: true })
     refresh_token: string;
 
@@ -48,4 +44,16 @@ export class User extends BaseEntity {
         if (!emailRegex.test(this.email)) throw new Error('Invalid email');
     }
 
+}
+
+export const USER_PAGINATION_CONFIG: PaginateConfig<User> = {
+    sortableColumns: ['id', 'firstName', 'createdAt', 'email'],
+    defaultSortBy: [['createdAt', 'DESC']],
+    searchableColumns: ['firstName', 'lastName', 'email'],
+    select: ['id', 'firstName', 'lastName', 'email', 'role', 'image', 'isDonor', 'createdAt', 'updatedAt'],
+    filterableColumns: {
+        firstName: [FilterOperator.EQ, FilterSuffix.NOT],
+        lastName: [FilterOperator.EQ, FilterSuffix.NOT],
+    },
+    defaultLimit: 10,
 }

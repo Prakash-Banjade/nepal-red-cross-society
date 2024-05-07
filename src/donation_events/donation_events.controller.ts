@@ -12,6 +12,8 @@ import { DonationEventsService } from './donation_events.service';
 import { CreateDonationEventDto } from './dto/create-donation_event.dto';
 import { UpdateDonationEventDto } from './dto/update-donation_event.dto';
 import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Paginate, PaginateQuery, PaginatedSwaggerDocs } from 'nestjs-paginate';
+import { DONATION_EVENT_PAGINATION_CONFIG } from './entities/donation_event.entity';
 
 @ApiTags('Donation Event')
 @ApiBearerAuth()
@@ -28,8 +30,9 @@ export class DonationEventsController {
 
   @Get()
   @ApiOperation({ description: "Get all donation events", summary: "View donation events" })
-  findAll() {
-    return this.donationEventsService.findAll();
+  @PaginatedSwaggerDocs(CreateDonationEventDto, DONATION_EVENT_PAGINATION_CONFIG)
+  findAll(@Paginate() query: PaginateQuery) {
+    return this.donationEventsService.findAll(query);
   }
 
   @Get(':id')

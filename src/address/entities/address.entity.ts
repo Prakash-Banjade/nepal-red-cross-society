@@ -1,5 +1,6 @@
 import { Donor } from "src/donors/entities/donor.entity";
 import { BaseEntity } from "src/entities/base.entity";
+import { Organization } from "src/organizations/entities/organization.entity";
 import { District, Province, addresses } from "src/types/address.types";
 import { Country } from "src/types/country.types";
 import { Municipal } from "src/types/municipals.types";
@@ -31,6 +32,9 @@ export class Address extends BaseEntity {
 
     @OneToOne(() => Volunteer, (volunteer) => volunteer.address, { nullable: true })
     volunteer: Volunteer
+
+    @OneToOne(() => Organization, (organization) => organization.address, { nullable: true })
+    organization: Organization
 
 
     @BeforeInsert()

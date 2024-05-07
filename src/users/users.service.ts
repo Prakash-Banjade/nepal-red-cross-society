@@ -1,29 +1,39 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from './entities/user.entity';
+import { USER_PAGINATION_CONFIG, User } from './entities/user.entity';
 import { Repository } from 'typeorm';
+// import { FilterOperator, FilterSuffix, PaginateQuery, Paginated, paginate } from 'nestjs-paginate';
+import { IPaginationOptions, Pagination, paginate } from 'nestjs-typeorm-paginate';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private usersRepository: Repository<User>,
-  ) {}
+  ) { }
 
-  async findAll() {
-    return await this.usersRepository.find({
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        role: true,
-        image: true,
-        isDonor: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+  // async findAll() {
+  //   return await this.usersRepository.find({
+  //     select: {
+  //       id: true,
+  //       firstName: true,
+  //       lastName: true,
+  //       email: true,
+  //       role: true,
+  //       image: true,
+  //       isDonor: true,
+  //       createdAt: true,
+  //       updatedAt: true,
+  //     },
+  //   });
+  // }
+
+  // public findAll(query: PaginateQuery): Promise<Paginated<User>> {
+  //   return paginate(query, this.usersRepository, USER_PAGINATION_CONFIG)
+  // }
+
+  async findAll(options: IPaginationOptions): Promise<Pagination<User>> {
+    return paginate<User>(this.usersRepository, options);
   }
 
   async findOne(id: string) {

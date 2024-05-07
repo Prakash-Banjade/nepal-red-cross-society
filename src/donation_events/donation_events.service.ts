@@ -2,9 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateDonationEventDto } from './dto/create-donation_event.dto';
 import { UpdateDonationEventDto } from './dto/update-donation_event.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DonationEvent } from './entities/donation_event.entity';
+import { DONATION_EVENT_PAGINATION_CONFIG, DonationEvent } from './entities/donation_event.entity';
 import { In, Repository } from 'typeorm';
 import { Volunteer } from 'src/volunteers/entities/volunteer.entity';
+import { PaginateQuery, Paginated, paginate } from 'nestjs-paginate';
 
 @Injectable()
 export class DonationEventsService {
@@ -12,7 +13,7 @@ export class DonationEventsService {
     @InjectRepository(DonationEvent)
     private donationEventsRepo: Repository<DonationEvent>,
     @InjectRepository(Volunteer) private volunteersRepo: Repository<Volunteer>,
-  ) {}
+  ) { }
 
   async create(createDonationEventDto: CreateDonationEventDto) {
     // retrieving volunteers
@@ -28,8 +29,8 @@ export class DonationEventsService {
     });
   }
 
-  async findAll() {
-    return await this.donationEventsRepo.find();
+  public findAll(query: PaginateQuery): Promise<Paginated<DonationEvent>> {
+    return paginate(query, this.donationEventsRepo, DONATION_EVENT_PAGINATION_CONFIG)
   }
 
   async findOne(id: string) {

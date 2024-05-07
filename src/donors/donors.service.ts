@@ -22,7 +22,8 @@ export class DonorsService {
     const address = this.addressRepo.create({ province, district, municipality, ward, street });
 
     const donor = this.donorRepo.create({
-      name: createDonorDto.name,
+      firstName: createDonorDto.firstName,
+      lastName: createDonorDto.lastName,
       gender: createDonorDto.gender,
       email: createDonorDto.email,
       race: createDonorDto.race,
@@ -56,7 +57,8 @@ export class DonorsService {
     updateDonorDto.province && await this.setAddress(existingDonor, updateDonorDto);
 
     Object.assign(existingDonor, {
-      name: updateDonorDto.name,
+      firstName: updateDonorDto.firstName,
+      lastName: updateDonorDto.lastName,
       gender: updateDonorDto.gender,
       email: updateDonorDto.email,
       race: updateDonorDto.race,
