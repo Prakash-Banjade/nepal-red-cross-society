@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCertificateDto } from './dto/create-certificate.dto';
 import { UpdateCertificateDto } from './dto/update-certificate.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -15,7 +15,12 @@ export class CertificateService {
   ) { }
 
   async create(createCertificateDto: CreateCertificateDto) {
-    const certificate = this.certificateRepo.create(createCertificateDto);
+    const donation = await this.findDonation(createCertificateDto.donation);
+
+    const certificate = this.certificateRepo.create({
+      ...createCertificateDto,
+      donation,
+    });
     return this.certificateRepo.save(certificate);
   }
 
@@ -47,5 +52,12 @@ export class CertificateService {
   async remove(id: string) {
     const foundCertificate = await this.findOne(id);
     return await this.certificateRepo.softRemove(foundCertificate);
+  }
+
+  async findDonation(id: string) {
+    const foundDonation = await this.donationRepo.findOneBy({ id });
+    if (!foundDonation) throw new BadRequestException('Donation not found');
+
+    return foundDonation;
   }
 }
