@@ -3,7 +3,7 @@ import { AuthService } from './auth.service';
 import { SignInDto } from './dto/signIn.dto';
 import { CookieOptions, Request, Response } from 'express';
 import { RegisterDto } from './dto/register.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Public } from 'src/decorators/setPublicRoute.decorator';
 
 @ApiTags('Authentication')
@@ -18,15 +18,10 @@ export class AuthController {
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 day
     }
 
-    // @Public()
-    // @Delete('deleteAll')
-    // async deleteAll() {
-    //     return await this.authService.deleteUsers();
-    // }
-
     @Public()
     @HttpCode(HttpStatus.OK)
     @Post('login')
+    @ApiOperation({ description: 'Login with email and password. Returns access token.', summary: 'Login' })
     async signIn(@Body() signInDto: SignInDto, @Res({ passthrough: true }) res: Response, @Req() req: Request) {
         const { access_token, refresh_token } = await this.authService.signIn(signInDto);
 
@@ -38,6 +33,7 @@ export class AuthController {
     @Public()
     @Post('refresh')
     @HttpCode(HttpStatus.OK)
+    @ApiOperation({ description: 'Refresh access token. Returns new access token.', summary: 'Refresh' })
     async refreshToken(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
         const refresh_token = req.cookies?.refresh_token;
         if (!refresh_token) throw new UnauthorizedException('No refresh token provided');
@@ -51,12 +47,14 @@ export class AuthController {
 
     @Public()
     @Post('register')
+    @ApiOperation({ description: 'Register new user. Returns access token.', summary: 'Register' })
     async register(@Body() registerDto: RegisterDto) {
         return await this.authService.register(registerDto);
     }
 
     @Post('logout')
     @HttpCode(HttpStatus.NO_CONTENT)
+    @ApiOperation({ description: 'Logout. Deletes refresh token from DB.', summary: 'Logout' })
     async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
         // on client also delete the access_token
 
