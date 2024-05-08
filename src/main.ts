@@ -17,6 +17,7 @@ import { LabReportsModule } from './lab_reports/lab_reports.module';
 import { TestCasesModule } from './test_cases/test_cases.module';
 import { VolunteersModule } from './volunteers/volunteers.module';
 import { setupSwagger } from './config/swagger.config';
+import helmet from 'helmet';
 const PORT = process.env.PORT || 3001;
 
 async function bootstrap() {
@@ -28,6 +29,8 @@ async function bootstrap() {
     methods: ['GET', 'POST', 'DELETE', 'PATCH'],
   });
 
+  app.use(helmet()); // header security
+  
   const { httpAdapter } = app.get(HttpAdapterHost);
   app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
   app.use(cookieParser());
