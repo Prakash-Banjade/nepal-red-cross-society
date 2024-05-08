@@ -26,6 +26,7 @@ async function bootstrap() {
     origin: ['http://localhost:5173'],
     credentials: true,
     optionsSuccessStatus: 200,
+    preflightContinue: false, // enforce CORS policy consistently across the application's endpoints.
     methods: ['GET', 'POST', 'DELETE', 'PATCH'],
   });
 
