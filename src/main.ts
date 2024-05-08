@@ -16,6 +16,7 @@ import { DonorCardModule } from './donor_card/donor_card.module';
 import { LabReportsModule } from './lab_reports/lab_reports.module';
 import { TestCasesModule } from './test_cases/test_cases.module';
 import { VolunteersModule } from './volunteers/volunteers.module';
+import { setupSwagger } from './config/swagger.config';
 const PORT = process.env.PORT || 3001;
 
 async function bootstrap() {
@@ -31,55 +32,9 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
   app.use(cookieParser());
 
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true }))
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }))
 
-  const config = new DocumentBuilder()
-    .setTitle('Blood Bank API Docs')
-    .setDescription('Backend API documentation for Blood Bank')
-    .setVersion('1.0')
-    .addBearerAuth(
-      {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-        name: 'JWT',
-        description: 'Enter JWT token',
-        in: 'header',
-      }
-    )
-    .build();
-
-
-  // swagger
-  const document = SwaggerModule.createDocument(app, config, {
-    include: [
-      AuthModule,
-      UsersModule,
-      OrganizationsModule,
-      DonationsModule,
-      DonationEventsModule,
-      CertificateModule,
-      DonorsModule,
-      AddressModule,
-      DonorCardModule,
-      LabReportsModule,
-      TestCasesModule,
-      VolunteersModule,
-    ],
-  });
-  SwaggerModule.setup('api', app, document, {
-    customSiteTitle: 'Blood Bank API Docs',
-    customfavIcon: 'https://avatars.githubusercontent.com/u/6936373?s=200&v=4',
-    customJs: [
-      'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-bundle.min.js',
-      'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-standalone-preset.min.js',
-    ],
-    customCssUrl: [
-      'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.min.css',
-      'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-standalone-preset.min.css',
-      'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.css',
-    ],
-  });
+  setupSwagger(app);
 
   app.listen(PORT).then(() => {
     console.log(`App running on port ${PORT}`)
