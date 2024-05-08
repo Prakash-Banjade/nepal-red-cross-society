@@ -1,5 +1,5 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsEnum, IsInt, IsNotEmpty, IsString, Min } from "class-validator";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Min, ValidateIf } from "class-validator";
 import { District, Province } from "src/types/address.types";
 import { Country } from "src/types/country.types";
 import { Municipal } from "src/types/municipals.types";
@@ -8,27 +8,31 @@ export class CreateAddressDto {
     @ApiProperty({ enum: Country })
     @IsEnum(Country)
     @IsNotEmpty()
-    country: Country;
+    country!: Country;
 
-    @ApiProperty({ type: 'enum', enum: Province, description: 'Province' })
+    @ApiPropertyOptional({ type: 'enum', enum: Province, description: 'Province' })
     @IsEnum(Province, { message: 'Invalid province. Province must be either Koshi, Madhesh, Bagmati, Gandaki, Lumbini, Karnali, Sudurpashchim.' })
-    province: Province;
+    @ValidateIf(function () { return this.country === 'Nepal' })
+    province?: Province;
 
-    @ApiProperty({ type: 'enum', enum: District, description: 'District' })
+    @ApiPropertyOptional({ type: 'enum', enum: District, description: 'District' })
     @IsEnum(District, { message: 'Invalid district.' })
-    district: District;
+    @ValidateIf(function () { return this.country === 'Nepal' })
+    district?: District;
 
-    @ApiProperty({ type: 'enum', enum: Municipal, description: 'Municipality' })
+    @ApiPropertyOptional({ type: 'enum', enum: Municipal, description: 'Municipality' })
     @IsEnum(Municipal, { message: 'Invalid municipality.' })
-    municipality: Municipal;
-
-    @ApiProperty({ description: 'Ward number' })
+    @ValidateIf(function () { return this.country === 'Nepal' })
+    municipality?: Municipal;
+    
+    @ApiPropertyOptional({ description: 'Ward number' })
     @IsInt()
     @Min(1)
-    ward: number;
+    @ValidateIf(function () { return this.country === 'Nepal' })
+    ward?: number;
 
     @ApiProperty({ description: 'Street name' })
     @IsString()
     @IsNotEmpty()
-    street: string;
+    street!: string;
 }
