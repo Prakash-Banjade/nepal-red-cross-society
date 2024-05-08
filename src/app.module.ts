@@ -20,6 +20,7 @@ import { TestCasesModule } from './test_cases/test_cases.module';
 import { DonorCardModule } from './donor_card/donor_card.module';
 import { OrganizationsModule } from './organizations/organizations.module';
 import { AddressModule } from './address/address.module';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -30,6 +31,10 @@ import { AddressModule } from './address/address.module';
       fileSystemStoragePath: 'public',
       autoDeleteFile: true,
     }),
+    ThrottlerModule.forRoot([{
+      ttl: 60000, // 10 requests per minute
+      limit: 10,
+    }]),
     UsersModule,
     AuthModule,
     CaslModule,
@@ -47,6 +52,10 @@ import { AddressModule } from './address/address.module';
   controllers: [AppController],
   providers: [
     AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard
+    }
     // {
     //   provide: APP_GUARD,
     //   useClass: AuthGuard,
