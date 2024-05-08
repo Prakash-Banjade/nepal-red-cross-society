@@ -5,13 +5,15 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { LabReport } from './entities/lab_report.entity';
 import { Donation } from 'src/donations/entities/donation.entity';
 import { TestCase } from 'src/test_cases/entities/test_case.entity';
+import { TestResult } from 'src/test_cases/entities/test_result.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       LabReport,
       Donation,
-      TestCase
+      TestCase,
+      TestResult,
     ])
   ],
   controllers: [LabReportsController],
