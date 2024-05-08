@@ -12,16 +12,16 @@ export class Address extends BaseEntity {
     @Column({ type: 'enum', enum: Country })
     country: Country;
 
-    @Column({ type: 'enum', enum: Province })
+    @Column({ type: 'enum', enum: Province, nullable: true })
     province: Province;
 
-    @Column({ type: 'enum', enum: District })
+    @Column({ type: 'enum', enum: District, nullable: true })
     district: District;
 
-    @Column({ type: 'enum', enum: Municipal })
+    @Column({ type: 'enum', enum: Municipal, nullable: true })
     municipality: Municipal;
 
-    @Column({ type: 'int' })
+    @Column({ type: 'int', nullable: true })
     ward: number;
 
     @Column({ type: 'varchar' })
@@ -40,6 +40,14 @@ export class Address extends BaseEntity {
     @BeforeInsert()
     @BeforeUpdate()
     verifyAddress() {
+        if (this.country !== 'Nepal') {
+            this.province = null;
+            this.district = null;
+            this.municipality = null;
+            this.ward = null;
+            return;
+        }
+
         const municipal = addresses.find(address => address.province === this.province)?.districts.find(district => district.name === this.district)?.municipals.find(municipal => municipal === this.municipality)
         if (!municipal) throw new Error('Invalid address')
     }
