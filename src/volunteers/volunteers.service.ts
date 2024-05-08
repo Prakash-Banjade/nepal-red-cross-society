@@ -3,9 +3,12 @@ import { CreateVolunteerDto } from './dto/create-volunteer.dto';
 import { UpdateVolunteerDto } from './dto/update-volunteer.dto';
 import { Volunteer } from './entities/volunteer.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { DonationEvent } from 'src/donation_events/entities/donation_event.entity';
 import { Address } from 'src/address/entities/address.entity';
+import { PageDto } from 'src/dto/page.dto.';
+import { PageOptionsDto } from 'src/dto/pageOptions.dto';
+import { PageMetaDto } from 'src/dto/pageMeta.dto';
 
 @Injectable()
 export class VolunteersService {
@@ -34,8 +37,20 @@ export class VolunteersService {
     return await this.volunteerRepo.save(volunteer);
   }
 
-  async findAll() {
-    return await this.volunteerRepo.find();
+  async findAll(pageOptionsDto: PageOptionsDto): Promise<PageDto<Volunteer>> {
+    const queryBuilder = this.queryBuilder();
+
+    queryBuilder
+      .orderBy("volunteer.createdAt", pageOptionsDto.order)
+      .skip(pageOptionsDto.skip)
+      .take(pageOptionsDto.take)
+
+    const itemCount = await queryBuilder.getCount();
+    const { entities } = await queryBuilder.getRawAndEntities();
+
+    const pageMetaDto = new PageMetaDto({ itemCount, pageOptionsDto });
+
+    return new PageDto(entities, pageMetaDto);
   }
 
   async findOne(id: string) {
@@ -59,12 +74,16 @@ export class VolunteersService {
   }
 
   async remove(id: string) {
-    const existingVolunteer = await this.findOne(id);
-    await this.volunteerRepo.softRemove(existingVolunteer);
+    await this.findOne(id);
+    this.queryBuilder().softDelete().where({ id }).execute()
 
     return {
       success: true,
       message: 'Volunteer deleted successfully',
     }
+  }
+
+  private queryBuilder(): SelectQueryBuilder<Volunteer> {
+    return this.volunteerRepo.createQueryBuilder("volunteer")
   }
 }

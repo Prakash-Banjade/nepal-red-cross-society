@@ -7,17 +7,20 @@ import {
   Param,
   Delete,
   ParseUUIDPipe,
+  Query,
 } from '@nestjs/common';
 import { VolunteersService } from './volunteers.service';
 import { CreateVolunteerDto } from './dto/create-volunteer.dto';
 import { UpdateVolunteerDto } from './dto/update-volunteer.dto';
 import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { PageOptionsDto } from 'src/dto/pageOptions.dto';
+import { ApiPaginatedResponse } from 'src/decorators/apiPaginatedResponse.decorator';
 
 @ApiBearerAuth()
 @ApiTags('Volunteers')
 @Controller('volunteers')
 export class VolunteersController {
-  constructor(private readonly volunteersService: VolunteersService) {}
+  constructor(private readonly volunteersService: VolunteersService) { }
 
   @Post()
   @ApiConsumes('multipart/form-data')
@@ -26,8 +29,9 @@ export class VolunteersController {
   }
 
   @Get()
-  findAll() {
-    return this.volunteersService.findAll();
+  @ApiPaginatedResponse(CreateVolunteerDto)
+  findAll(@Query() pageOptionsDto: PageOptionsDto) {
+    return this.volunteersService.findAll(pageOptionsDto);
   }
 
   @Get(':id')
