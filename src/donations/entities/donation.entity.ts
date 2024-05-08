@@ -1,4 +1,3 @@
-import { PaginateConfig } from "nestjs-paginate";
 import { Certificate } from "src/certificate/entities/certificate.entity";
 import { DonationEvent } from "src/donation_events/entities/donation_event.entity";
 import { Donor } from "src/donors/entities/donor.entity";
@@ -49,13 +48,4 @@ export class Donation extends BaseEntity {
             this.organization = null;
         }
     }
-}
-
-export const DONATION_PAGINATION_CONFIG: PaginateConfig<Donation> = {
-    relations: ['donor', 'donation_event', 'certificate', 'labReport', 'organization'],
-    sortableColumns: ['id', 'createdAt', 'donor.firstName', 'donor.lastName', 'donation_event', 'status', 'bloodBagNo', 'organization.name', 'verifiedBy'],
-    defaultSortBy: [['createdAt', 'DESC']],
-    searchableColumns: ['donor', 'donation_event', 'status'],
-    select: ['id', 'certificate', 'bloodBagNo', 'status', 'failedReason', 'verifiedBy', 'donationType', 'createdAt', 'updatedAt'],
-    defaultLimit: 10,
 }

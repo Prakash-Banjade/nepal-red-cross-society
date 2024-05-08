@@ -1,4 +1,3 @@
-import { PaginateConfig } from 'nestjs-paginate';
 import { Donation } from 'src/donations/entities/donation.entity';
 import { BaseEntity } from 'src/entities/base.entity';
 import { Volunteer } from 'src/volunteers/entities/volunteer.entity';
@@ -29,13 +28,4 @@ export class DonationEvent extends BaseEntity {
 
   @OneToMany(() => Volunteer, (volunteer) => volunteer.donationEvent)
   volunteers: Volunteer[];
-}
-
-export const DONATION_EVENT_PAGINATION_CONFIG: PaginateConfig<DonationEvent> = {
-  sortableColumns: ['date', 'createdAt', 'host', 'location', 'leader'],
-  defaultSortBy: [['createdAt', 'DESC']],
-  // relations: ['donations', 'volunteers'],
-  searchableColumns: ['date', 'host', 'location', 'leader'],
-  select: ['id', 'date', 'host', 'location', 'mapLink', 'leader', 'createdAt', 'updatedAt'],
-  defaultLimit: 10,
 }
