@@ -3,8 +3,10 @@ import { CreateCertificateDto } from './dto/create-certificate.dto';
 import { UpdateCertificateDto } from './dto/update-certificate.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Certificate } from './entities/certificate.entity';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { Donation } from 'src/donations/entities/donation.entity';
+import { PageOptionsDto } from 'src/dto/pageOptions.dto';
+import paginatedData from 'src/utils/paginatedData';
 
 @Injectable()
 export class CertificateService {
@@ -24,8 +26,13 @@ export class CertificateService {
     return this.certificateRepo.save(certificate);
   }
 
-  async findAll() {
-    return this.certificateRepo.find();
+  async findAll(pageOptionsDto: PageOptionsDto) {
+    this.queryBuilder()
+      .orderBy("certificate.createdAt", pageOptionsDto.order)
+      .skip(pageOptionsDto.skip)
+      .take(pageOptionsDto.take)
+
+    return paginatedData(pageOptionsDto, this.queryBuilder())
   }
 
   async findOne(id: string) {
@@ -59,5 +66,9 @@ export class CertificateService {
     if (!foundDonation) throw new BadRequestException('Donation not found');
 
     return foundDonation;
+  }
+
+  private queryBuilder(): SelectQueryBuilder<Certificate> {
+    return this.certificateRepo.createQueryBuilder("certificate")
   }
 }
