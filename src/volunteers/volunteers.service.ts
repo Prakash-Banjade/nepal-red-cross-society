@@ -8,6 +8,7 @@ import { DonationEvent } from 'src/donation_events/entities/donation_event.entit
 import { Address } from 'src/address/entities/address.entity';
 import { PageDto } from 'src/dto/page.dto.';
 import { PageOptionsDto } from 'src/dto/pageOptions.dto';
+import paginatedData from 'src/utils/paginatedData';
 import { PageMetaDto } from 'src/dto/pageMeta.dto';
 
 @Injectable()
@@ -38,19 +39,23 @@ export class VolunteersService {
   }
 
   async findAll(pageOptionsDto: PageOptionsDto): Promise<PageDto<Volunteer>> {
-    const queryBuilder = this.queryBuilder();
 
+    const queryBuilder = this.queryBuilder();
+    
+    
     queryBuilder
       .orderBy("volunteer.createdAt", pageOptionsDto.order)
       .skip(pageOptionsDto.skip)
       .take(pageOptionsDto.take)
 
-    const itemCount = await queryBuilder.getCount();
-    const { entities } = await queryBuilder.getRawAndEntities();
+    return paginatedData(pageOptionsDto, queryBuilder);
 
-    const pageMetaDto = new PageMetaDto({ itemCount, pageOptionsDto });
+    // const itemCount = await queryBuilder.getCount();
+    // const { entities } = await queryBuilder.getRawAndEntities();
 
-    return new PageDto(entities, pageMetaDto);
+    // const pageMetaDto = new PageMetaDto({ itemCount, pageOptionsDto });
+
+    // return new PageDto(entities, pageMetaDto);
   }
 
   async findOne(id: string) {
