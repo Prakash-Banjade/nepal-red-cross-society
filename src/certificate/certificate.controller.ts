@@ -1,8 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query } from '@nestjs/common';
 import { CertificateService } from './certificate.service';
 import { CreateCertificateDto } from './dto/create-certificate.dto';
 import { UpdateCertificateDto } from './dto/update-certificate.dto';
 import { ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiPaginatedResponse } from 'src/decorators/apiPaginatedResponse.decorator';
+import { PageOptionsDto } from 'src/dto/pageOptions.dto';
 
 @ApiTags('Certificate')
 @Controller('certificate')
@@ -18,8 +20,9 @@ export class CertificateController {
 
   @Get()
   @ApiOperation({ description: 'Get all certificates', summary: "Get certificates" })
-  findAll() {
-    return this.certificateService.findAll();
+  @ApiPaginatedResponse(CreateCertificateDto)
+  findAll(@Query() pageOptionsDto: PageOptionsDto) {
+    return this.certificateService.findAll(pageOptionsDto);
   }
 
   @Get(':id')
