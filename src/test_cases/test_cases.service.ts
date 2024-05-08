@@ -12,6 +12,12 @@ export class TestCasesService {
   ) { }
 
   async create(createTestCaseDto: CreateTestCaseDto) {
+    const foundTestCaseWithSameName = await this.testCaseRepo.findOneBy({
+      name: createTestCaseDto.name,
+    })
+
+    if (foundTestCaseWithSameName) throw new BadRequestException('Test case with this name already exists');
+
     const testCase = this.testCaseRepo.create(createTestCaseDto);
     return await this.testCaseRepo.save(testCase);
   }
