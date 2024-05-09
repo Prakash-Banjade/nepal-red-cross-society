@@ -2,7 +2,7 @@ import { Address } from "src/address/entities/address.entity";
 import { Donation } from "src/donations/entities/donation.entity";
 import { DonorCard } from "src/donor_card/entities/donor_card.entity";
 import { BaseEntity } from "src/core/entities/base.entity";
-import { BloodGroup, Cast, Gender, Race } from "src/core/types/global.types";
+import { BloodType, Cast, Gender, Race, RhFactor } from "src/core/types/global.types";
 import * as bcrypt from 'bcrypt';
 import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany, OneToOne } from "typeorm";
 
@@ -35,12 +35,18 @@ export class Donor extends BaseEntity {
     @Column({ type: 'datetime' })
     dob: Date;
 
+    @Column({ type: 'real' })
+    weight: number;
+
     // circular dependency
     @OneToOne(() => Address, (address) => address.donor)
     address: Address
 
-    @Column({ type: 'enum', enum: BloodGroup })
-    bloodGroup: BloodGroup;
+    @Column({ type: 'enum', enum: BloodType })
+    bloodType: BloodType;
+
+    @Column({ type: 'enum', enum: RhFactor })
+    rhFactor: RhFactor;
 
     // circular dependencies
     @OneToMany(() => Donation, (donation) => donation.donor, { nullable: true })
@@ -54,13 +60,6 @@ export class Donor extends BaseEntity {
     checkIfEligibleForDonorCard() {
         if (this.donations?.length < 3) this.donorCard = null
     }
-
-    // @BeforeInsert()
-    // hashPassword() {
-    //     if (!this.password) throw new Error('Password required');
-
-    //     this.password = bcrypt.hashSync(this.password, 10);
-    // }
 
     @BeforeInsert()
     @BeforeUpdate()

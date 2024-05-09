@@ -32,15 +32,16 @@ export enum Race {
     DALIT = 'dalit',
 }
 
-export enum BloodGroup {
-    A_POSITIVE = 'A+',
-    A_NEGATIVE = 'A-',
-    B_POSITIVE = 'B+',
-    B_NEGATIVE = 'B-',
-    O_POSITIVE = 'O+',
-    O_NEGATIVE = 'O-',
-    AB_POSITIVE = 'AB+',
-    AB_NEGATIVE = 'AB-',
+export enum BloodType {
+    A = 'A',
+    B = 'B',
+    AB = 'AB',
+    O = 'O',
+}
+
+export enum RhFactor {
+    POSITIVE = 'positive',
+    NEGATIVE = 'negative',
 }
 
 export enum Cast {
