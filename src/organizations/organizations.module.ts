@@ -16,5 +16,6 @@ import { Address } from 'src/address/entities/address.entity';
   ],
   controllers: [OrganizationsController],
   providers: [OrganizationsService],
+  exports: [OrganizationsService],
 })
 export class OrganizationsModule { }

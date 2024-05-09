@@ -7,17 +7,18 @@ import { Repository, SelectQueryBuilder } from 'typeorm';
 import { Donation } from 'src/donations/entities/donation.entity';
 import { PageOptionsDto } from 'src/core/dto/pageOptions.dto';
 import paginatedData from 'src/core/utils/paginatedData';
+import { DonationsService } from 'src/donations/donations.service';
 
 @Injectable()
 export class CertificateService {
 
   constructor(
     @InjectRepository(Certificate) private certificateRepo: Repository<Certificate>,
-    @InjectRepository(Donation) private donationRepo: Repository<Donation>,
+    private readonly donationsService: DonationsService,
   ) { }
 
   async create(createCertificateDto: CreateCertificateDto) {
-    const donation = await this.findDonation(createCertificateDto.donation);
+    const donation = await this.donationsService.findOne(createCertificateDto.donation);
 
     const certificate = this.certificateRepo.create({
       ...createCertificateDto,
@@ -46,7 +47,7 @@ export class CertificateService {
     const foundCertificate = await this.findOne(id);
 
     // retrieving donation
-    const donation = updateCertificateDto.donation ? await this.donationRepo.findOneBy({ id: updateCertificateDto.donation }) : null;
+    const donation = updateCertificateDto.donation ? await this.donationsService.findOne(updateCertificateDto.donation) : null;
 
     Object.assign(foundCertificate, {
       ...updateCertificateDto,
@@ -59,13 +60,6 @@ export class CertificateService {
   async remove(id: string) {
     const foundCertificate = await this.findOne(id);
     return await this.certificateRepo.softRemove(foundCertificate);
-  }
-
-  async findDonation(id: string) {
-    const foundDonation = await this.donationRepo.findOneBy({ id });
-    if (!foundDonation) throw new BadRequestException('Donation not found');
-
-    return foundDonation;
   }
 
   private queryBuilder(): SelectQueryBuilder<Certificate> {

@@ -18,5 +18,6 @@ import { TestResult } from 'src/test_cases/entities/test_result.entity';
   ],
   controllers: [LabReportsController],
   providers: [LabReportsService],
+  exports: [LabReportsService],
 })
 export class LabReportsModule { }

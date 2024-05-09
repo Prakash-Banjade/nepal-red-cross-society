@@ -14,5 +14,11 @@ import { Address } from 'src/address/entities/address.entity';
   ],
   controllers: [DonorsController],
   providers: [DonorsService],
+  exports: [
+    {
+      useClass: DonorsService,
+      provide: DonorsService
+    }
+  ]
 })
 export class DonorsModule { }

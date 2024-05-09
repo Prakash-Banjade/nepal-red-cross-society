@@ -13,7 +13,7 @@ export class UpdateDonationDto extends PartialType(CreateDonationDto) {
     @IsOptional()
     certificate?: string;
 
-    @ApiPropertyOptional({ type: String, isArray: true, example: 'High BP, Sugar' })
+    @ApiPropertyOptional({ type: String, isArray: true, example: ["High BP", "Sugar"] })
     @IsString({ each: true })
     @IsOptional()
     failedReason?: string[];

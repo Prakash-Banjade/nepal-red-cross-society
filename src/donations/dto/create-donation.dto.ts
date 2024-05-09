@@ -32,4 +32,9 @@ export class CreateDonationDto {
     @IsEnum(DonationStatus, { message: 'Donation status must be one of these: ' + Object.values(DonationStatus) })
     @IsOptional()
     status?: DonationStatus;
+
+    @ApiProperty({ type: String })
+    @IsString()
+    @IsNotEmpty()
+    verifiedBy: string;
 }

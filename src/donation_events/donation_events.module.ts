@@ -15,5 +15,6 @@ import { Volunteer } from 'src/volunteers/entities/volunteer.entity';
   ],
   controllers: [DonationEventsController],
   providers: [DonationEventsService],
+  exports: [DonationEventsService],
 })
 export class DonationEventsModule { }

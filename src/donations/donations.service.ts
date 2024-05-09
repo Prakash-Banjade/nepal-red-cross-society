@@ -4,22 +4,23 @@ import { UpdateDonationDto } from './dto/update-donation.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Donation } from './entities/donation.entity';
 import { Repository } from 'typeorm';
-import { Donor } from 'src/donors/entities/donor.entity';
-import { Organization } from 'src/organizations/entities/organization.entity';
-import { DonationEvent } from 'src/donation_events/entities/donation_event.entity';
 import { Certificate } from 'src/certificate/entities/certificate.entity';
-import { LabReport } from 'src/lab_reports/entities/lab_report.entity';
+import { DonorsService } from 'src/donors/donors.service';
+import { OrganizationsService } from 'src/organizations/organizations.service';
+import { DonationEventsService } from 'src/donation_events/donation_events.service';
+import { LabReportsService } from 'src/lab_reports/lab_reports.service';
+import { CertificateService } from 'src/certificate/certificate.service';
 
 @Injectable()
 export class DonationsService {
 
   constructor(
     @InjectRepository(Donation) private donationRepo: Repository<Donation>,
-    @InjectRepository(Donor) private donorRepo: Repository<Donor>,
-    @InjectRepository(Organization) private organizationRepo: Repository<Organization>,
-    @InjectRepository(DonationEvent) private donationEventRepo: Repository<DonationEvent>,
-    @InjectRepository(Certificate) private certificateRepo: Repository<Certificate>,
-    @InjectRepository(LabReport) private labReportRepo: Repository<LabReport>,
+    private readonly certificateService: CertificateService,
+    private readonly labReportsService: LabReportsService,
+    private readonly donationEventsService: DonationEventsService,
+    private readonly donorsService: DonorsService,
+    private readonly organizationsService: OrganizationsService,
   ) { }
 
   async create(createDonationDto: CreateDonationDto) {
@@ -75,19 +76,19 @@ export class DonationsService {
   }
 
   private async retrieveCreateDependencies(createDonationDto: CreateDonationDto) {
-    const donor = createDonationDto.donor ? await this.donorRepo.findOneBy({ id: createDonationDto.donor }) : null;
-    const organization = createDonationDto.organization ? await this.organizationRepo.findOneBy({ id: createDonationDto.organization }) : null;
-    const donationEvent = createDonationDto.donation_event ? await this.donationEventRepo.findOneBy({ id: createDonationDto.donation_event }) : null;
+    const donor = await this.donorsService.findOne(createDonationDto.donor);
+    const organization = await this.organizationsService.findOne(createDonationDto.organization);
+    const donationEvent = await this.donationEventsService.findOne(createDonationDto.donation_event);
 
     return { donor, organization, donation_event: donationEvent };
   }
 
   private async retrieveUpdateDependencies(updateDonationDto: UpdateDonationDto) {
-    const donor = updateDonationDto.donor ? await this.donorRepo.findOneBy({ id: updateDonationDto.donor }) : null;
-    const organization = updateDonationDto.organization ? await this.organizationRepo.findOneBy({ id: updateDonationDto.organization }) : null;
-    const donationEvent = updateDonationDto.donation_event ? await this.donationEventRepo.findOneBy({ id: updateDonationDto.donation_event }) : null;
-    const certificate = updateDonationDto.certificate ? await this.certificateRepo.findOneBy({ id: updateDonationDto.certificate }) : null;
-    const labReport = updateDonationDto.labReport ? await this.labReportRepo.findOneBy({ id: updateDonationDto.labReport }) : null;
+    const donor = await this.donorsService.findOne(updateDonationDto.donor);
+    const organization = await this.organizationsService.findOne(updateDonationDto.organization);
+    const donationEvent = await this.donationEventsService.findOne(updateDonationDto.donation_event);
+    const certificate = await this.certificateService.findOne(updateDonationDto.certificate);
+    const labReport = await this.labReportsService.findOne(updateDonationDto.labReport);
 
     return { donor, organization, donation_event: donationEvent, certificate, labReport };
   }
