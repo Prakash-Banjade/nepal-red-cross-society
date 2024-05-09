@@ -24,12 +24,12 @@ export class CreateAddressDto {
     @IsEnum(Municipal, { message: 'Invalid municipality.' })
     @ValidateIf(function () { return this.country === 'Nepal' })
     municipality?: Municipal;
-    
-    @ApiPropertyOptional({ description: 'Ward number' })
+
+    @ApiPropertyOptional({ description: 'Ward number', default: 1 })
     @IsInt()
     @Min(1)
     @ValidateIf(function () { return this.country === 'Nepal' })
-    ward?: number;
+    ward?: number = 1;
 
     @ApiProperty({ description: 'Street name' })
     @IsString()
