@@ -20,8 +20,8 @@ export class Donor extends BaseEntity {
     @Column({ type: 'varchar' })
     email: string;
 
-    @Column({ type: "varchar" })
-    password: string;
+    // @Column({ type: "varchar" })
+    // password: string;
 
     @Column({ type: 'enum', enum: Race })
     race: Race;
@@ -33,7 +33,7 @@ export class Donor extends BaseEntity {
     phone: string;
 
     @Column({ type: 'datetime' })
-    dob: string;
+    dob: Date;
 
     // circular dependency
     @OneToOne(() => Address, (address) => address.donor)
@@ -52,15 +52,15 @@ export class Donor extends BaseEntity {
     @BeforeInsert()
     @BeforeUpdate()
     checkIfEligibleForDonorCard() {
-        if (this.donations.length < 3) this.donorCard = null
+        if (this.donations?.length < 3) this.donorCard = null
     }
 
-    @BeforeInsert()
-    hashPassword() {
-        if (!this.password) throw new Error('Password required');
+    // @BeforeInsert()
+    // hashPassword() {
+    //     if (!this.password) throw new Error('Password required');
 
-        this.password = bcrypt.hashSync(this.password, 10);
-    }
+    //     this.password = bcrypt.hashSync(this.password, 10);
+    // }
 
     @BeforeInsert()
     @BeforeUpdate()
