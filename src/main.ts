@@ -1,11 +1,11 @@
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { AllExceptionsFilter } from './all-exceptions.filter';
+import { AllExceptionsFilter } from './core/filters/all-exceptions.filter';
 import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 import { setupSwagger } from './config/swagger.config';
 import helmet from 'helmet';
-import { SecurityHeadersMiddleware } from './middlewares/security_headers.middleware';
+import { SecurityHeadersMiddleware } from './core/middlewares/security_headers.middleware';
 const PORT = process.env.PORT || 3001;
 
 async function bootstrap() {

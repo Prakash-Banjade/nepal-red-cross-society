@@ -1,10 +1,10 @@
 import { Certificate } from "src/certificate/entities/certificate.entity";
 import { DonationEvent } from "src/donation_events/entities/donation_event.entity";
 import { Donor } from "src/donors/entities/donor.entity";
-import { BaseEntity } from "src/entities/base.entity";
+import { BaseEntity } from "src/core/entities/base.entity";
 import { LabReport } from "src/lab_reports/entities/lab_report.entity";
 import { Organization } from "src/organizations/entities/organization.entity";
-import { DonationStatus, DonationType } from "src/types/global.types";
+import { DonationStatus, DonationType } from "src/core/types/global.types";
 import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne, OneToOne } from "typeorm";
 
 @Entity()

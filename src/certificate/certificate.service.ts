@@ -5,8 +5,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Certificate } from './entities/certificate.entity';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { Donation } from 'src/donations/entities/donation.entity';
-import { PageOptionsDto } from 'src/dto/pageOptions.dto';
-import paginatedData from 'src/utils/paginatedData';
+import { PageOptionsDto } from 'src/core/dto/pageOptions.dto';
+import paginatedData from 'src/core/utils/paginatedData';
 
 @Injectable()
 export class CertificateService {

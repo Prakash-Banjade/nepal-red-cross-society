@@ -6,10 +6,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { DonationEvent } from 'src/donation_events/entities/donation_event.entity';
 import { Address } from 'src/address/entities/address.entity';
-import { PageDto } from 'src/dto/page.dto.';
-import { PageOptionsDto } from 'src/dto/pageOptions.dto';
-import paginatedData from 'src/utils/paginatedData';
-import { PageMetaDto } from 'src/dto/pageMeta.dto';
+import { PageDto } from 'src/core/dto/page.dto.';
+import { PageOptionsDto } from 'src/core/dto/pageOptions.dto';
+import paginatedData from 'src/core/utils/paginatedData';
+import { PageMetaDto } from 'src/core/dto/pageMeta.dto';
 
 @Injectable()
 export class VolunteersService {

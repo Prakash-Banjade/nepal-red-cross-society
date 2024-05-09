@@ -1,6 +1,6 @@
 import { Address } from "src/address/entities/address.entity";
 import { Donation } from "src/donations/entities/donation.entity";
-import { BaseEntity } from "src/entities/base.entity";
+import { BaseEntity } from "src/core/entities/base.entity";
 import { Column, Entity, OneToMany, OneToOne } from "typeorm";
 
 @Entity()

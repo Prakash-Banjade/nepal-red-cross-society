@@ -1,5 +1,5 @@
 import { Donation } from 'src/donations/entities/donation.entity';
-import { BaseEntity } from 'src/entities/base.entity';
+import { BaseEntity } from 'src/core/entities/base.entity';
 import { Volunteer } from 'src/volunteers/entities/volunteer.entity';
 import { Column, Entity, OneToMany } from 'typeorm';
 

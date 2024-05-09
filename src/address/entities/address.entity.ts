@@ -1,9 +1,9 @@
 import { Donor } from "src/donors/entities/donor.entity";
-import { BaseEntity } from "src/entities/base.entity";
+import { BaseEntity } from "src/core/entities/base.entity";
 import { Organization } from "src/organizations/entities/organization.entity";
-import { District, Province, addresses } from "src/types/address.types";
-import { Country } from "src/types/country.types";
-import { Municipal } from "src/types/municipals.types";
+import { District, Province, addresses } from "src/core/types/address.types";
+import { Country } from "src/core/types/country.types";
+import { Municipal } from "src/core/types/municipals.types";
 import { Volunteer } from "src/volunteers/entities/volunteer.entity";
 import { BeforeInsert, BeforeUpdate, Column, Entity, OneToOne } from "typeorm";
 

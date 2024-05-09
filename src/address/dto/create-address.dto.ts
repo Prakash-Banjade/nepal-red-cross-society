@@ -1,8 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Min, ValidateIf } from "class-validator";
-import { District, Province } from "src/types/address.types";
-import { Country } from "src/types/country.types";
-import { Municipal } from "src/types/municipals.types";
+import { District, Province } from "src/core/types/address.types";
+import { Country } from "src/core/types/country.types";
+import { Municipal } from "src/core/types/municipals.types";
 
 export class CreateAddressDto {
     @ApiProperty({ enum: Country })

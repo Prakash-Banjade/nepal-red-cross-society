@@ -1,4 +1,4 @@
-import { BaseEntity } from "src/entities/base.entity";
+import { BaseEntity } from "src/core/entities/base.entity";
 import { Column, Entity, ManyToOne, OneToMany, OneToOne } from "typeorm";
 import { TestResult } from "./test_result.entity";
 

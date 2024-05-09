@@ -2,11 +2,11 @@ import { CanActivate, ExecutionContext, ForbiddenException, Injectable, Unauthor
 import { Reflector } from "@nestjs/core";
 import { JwtService } from "@nestjs/jwt";
 import { Request } from "express";
-import { AbilityRequiredRules, CHECK_ABILITY } from "src/decorators/abilities.decorator";
-import { IS_PUBLIC_KEY } from "src/decorators/setPublicRoute.decorator";
+import { AbilityRequiredRules, CHECK_ABILITY } from "src/core/decorators/abilities.decorator";
+import { IS_PUBLIC_KEY } from "src/core/decorators/setPublicRoute.decorator";
 import { CaslAbilityFactory } from "../casl-ability.factory/casl-ability.factory";
 import { ForbiddenError } from "@casl/ability";
-import { Roles } from "src/types/global.types";
+import { Roles } from "src/core/types/global.types";
 require('dotenv').config();
 
 @Injectable()

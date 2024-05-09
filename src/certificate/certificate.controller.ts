@@ -3,8 +3,8 @@ import { CertificateService } from './certificate.service';
 import { CreateCertificateDto } from './dto/create-certificate.dto';
 import { UpdateCertificateDto } from './dto/update-certificate.dto';
 import { ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ApiPaginatedResponse } from 'src/decorators/apiPaginatedResponse.decorator';
-import { PageOptionsDto } from 'src/dto/pageOptions.dto';
+import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.decorator';
+import { PageOptionsDto } from 'src/core/dto/pageOptions.dto';
 
 @ApiTags('Certificate')
 @Controller('certificate')

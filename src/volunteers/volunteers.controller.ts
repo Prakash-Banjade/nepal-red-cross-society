@@ -13,8 +13,8 @@ import { VolunteersService } from './volunteers.service';
 import { CreateVolunteerDto } from './dto/create-volunteer.dto';
 import { UpdateVolunteerDto } from './dto/update-volunteer.dto';
 import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
-import { PageOptionsDto } from 'src/dto/pageOptions.dto';
-import { ApiPaginatedResponse } from 'src/decorators/apiPaginatedResponse.decorator';
+import { PageOptionsDto } from 'src/core/dto/pageOptions.dto';
+import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.decorator';
 
 @ApiBearerAuth()
 @ApiTags('Volunteers')

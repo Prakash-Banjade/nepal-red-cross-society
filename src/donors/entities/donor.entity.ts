@@ -1,8 +1,8 @@
 import { Address } from "src/address/entities/address.entity";
 import { Donation } from "src/donations/entities/donation.entity";
 import { DonorCard } from "src/donor_card/entities/donor_card.entity";
-import { BaseEntity } from "src/entities/base.entity";
-import { BloodGroup, Cast, Gender, Race } from "src/types/global.types";
+import { BaseEntity } from "src/core/entities/base.entity";
+import { BloodGroup, Cast, Gender, Race } from "src/core/types/global.types";
 import * as bcrypt from 'bcrypt';
 import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany, OneToOne } from "typeorm";
 
