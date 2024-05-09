@@ -1,13 +1,13 @@
 import { Municipal } from "./municipals.types"
 
 export enum Province {
-    KOSHI = 'koshi',
-    MADHESH = 'madhesh',
-    BAGMATI = 'bagmati',
-    GANDAKI = 'gandaki',
-    LUMBINI = 'lumbini',
-    KARNALI = 'karnali',
-    SUDURPASHCHIM = 'sudurpashchim',
+    KOSHI = 'Koshi',
+    MADHESH = 'Madhesh',
+    BAGMATI = 'Bagmati',
+    GANDAKI = 'Gandaki',
+    LUMBINI = 'Lumbini',
+    KARNALI = 'Karnali',
+    SUDURPASHCHIM = 'Sudurpashchim',
 }
 
 export enum District {
