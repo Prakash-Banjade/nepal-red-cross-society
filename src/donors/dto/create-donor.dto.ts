@@ -1,9 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsDateString, IsEmail, IsEnum, IsInt, IsNotEmpty, IsPhoneNumber, IsString, Length, Min } from "class-validator";
+import { IsDateString, IsEmail, IsEnum, IsNotEmpty, IsPhoneNumber, IsString, Length } from "class-validator";
 import { CreateAddressDto } from "src/address/dto/create-address.dto";
-import { District, Province } from "src/core/types/address.types";
 import { BloodGroup, Cast, Gender, Race } from "src/core/types/global.types";
-import { Municipal } from "src/core/types/municipals.types";
 
 export class CreateDonorDto extends CreateAddressDto {
     @ApiProperty({ description: 'Donor first name' })
@@ -20,15 +18,10 @@ export class CreateDonorDto extends CreateAddressDto {
     @IsEnum(Gender, { message: 'Invalid gender. Gender must be either male or female or other.' })
     gender: Gender;
 
-    @ApiProperty({ description: 'Donor email', format: 'Email' })
+    @ApiProperty({ description: 'Donor email', format: 'Email', default: 'techiesakar@gmail.com' })
     @IsEmail()
     @IsNotEmpty()
     email: string;
-
-    @ApiProperty({ description: 'Donor account password' })
-    @IsEmail()
-    @IsNotEmpty()
-    password: string;
 
     @ApiProperty({ type: 'enum', enum: Race, description: 'Donor race' })
     @IsEnum(Race, { message: 'Invalid race. Race must be either mahila, janajati, adiwashi, dalit.' })
@@ -38,17 +31,19 @@ export class CreateDonorDto extends CreateAddressDto {
     @IsEnum(Cast, { message: 'Invalid cast. Cast must be either ' + Object.values(Cast).join(', ') })
     cast: Cast;
 
-
-
-    @ApiProperty({ description: 'Donor phone number (NP)' })
+    @ApiProperty({ description: 'Donor phone number (NP)', default: '9841234567' })
     @IsPhoneNumber('NP')
     phone: string;
 
-    @ApiProperty({ description: 'Donor date of birth' })
+    @ApiProperty({ description: 'Donor date of birth', default: '2024-05-09T07:12:13.012Z' })
     @IsString()
+    @IsDateString()
     dob: string;
 
     @ApiProperty({ type: 'enum', enum: BloodGroup, description: 'Donor blood group' })
     @IsEnum(BloodGroup, { message: 'Invalid blood group. Blood group must be either A+, A-, B+, B-, AB+, AB-, O+, O-.' })
     bloodGroup: BloodGroup;
+
+    // @ApiProperty({ type: 'string', format: 'binary', description: 'Donor image' })
+    // image: FileSystemStoredFile;
 }
