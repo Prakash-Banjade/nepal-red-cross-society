@@ -7,18 +7,17 @@ import { Repository, SelectQueryBuilder } from 'typeorm';
 import { Donation } from 'src/donations/entities/donation.entity';
 import { PageOptionsDto } from 'src/core/dto/pageOptions.dto';
 import paginatedData from 'src/core/utils/paginatedData';
-import { DonationsService } from 'src/donations/donations.service';
 
 @Injectable()
 export class CertificateService {
 
   constructor(
     @InjectRepository(Certificate) private certificateRepo: Repository<Certificate>,
-    private readonly donationsService: DonationsService,
+    @InjectRepository(Donation) private donationRepo: Repository<Donation>,
   ) { }
 
   async create(createCertificateDto: CreateCertificateDto) {
-    const donation = await this.donationsService.findOne(createCertificateDto.donation);
+    const donation = await this.findDonation(createCertificateDto.donation);
 
     const certificate = this.certificateRepo.create({
       ...createCertificateDto,
@@ -47,7 +46,7 @@ export class CertificateService {
     const foundCertificate = await this.findOne(id);
 
     // retrieving donation
-    const donation = updateCertificateDto.donation ? await this.donationsService.findOne(updateCertificateDto.donation) : null;
+    const donation = updateCertificateDto?.donation ? await this.findDonation(updateCertificateDto.donation) : null;
 
     Object.assign(foundCertificate, {
       ...updateCertificateDto,
@@ -60,6 +59,14 @@ export class CertificateService {
   async remove(id: string) {
     const foundCertificate = await this.findOne(id);
     return await this.certificateRepo.softRemove(foundCertificate);
+  }
+
+  // To avoid circular dependency, we need to retrieve donation in this service too
+  async findDonation(id: string) {
+    const foundDonation = await this.donationRepo.findOneBy({ id });
+    if (!foundDonation) throw new BadRequestException('Donation not found');
+
+    return foundDonation;
   }
 
   private queryBuilder(): SelectQueryBuilder<Certificate> {

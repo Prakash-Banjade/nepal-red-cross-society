@@ -6,5 +6,5 @@ export class UpdateCertificateDto extends PartialType(CreateCertificateDto) {
     @ApiPropertyOptional({ type: String, format: 'uuid', description: 'Donation ID' })
     @IsUUID()
     @IsOptional()
-    donation: string;
+    donation?: string;
 }
