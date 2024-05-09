@@ -4,7 +4,7 @@ import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { configService } from './config/db.config';
 import { UsersModule } from './users/users.module';
-import { MemoryStoredFile, NestjsFormDataModule } from 'nestjs-form-data';
+import { FileSystemStoredFile, NestjsFormDataModule } from 'nestjs-form-data';
 import { AuthModule } from './auth/auth.module';
 import { CaslModule } from './casl/casl.module';
 import { APP_GUARD } from '@nestjs/core';
@@ -26,10 +26,10 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
   imports: [
     TypeOrmModule.forRoot(configService),
     NestjsFormDataModule.config({
-      storage: MemoryStoredFile,
+      storage: FileSystemStoredFile,
       isGlobal: true,
       fileSystemStoragePath: 'public',
-      autoDeleteFile: true,
+      autoDeleteFile: false,
     }),
     ThrottlerModule.forRoot([{
       ttl: 60000, // 10 requests per minute
