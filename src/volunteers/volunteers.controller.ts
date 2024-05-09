@@ -15,6 +15,7 @@ import { UpdateVolunteerDto } from './dto/update-volunteer.dto';
 import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { PageOptionsDto } from 'src/core/dto/pageOptions.dto';
 import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.decorator';
+import { FileSystemStoredFile, FormDataRequest } from 'nestjs-form-data';
 
 @ApiBearerAuth()
 @ApiTags('Volunteers')
@@ -24,6 +25,7 @@ export class VolunteersController {
 
   @Post()
   @ApiConsumes('multipart/form-data')
+  @FormDataRequest({ storage: FileSystemStoredFile })
   create(@Body() createVolunteerDto: CreateVolunteerDto) {
     return this.volunteersService.create(createVolunteerDto);
   }
@@ -41,6 +43,7 @@ export class VolunteersController {
 
   @Patch(':id')
   @ApiConsumes('multipart/form-data')
+  @FormDataRequest({ storage: FileSystemStoredFile })
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateVolunteerDto: UpdateVolunteerDto,

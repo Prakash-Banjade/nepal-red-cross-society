@@ -2,7 +2,8 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from
 import { DonorsService } from './donors.service';
 import { CreateDonorDto } from './dto/create-donor.dto';
 import { UpdateDonorDto } from './dto/update-donor.dto';
-import { ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { FileSystemStoredFile, FormDataRequest } from 'nestjs-form-data';
 
 @ApiTags('Donors')
 @Controller('donors')
@@ -11,7 +12,9 @@ export class DonorsController {
 
   @Post()
   @ApiConsumes('multipart/form-data')
+  @FormDataRequest({ storage: FileSystemStoredFile })
   create(@Body() createDonorDto: CreateDonorDto) {
+    console.log(createDonorDto)
     return this.donorsService.create(createDonorDto);
   }
 

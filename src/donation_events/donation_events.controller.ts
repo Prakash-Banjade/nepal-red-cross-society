@@ -12,6 +12,7 @@ import { DonationEventsService } from './donation_events.service';
 import { CreateDonationEventDto } from './dto/create-donation_event.dto';
 import { UpdateDonationEventDto } from './dto/update-donation_event.dto';
 import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { FileSystemStoredFile, FormDataRequest } from 'nestjs-form-data';
 
 @ApiTags('Donation Event')
 @ApiBearerAuth()
@@ -21,6 +22,7 @@ export class DonationEventsController {
 
   @Post()
   @ApiConsumes('multipart/form-data')
+  @FormDataRequest({ storage: FileSystemStoredFile })
   @ApiOperation({ description: "Add a new donation event", summary: "Create new donation event" })
   create(@Body() createDonationEventDto: CreateDonationEventDto) {
     return this.donationEventsService.create(createDonationEventDto);
@@ -39,6 +41,7 @@ export class DonationEventsController {
   }
 
   @Patch(':id')
+  @FormDataRequest({ storage: FileSystemStoredFile })
   @ApiOperation({ description: "Update a donation event", summary: "Edit existing donation event" })
   @ApiConsumes('multipart/form-data')
   update(

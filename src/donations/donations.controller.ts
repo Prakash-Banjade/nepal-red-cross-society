@@ -3,6 +3,7 @@ import { DonationsService } from './donations.service';
 import { CreateDonationDto } from './dto/create-donation.dto';
 import { UpdateDonationDto } from './dto/update-donation.dto';
 import { ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { FileSystemStoredFile, FormDataRequest } from 'nestjs-form-data';
 
 @ApiTags('Donations')
 @Controller('donations')
@@ -11,6 +12,7 @@ export class DonationsController {
 
   @Post()
   @ApiConsumes('multipart/form-data')
+  @FormDataRequest({ storage: FileSystemStoredFile })
   create(@Body() createDonationDto: CreateDonationDto) {
     return this.donationsService.create(createDonationDto);
   }
@@ -26,6 +28,8 @@ export class DonationsController {
   }
 
   @Patch(':id')
+  @ApiConsumes('multipart/form-data')
+  @FormDataRequest({ storage: FileSystemStoredFile })
   update(@Param('id', ParseUUIDPipe) id: string, @Body() updateDonationDto: UpdateDonationDto) {
     return this.donationsService.update(id, updateDonationDto);
   }
