@@ -4,8 +4,7 @@ require('dotenv').config();
 
 const configService: TypeOrmModuleOptions = {
     type: 'mysql',
-    url: process.env.DATABASE_URL_LOCAL!,
-    // url: process.env.DATABASE_URL!,
+    url: process.env.DATABASE_URL!,
 
     entities: [join(__dirname, '**', '*.entity.{ts,js}')],
 
@@ -14,7 +13,7 @@ const configService: TypeOrmModuleOptions = {
     migrations: ['src/migration/*.ts'],
 
     autoLoadEntities: true,
-    synchronize: false,
+    synchronize: true,
 };
 
 export { configService };
