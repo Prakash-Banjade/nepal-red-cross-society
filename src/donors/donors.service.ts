@@ -22,15 +22,7 @@ export class DonorsService {
     const address = this.addressRepo.create({ province, district, municipality, ward, street });
 
     const donor = this.donorRepo.create({
-      firstName: createDonorDto.firstName,
-      lastName: createDonorDto.lastName,
-      gender: createDonorDto.gender,
-      email: createDonorDto.email,
-      race: createDonorDto.race,
-      cast: createDonorDto.cast,
-      phone: createDonorDto.phone,
-      dob: createDonorDto.dob,
-      bloodGroup: createDonorDto.bloodGroup,
+      ...createDonorDto,
       address,
     });
 
@@ -65,7 +57,8 @@ export class DonorsService {
       cast: updateDonorDto.cast,
       phone: updateDonorDto.phone,
       dob: updateDonorDto.dob,
-      bloodGroup: updateDonorDto.bloodGroup,
+      bloodType: updateDonorDto.bloodType,
+      rhFactor: updateDonorDto.rhFactor,
     })
 
     return await this.donorRepo.save(existingDonor);
@@ -77,11 +70,12 @@ export class DonorsService {
   }
 
   async setAddress(donor: Donor, updateDonorDto: UpdateDonorDto) {
-    const { province, district, municipality, ward, street } = updateDonorDto;
+    const { country, province, district, municipality, ward, street } = updateDonorDto;
 
     const existingAddress = await this.addressRepo.findOneBy({ donor });
     if (!existingAddress) throw new BadRequestException('Address not found');
 
+    existingAddress.country = country;
     existingAddress.province = province;
     existingAddress.district = district;
     existingAddress.municipality = municipality;
