@@ -5,7 +5,7 @@ import { District, Province, addresses } from "src/core/types/address.types";
 import { Country } from "src/core/types/country.types";
 import { Municipal } from "src/core/types/municipals.types";
 import { Volunteer } from "src/volunteers/entities/volunteer.entity";
-import { BeforeInsert, BeforeUpdate, Column, Entity, OneToOne } from "typeorm";
+import { BeforeInsert, BeforeUpdate, Column, Entity, JoinColumn, OneToOne } from "typeorm";
 
 @Entity()
 export class Address extends BaseEntity {
@@ -28,12 +28,15 @@ export class Address extends BaseEntity {
     street: string;
 
     @OneToOne(() => Donor, (donor) => donor.address, { nullable: true })
+    @JoinColumn()
     donor: Donor
 
     @OneToOne(() => Volunteer, (volunteer) => volunteer.address, { nullable: true })
+    @JoinColumn()
     volunteer: Volunteer
 
     @OneToOne(() => Organization, (organization) => organization.address, { nullable: true })
+    @JoinColumn()
     organization: Organization
 
 
