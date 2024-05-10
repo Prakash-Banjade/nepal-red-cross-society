@@ -7,9 +7,8 @@ services:
     container_name: blood_bank
     ports:
       - "3306:3306"
-    environment:
-      - MYSQL_ROOT_PASSWORD=mySQL
-      - MYSQL_DATABASE=blood_bank_v2
+    env_file:
+      - .env.local
     volumes:
       - mysql:/var/lib/mysql
 
