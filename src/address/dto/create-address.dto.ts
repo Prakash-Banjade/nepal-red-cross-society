@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Min, ValidateIf } from "class-validator";
+import { Transform } from "class-transformer";
+import { IsEnum, IsNotEmpty, IsString, Min, ValidateIf } from "class-validator";
 import { District, Province } from "src/core/types/address.types";
 import { Country } from "src/core/types/country.types";
 import { Municipal } from "src/core/types/municipals.types";
@@ -26,8 +27,8 @@ export class CreateAddressDto {
     municipality?: Municipal;
 
     @ApiPropertyOptional({ description: 'Ward number', default: 1 })
-    @IsInt()
     @Min(1)
+    @Transform(({ value }) => parseInt(value))
     @ValidateIf((object) => object.country === Country.NP) // field is required only if country is Nepal
     ward?: number;
 
