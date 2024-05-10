@@ -30,6 +30,7 @@ export class DonorsController {
 
   @Patch(':id')
   @ApiConsumes('multipart/form-data')
+  @FormDataRequest({ storage: FileSystemStoredFile })
   update(@Param('id', ParseUUIDPipe) id: string, @Body() updateDonorDto: UpdateDonorDto) {
     return this.donorsService.update(id, updateDonorDto);
   }
