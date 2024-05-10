@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEmail, IsOptional, IsString } from 'class-validator';
-import { MemoryStoredFile } from 'nestjs-form-data';
+import { FileSystemStoredFile } from 'nestjs-form-data';
 
 export class UpdateUserDto {
     @ApiPropertyOptional({ type: 'string', description: 'firstName' })
@@ -19,7 +19,6 @@ export class UpdateUserDto {
     email: string;
 
     @ApiPropertyOptional({ type: 'string', format: 'binary', description: 'Profile Image' })
-    @IsString()
     @IsOptional()
-    image: string | MemoryStoredFile
+    image: string | FileSystemStoredFile
 }
