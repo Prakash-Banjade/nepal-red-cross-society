@@ -45,8 +45,8 @@ export class CreateDonorDto extends CreateAddressDto {
     @IsNotEmpty()
     weight: number;
 
-    @ApiProperty({ type: 'enum', enum: BloodType, description: 'Donor blood group' })
-    @IsEnum(BloodType, { message: 'Invalid blood group. Blood group must be either ' + Object.values(BloodType).join(', ') })
+    @ApiProperty({ type: 'enum', enum: BloodType, description: 'Donor blood type' })
+    @IsEnum(BloodType, { message: 'Invalid blood type. Blood type must be either ' + Object.values(BloodType).join(', ') })
     bloodType!: BloodType;
 
     @ApiProperty({ type: 'enum', enum: RhFactor, description: 'Donor blood RH-factor' })
