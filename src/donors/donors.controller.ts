@@ -14,7 +14,6 @@ export class DonorsController {
   @ApiConsumes('multipart/form-data')
   @FormDataRequest({ storage: FileSystemStoredFile })
   create(@Body() createDonorDto: CreateDonorDto) {
-    console.log(createDonorDto)
     return this.donorsService.create(createDonorDto);
   }
 
