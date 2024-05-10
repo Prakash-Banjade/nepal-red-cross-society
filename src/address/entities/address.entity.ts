@@ -43,7 +43,7 @@ export class Address extends BaseEntity {
     @BeforeInsert()
     @BeforeUpdate()
     verifyAddress() {
-        if (this.country !== 'Nepal') {
+        if (this.country !== Country.NP) {
             this.province = null;
             this.district = null;
             this.municipality = null;
