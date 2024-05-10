@@ -2,7 +2,7 @@ import { Address } from "src/address/entities/address.entity";
 import { Donation } from "src/donations/entities/donation.entity";
 import { DonorCard } from "src/donor_card/entities/donor_card.entity";
 import { BaseEntity } from "src/core/entities/base.entity";
-import { BloodType, Cast, Gender, Race, RhFactor } from "src/core/types/global.types";
+import { BloodType, Caste, Gender, Race, RhFactor } from "src/core/types/global.types";
 import * as bcrypt from 'bcrypt';
 import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany, OneToOne } from "typeorm";
 
@@ -23,11 +23,11 @@ export class Donor extends BaseEntity {
     // @Column({ type: "varchar" })
     // password: string;
 
-    @Column({ type: 'enum', enum: Race })
+    @Column({ type: 'enum', enum: Race, nullable: true })
     race: Race;
 
-    @Column({ type: 'enum', enum: Cast })
-    cast: Cast;
+    @Column({ type: 'enum', enum: Caste })
+    caste: Caste;
 
     @Column({ type: 'varchar', length: 10 })
     phone: string;
