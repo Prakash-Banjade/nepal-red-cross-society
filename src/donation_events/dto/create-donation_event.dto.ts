@@ -1,16 +1,18 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import { FileSystemStoredFile, IsFile } from 'nestjs-form-data';
+import { CreateAddressDto } from 'src/address/dto/create-address.dto';
 
-export class CreateDonationEventDto {
-  @ApiProperty({ type: 'string', description: 'Event host name' })
+export class CreateDonationEventDto extends CreateAddressDto {
+  @ApiProperty({ type: 'string', description: 'Event date' })
   @IsString()
   @IsNotEmpty()
-  host: string;
+  date: string;
 
-  @ApiProperty({ type: 'string', description: 'Event location' })
-  @IsString()
-  @IsNotEmpty()
-  location: string;
+  @ApiPropertyOptional({ format: 'uuidv4', description: 'Organization id', example: '123e4567-e89b-12d3-a456-426614174000' })
+  @IsOptional()
+  @IsUUID()
+  organization?: string;
 
   @ApiProperty({ type: 'string', description: 'Event map link' })
   @IsString()
@@ -32,8 +34,12 @@ export class CreateDonationEventDto {
   @IsUUID('4', { each: true })
   volunteers: string[];
 
-  @ApiProperty({ type: 'string', description: 'Event date' })
+  @ApiProperty({ format: 'binary', type: 'string', description: 'Event cover image' })
+  @IsFile({ message: 'Cover must be a file' })
+  coverImage: FileSystemStoredFile;
+
+  @ApiProperty({ type: 'string', description: 'Event description' })
   @IsString()
   @IsNotEmpty()
-  date: string;
+  description: string;
 }

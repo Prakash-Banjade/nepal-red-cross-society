@@ -3,8 +3,9 @@ import { DonationEventsService } from './donation_events.service';
 import { DonationEventsController } from './donation_events.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DonationEvent } from './entities/donation_event.entity';
-import { VolunteersModule } from 'src/volunteers/volunteers.module';
 import { Volunteer } from 'src/volunteers/entities/volunteer.entity';
+import { OrganizationsModule } from 'src/organizations/organizations.module';
+import { AddressModule } from 'src/address/address.module';
 
 @Module({
   imports: [
@@ -12,6 +13,8 @@ import { Volunteer } from 'src/volunteers/entities/volunteer.entity';
       DonationEvent,
       Volunteer,
     ]),
+    OrganizationsModule,
+    AddressModule,
   ],
   controllers: [DonationEventsController],
   providers: [DonationEventsService],

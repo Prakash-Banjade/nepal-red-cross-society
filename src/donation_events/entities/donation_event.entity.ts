@@ -1,24 +1,23 @@
 import { Donation } from 'src/donations/entities/donation.entity';
 import { BaseEntity } from 'src/core/entities/base.entity';
 import { Volunteer } from 'src/volunteers/entities/volunteer.entity';
-import { Column, Entity, OneToMany } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany, OneToOne } from 'typeorm';
+import { Address } from 'src/address/entities/address.entity';
+import { Organization } from 'src/organizations/entities/organization.entity';
 
 @Entity()
 export class DonationEvent extends BaseEntity {
-  // donations
-  @OneToMany(() => Donation, (donation) => donation.donation_event, {
-    nullable: true,
-  })
+  @OneToMany(() => Donation, (donation) => donation.donation_event, { nullable: true })
   donations: Donation[];
 
   @Column({ type: 'datetime', nullable: false })
   date: string;
 
-  @Column({ nullable: true })
-  host: string;
+  @ManyToOne(() => Organization, (organization) => organization.donationEvents, { nullable: true })
+  organization: Organization;
 
-  @Column()
-  location: string;
+  @OneToOne(() => Address, (address) => address.donationEvent)
+  address: Address;
 
   @Column()
   mapLink: string;
@@ -28,4 +27,13 @@ export class DonationEvent extends BaseEntity {
 
   @OneToMany(() => Volunteer, (volunteer) => volunteer.donationEvent)
   volunteers: Volunteer[];
+
+  @Column({ type: 'simple-array', nullable: true })
+  gallery: string[]
+
+  @Column({ type: 'varchar' })
+  coverImage: string;
+
+  @Column({ type: 'text' })
+  description: string;
 }
