@@ -44,7 +44,7 @@ export enum RhFactor {
     NEGATIVE = 'negative',
 }
 
-export enum Cast {
+export enum Caste {
     BRAHMIN = 'brahmin',
     CHHETRI = 'chhetri',
     MAGAR = 'magar',
