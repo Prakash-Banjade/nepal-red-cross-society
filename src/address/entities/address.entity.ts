@@ -6,6 +6,7 @@ import { Country } from "src/core/types/country.types";
 import { Municipal } from "src/core/types/municipals.types";
 import { Volunteer } from "src/volunteers/entities/volunteer.entity";
 import { BeforeInsert, BeforeUpdate, Column, Entity, JoinColumn, OneToOne } from "typeorm";
+import { BadRequestException } from "@nestjs/common";
 
 @Entity()
 export class Address extends BaseEntity {
@@ -39,7 +40,6 @@ export class Address extends BaseEntity {
     @JoinColumn()
     organization: Organization
 
-
     @BeforeInsert()
     @BeforeUpdate()
     verifyAddress() {
@@ -50,8 +50,10 @@ export class Address extends BaseEntity {
             this.ward = null;
             return;
         }
-
+        // validate right address
+        if (!this.province || !this.district || !this.municipality || !this.ward) throw new BadRequestException('Province, District, Municipality, Ward are required for Nepal address. Please provide all of them.');
+        
         const municipal = addresses.find(address => address.province === this.province)?.districts.find(district => district.name === this.district)?.municipals.find(municipal => municipal === this.municipality)
-        if (!municipal) throw new Error('Invalid address')
+        if (!municipal) throw new BadRequestException('Invalid address. The address you provided is not a valid address in Nepal.')
     }
 }
