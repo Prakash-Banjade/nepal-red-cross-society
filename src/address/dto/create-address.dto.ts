@@ -1,9 +1,10 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
 import { IsEnum, IsNotEmpty, IsString, Min, ValidateIf } from "class-validator";
-import { District, Province } from "src/core/types/address.types";
 import { Country } from "src/core/types/country.types";
+import { District } from "src/core/types/districts.types";
 import { Municipal } from "src/core/types/municipals.types";
+import { Province } from "src/core/types/provinces.types";
 
 export class CreateAddressDto {
     @ApiProperty({ enum: Country })

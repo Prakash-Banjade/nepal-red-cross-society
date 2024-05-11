@@ -1,13 +1,15 @@
 import { Donor } from "src/donors/entities/donor.entity";
 import { BaseEntity } from "src/core/entities/base.entity";
 import { Organization } from "src/organizations/entities/organization.entity";
-import { District, Province, addresses } from "src/core/types/address.types";
+import { addresses } from "src/core/types/address.types";
 import { Country } from "src/core/types/country.types";
 import { Municipal } from "src/core/types/municipals.types";
 import { Volunteer } from "src/volunteers/entities/volunteer.entity";
 import { BeforeInsert, BeforeUpdate, Column, Entity, JoinColumn, OneToOne } from "typeorm";
 import { BadRequestException } from "@nestjs/common";
 import { DonationEvent } from "src/donation_events/entities/donation_event.entity";
+import { Province } from "src/core/types/provinces.types";
+import { District } from "src/core/types/districts.types";
 
 @Entity()
 export class Address extends BaseEntity {
