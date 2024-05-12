@@ -273,7 +273,7 @@ export enum Municipal {
     ARNAMA_RURAL_MUNICIPALITY = "Arnama Rural Municipality",
     BHAGAWANPUR_RURAL_MUNICIPALITY = "Bhagawanpur Rural Municipality",
     NAWARAJPUR_RURAL_MUNICIPALITY = "Nawarajpur Rural Municipality",
-    BISHNUPUR_RURAL_MUNICIPALITY_2 = "Bishnupur Rural Municipality",
+    // BISHNUPUR_RURAL_MUNICIPALITY = "Bishnupur Rural Municipality", // also in saptari
     BARIYARPATTI_RURAL_MUNICIPALITY = "Bariyarpatti Rural Municipality",
     LAXMIPUR_PATARI_RURAL_MUNICIPALITY = "Laxmipur Patari Rural Municipality",
     SAKHUWANANKARKATTI_RURAL_MUNICIPALITY = "Sakhuwanankarkatti Rural Municipality",
@@ -464,6 +464,251 @@ export enum Municipal {
     BAKAIYA_RURAL_MUNICIPALITY = "Bakaiya Rural Municipality",
     // BAGMATI_RURAL_MUNICIPALITY = "Bagmati Rural Municipality", // also in Lalitpur district
     KAILASH_RURAL_MUNICIPALITY = "Kailash Rural Municipality",
-    INDRASAROWAR_RURAL_MUNICIPALITY = "Indrasarowar Rural Municipality"
+    INDRASAROWAR_RURAL_MUNICIPALITY = "Indrasarowar Rural Municipality",
+
+    // Gandaki Province:
+
+    // Baglung
+    BARENG_RURAL_MUNICIPALITY = "Bareng Rural Municipality",
+    BADIGAD_RURAL_MUNICIPALITY = "Badigad Rural Municipality",
+    NISIKHOLA_RURAL_MUNICIPALITY = "Nisikhola Rural Municipality",
+    KANTHEKHOLA_RURAL_MUNICIPALITY = "Kanthekhola Rural Municipality",
+    TARA_KHOLA_RURAL_MUNICIPALITY = "Tara Khola Rural Municipality",
+    TAMAN_KHOLA_RURAL_MUNICIPALITY = "Taman Khola Rural Municipality",
+    JAIMUNI_MUNICIPALITY = "Jaimuni Municipality",
+    BAGLUNG_MUNICIPALITY = "Baglung Municipality",
+    GALKOT_MUNICIPALITY = "Galkot Municipality",
+    DHORPATAN_MUNICIPALITY = "Dhorpatan Municipality",
+
+    // Gorkha
+    GANDAKI_RURAL_MUNICIPALITY = "Gandaki Rural Municipality",
+    DHARCHE_RURAL_MUNICIPALITY = "Dharche Rural Municipality",
+    AARUGHAT_RURAL_MUNICIPALITY = "Aarughat Rural Municipality",
+    AJIRKOT_RURAL_MUNICIPALITY = "Ajirkot Rural Municipality",
+    SAHID_LAKHAN_RURAL_MUNICIPALITY = "Sahid Lakhan Rural Municipality",
+    SIRANCHOK_RURAL_MUNICIPALITY = "Siranchok Rural Municipality",
+    BHIMSENTHAPA_RURAL_MUNICIPALITY = "Bhimsenthapa Rural Municipality",
+    CHUM_NUBRI_RURAL_MUNICIPALITY = "Chum Nubri Rural Municipality",
+    BARPAK_SULIKOT_RURAL_MUNICIPALITY = "Barpak Sulikot Rural Municipality",
+    PALUNGTAR_MUNICIPALITY = "Palungtar Municipality",
+    GORKHA_MUNICIPALITY = "Gorkha Municipality",
+
+    // Kaski
+    RUPA_RURAL_MUNICIPALITY = "Rupa Rural Municipality",
+    MADI_RURAL_MUNICIPALITY = "Madi Rural Municipality",
+    ANNAPURNA_RURAL_MUNICIPALITY = "Annapurna Rural Municipality",
+    MACHHAPUCHCHHRE_RURAL_MUNICIPALITY = "Machhapuchchhre Rural Municipality",
+    POKHARA_METROPOLITIAN_CITY = "Pokhara Metropolitan City",
+
+    // Lamjung
+    DORDI_RURAL_MUNICIPALITY = "Dordi Rural Municipality",
+    DUDHPOKHARI_RURAL_MUNICIPALITY = "Dudhpokhari Rural Municipality",
+    MARSYANGDI_RURAL_MUNICIPALITY = "Marsyangdi Rural Municipality",
+    KWHOLASOTHAR_RURAL_MUNICIPALITY = "Kwholasothar Rural Municipality",
+    SUNDARBAZAR_MUNICIPALITY = "Sundarbazar Municipality",
+    BESISHAHAR_MUNICIPALITY = "Besishahar Municipality",
+    RAINAS_MUNICIPALITY = "Rainas Municipality",
+    MADHYANEPAL_MUNICIPALITY = "Madhyanepal Municipality",
+
+    // Manang
+    CHAME_RURAL_MUNICIPALITY = "Chame Rural Municipality",
+    NARSHON_RURAL_MUNICIPALITY = "Narshon Rural Municipality",
+    NARPA_BHUMI_RURAL_MUNICIPALITY = "Narpa Bhumi Rural Municipality",
+    MANANG_INGSHYANG_RURAL_MUNICIPALITY = "Manang IngsHyang Rural Municipality",
+
+    // Mustang
+    THASANG_RURAL_MUNICIPALITY = "Thasang Rural Municipality",
+    GHARAPJHONG_RURAL_MUNICIPALITY = "Gharapjhong Rural Municipality",
+    LOMANTHANG_RURAL_MUNICIPALITY = "Lomanthang Rural Municipality",
+    LO_GHEKAR_DAMODARKUNDA_RURAL_MUNICIPALITY = "Lo-Ghekar Damodarkunda Rural Municipality",
+    WARAGUNG_MUKTIKHSETRA_RURAL_MUNICIPALITY = "Waragung Muktikhsetra Rural Municipality",
+
+    // Myagdi
+    MANGALA_RURAL_MUNICIPALITY = "Mangala Rural Municipality",
+    // MALIKA_RURAL_MUNICIPALITY = "Malika Rural Municipality", // also in Gulmi
+    RAGHUGANGA_RURAL_MUNICIPALITY = "Raghuganga Rural Municipality",
+    DHAULAGIRI_RURAL_MUNICIPALITY = "Dhaulagiri Rural Municipality",
+    //  ANNAPURNA_RURAL_MUNICIPALITY = "Annapurna Rural Municipality", // also in kaski
+    BENI_MUNICIPALITY = "Beni Municipality",
+
+    // Nawalpur
+    BAUDEEKALI_RURAL_MUNICIPALITY = "Baudeekali Rural Municipality",
+    BULINGTAR_RURAL_MUNICIPALITY = "Bulingtar Rural Municipality",
+    HUPSEKOT_RURAL_MUNICIPALITY = "Hupsekot Rural Municipality",
+    BINAYEE_TRIBENI_RURAL_MUNICIPALITY = "Binayee Tribeni Rural Municipality",
+    MADHYABINDU_MUNICIPALITY = "Madhyabindu Municipality",
+    DEVCHULI_MUNICIPALITY = "Devchuli Municipality",
+    GAIDAKOT_MUNICIPALITY = "Gaidakot Municipality",
+    KAWASOTI_MUNICIPALITY = "Kawasoti Municipality",
+
+    // Parbat
+    MODI_RURAL_MUNICIPALITY = "Modi Rural Municipality",
+    PAINYU_RURAL_MUNICIPALITY = "Painyu Rural Municipality",
+    JALJALA_RURAL_MUNICIPALITY = "Jaljala Rural Municipality",
+    BIHADI_RURAL_MUNICIPALITY = "Bihadi Rural Municipality",
+    MAHASHILA_RURAL_MUNICIPALITY = "Mahashila Rural Municipality",
+    KUSHMA_MUNICIPALITY = "Kushma Municipality",
+    PHALEBAS_MUNICIPALITY = "Phalebas Municipality",
+
+    // Syangja
+    HARINAS_RURAL_MUNICIPALITY = "Harinas Rural Municipality",
+    BIRUWA_RURAL_MUNICIPALITY = "Biruwa Rural Municipality",
+    AANDHIKHOLA_RURAL_MUNICIPALITY = "Aandhikhola Rural Municipality",
+    PHEDIKHOLA_RURAL_MUNICIPALITY = "Phedikhola Rural Municipality",
+    // KALIGANDAKI_RURAL_MUNICIPALITY = "Kaligandaki Rural Municipality", // also in Gulmi
+    ARJUNCHAUPARI_RURAL_MUNICIPALITY = "Arjunchaupari Rural Municipality",
+    PUTALIBAZAR_MUNICIPALITY = "Putalibazar Municipality",
+    BHIRKOT_MUNICIPALITY = "Bhirkot Municipality",
+    GALYANG_MUNICIPALITY = "Galyang Municipality",
+    CHAPAKOT_MUNICIPALITY = "Chapakot Municipality",
+    WALING_MUNICIPALITY = "Waling Municipality",
+
+    // Tanahun
+    GHIRING_RURAL_MUNICIPALITY = "Ghiring Rural Municipality",
+    DEVGHAT_RURAL_MUNICIPALITY = "Devghat Rural Municipality",
+    RHISHING_RURAL_MUNICIPALITY = "Rhishing Rural Municipality",
+    MYAGDE_RURAL_MUNICIPALITY = "Myagde Rural Municipality",
+    BANDIPUR_RURAL_MUNICIPALITY = "Bandipur Rural Municipality",
+    ANBUKHAIRENI_RURAL_MUNICIPALITY = "Anbukhaireni Rural Municipality",
+    BYAS_MUNICIPALITY = "Byas Municipality",
+    SHUKLAGANDAKI_MUNICIPALITY = "Shuklagandaki Municipality",
+    BHIMAD_MUNICIPALITY = "Bhimad Municipality",
+    BHANU_MUNICIPALITY = "Bhanu Municipality",
+
+    // Lumbini Province
+
+     // Kapilvastu
+     YASHODHARA_RURAL_MUNICIPALITY = "Yashodhara Rural Municipality",
+     BIJAYANAGAR_RURAL_MUNICIPALITY = "Bijayanagar Rural Municipality",
+     MAYADEVI_RURAL_MUNICIPALITY = "Mayadevi Rural Municipality",
+     SUDDHODHAN_RURAL_MUNICIPALITY = "Suddhodhan Rural Municipality",
+     SHIVARAJ_MUNICIPALITY = "Shivaraj Municipality",
+     KAPILBASTU_MUNICIPALITY = "Kapilbastu Municipality",
+     BUDDHABHUMI_MUNICIPALITY = "Buddhabhumi Municipality",
+     MAHARAJGUNJ_MUNICIPALITY = "Maharajgunj Municipality",
+     BANGANGA_MUNICIPALITY = "Banganga Municipality",
+     KRISHNANAGAR_MUNICIPALITY = "Krishnanagar Municipality",
+ 
+     // Parasi
+     SARAWAL_RURAL_MUNICIPALITY = "Sarawal Rural Municipality",
+     SUSTA_RURAL_MUNICIPALITY = "Susta Rural Municipality",
+     PRATAPPUR_RURAL_MUNICIPALITY = "Pratappur Rural Municipality",
+     PALHI_NANDAN_RURAL_MUNICIPALITY = "Palhi Nandan Rural Municipality",
+     BARDAGHAT_MUNICIPALITY = "Bardaghat Municipality",
+     SUNWAL_MUNICIPALITY = "Sunwal Municipality",
+     RAMGRAM_MUNICIPALITY = "Ramgram Municipality",
+ 
+     // Rupandehi
+     KANCHAN_RURAL_MUNICIPALITY = "Kanchan Rural Municipality",
+     SIYARI_RURAL_MUNICIPALITY = "Siyari Rural Municipality",
+     ROHINI_RURAL_MUNICIPALITY = "Rohini Rural Municipality",
+     GAIDAHAWA_RURAL_MUNICIPALITY = "Gaidahawa Rural Municipality",
+     OMSATIYA_RURAL_MUNICIPALITY = "Omsatiya Rural Municipality",
+     SUDDHDHODHAN_RURAL_MUNICIPALITY = "Suddhdhodhan Rural Municipality",
+     MAYADEVI_RURAL_MUNICIPALITY_2 = "Mayadevi Rural Municipality Rupandehi",
+     MARCHAWARI_RURAL_MUNICIPALITY = "Marchawari Rural Municipality",
+     KOTAHIMAI_RURAL_MUNICIPALITY = "Kotahimai Rural Municipality",
+     SAMMARIMAI_RURAL_MUNICIPALITY = "Sammarimai Rural Municipality",
+     BUTWAL_SUB_METROPOLITAN_CITY = "Butwal Sub-Metropolitan City",
+     LUMBINI_SANSKRITIK_MUNICIPALITY = "Lumbini Sanskritik Municipality",
+     DEVDAHA_MUNICIPALITY = "Devdaha Municipality",
+     SAINAMAINA_MUNICIPALITY = "Sainamaina Municipality",
+     SIDDHARTHANAGAR_MUNICIPALITY = "Siddharthanagar Municipality",
+     TILLOTAMA_MUNICIPALITY = "Tillotama Municipality",
+ 
+     // Arghakhanchi
+     PANINI_RURAL_MUNICIPALITY = "Panini Rural Municipality",
+     CHHATRADEV_RURAL_MUNICIPALITY = "Chhatradev Rural Municipality",
+     MALARANI_RURAL_MUNICIPALITY = "Malarani Rural Municipality",
+     BHUMEKASTHAN_MUNICIPALITY = "Bhumekasthan Municipality",
+     SITGANGA_MUNICIPALITY = "Sitganga Municipality",
+     SANDHIKHARKA_MUNICIPALITY = "Sandhikharka Municipality",
+ 
+     // Gulmi
+     RURU_RURAL_MUNICIPALITY = "Ruru Rural Municipality",
+     ISMA_RURAL_MUNICIPALITY = "Isma Rural Municipality",
+     MADANE_RURAL_MUNICIPALITY = "Madane Rural Municipality",
+     MALIKA_RURAL_MUNICIPALITY = "Malika Rural Municipality",
+     CHATRAKOT_RURAL_MUNICIPALITY = "Chatrakot Rural Municipality",
+     DHURKOT_RURAL_MUNICIPALITY = "Dhurkot Rural Municipality",
+     SATYAWATI_RURAL_MUNICIPALITY = "Satyawati Rural Municipality",
+     CHANDRAKOT_RURAL_MUNICIPALITY = "Chandrakot Rural Municipality",
+     KALIGANDAKI_RURAL_MUNICIPALITY = "Kaligandaki Rural Municipality",
+     GULMI_DARBAR_RURAL_MUNICIPALITY = "Gulmidarbar Rural Municipality",
+     RESUNGA_MUNICIPALITY = "Resunga Municipality",
+     MUSIKOT_MUNICIPALITY = "Musikot Municipality",
+ 
+     // Palpa
+     RAMBHA_RURAL_MUNICIPALITY = "Rambha Rural Municipality",
+     TINAU_RURAL_MUNICIPALITY = "Tinau Rural Municipality",
+     NISDI_RURAL_MUNICIPALITY = "Nisdi Rural Municipality",
+     MATHAGADHI_RURAL_MUNICIPALITY = "Mathagadhi Rural Municipality",
+     RIBDIKOT_RURAL_MUNICIPALITY = "Ribdikot Rural Municipality",
+     PURBAKHOLA_RURAL_MUNICIPALITY = "Purbakhola Rural Municipality",
+     BAGNASKALI_RURAL_MUNICIPALITY = "Bagnaskali Rural Municipality",
+     RAINADEVI_CHHARA_RURAL_MUNICIPALITY = "Rainadevi Chhara Rural Municipality",
+     TANSEN_MUNICIPALITY = "Tansen Municipality",
+     RAMPUR_MUNICIPALITY = "Rampur Municipality",
+ 
+     // Dang
+     BABAI_RURAL_MUNICIPALITY = "Babai Rural Municipality",
+     GADHAWA_RURAL_MUNICIPALITY = "Gadhawa Rural Municipality",
+     RAPTI_RURAL_MUNICIPALITY = "Rapti Rural Municipality",
+     RAJPUR_RURAL_MUNICIPALITY = "Rajpur Rural Municipality",
+     DANGISHARAN_RURAL_MUNICIPALITY = "Dangisharan Rural Municipality",
+     SHANTINAGAR_RURAL_MUNICIPALITY = "Shantinagar Rural Municipality",
+     BANGLACHULI_RURAL_MUNICIPALITY = "Banglachuli Rural Municipality",
+     TULSIPUR_SUB_METROPOLITAN_CITY = "Tulsipur Sub-Metropolitan City",
+     GHORAHI_SUB_METROPOLITAN_CITY = "Ghorahi Sub-Metropolitan City",
+     LAMAHI_MUNICIPALITY = "Lamahi Municipality",
+ 
+     // Pyuthan
+     AYIRABATI_RURAL_MUNICIPALITY = "Ayirabati Rural Municipality",
+     GAUMUKHI_RURAL_MUNICIPALITY = "Gaumukhi Rural Municipality",
+     JHIMRUK_RURAL_MUNICIPALITY = "Jhimruk Rural Municipality",
+     NAUBAHINI_RURAL_MUNICIPALITY = "Naubahini Rural Municipality",
+     MANDAVI_RURAL_MUNICIPALITY = "Mandavi Rural Municipality",
+     MALLARANI_RURAL_MUNICIPALITY = "Mallarani Rural Municipality",
+     SARUMARANI_RURAL_MUNICIPALITY = "Sarumarani Rural Municipality",
+     PYUTHAN_MUNICIPALITY = "Pyuthan Municipality",
+     SWORGADWARY_MUNICIPALITY = "Sworgadwary Municipality",
+ 
+     // Rolpa
+    //  MADI_RURAL_MUNICIPALITY = "Madi Rural Municipality", // Also in Kaski
+     THAWANG_RURAL_MUNICIPALITY = "Thawang Rural Municipality",
+     SUNCHHAHARI_RURAL_MUNICIPALITY = "Sunchhahari Rural Municipality",
+     LUNGRI_RURAL_MUNICIPALITY = "Lungri Rural Municipality",
+     GANGADEVA_RURAL_MUNICIPALITY = "Gangadev Rural Municipality",
+     TRIBENI_RURAL_MUNICIPALITY = "Tribeni Rural Municipality",
+     PARIWARTAN_RURAL_MUNICIPALITY = "Pariwartan Rural Municipality",
+     RUNTIGADI_RURAL_MUNICIPALITY = "Runtigadi Rural Municipality",
+     SUNIL_SMRITI_RURAL_MUNICIPALITY = "Sunil Smriti Rural Municipality",
+     ROLPA_MUNICIPALITY = "Rolpa Municipality",
+ 
+     // Eastern Rukum
+     BHUME_RURAL_MUNICIPALITY = "Bhume Rural Municipality",
+     SISNE_RURAL_MUNICIPALITY = "Sisne Rural Municipality",
+     PUTHA_UTTARGANGA_RURAL_MUNICIPALITY = "Putha Uttarganga Rural Municipality",
+ 
+     // Banke
+     KHAJURA_RURAL_MUNICIPALITY = "Khajura Rural Municipality",
+     JANKI_RURAL_MUNICIPALITY = "Janki Rural Municipality",
+     BAIJNATH_RURAL_MUNICIPALITY = "Baijanath Rural Municipality",
+     DUDUWA_RURAL_MUNICIPALITY = "Duduwa Rural Municipality",
+     NARAINAPUR_RURAL_MUNICIPALITY = "Narainapur Rural Municipality",
+     RAPTI_SONARI_RURAL_MUNICIPALITY = "Rapti Sonari Rural Municipality",
+     KOHALPUR_MUNICIPALITY = "Kohalpur Municipality",
+     NEPALGUNJ_SUB_METROPOLITAN_CITY = "Nepalgunj Sub-Metropolitan City",
+ 
+     // Bardiya
+     GERUWA_RURAL_MUNICIPALITY = "Geruwa Rural Municipality",
+     BADHAIYATAL_RURAL_MUNICIPALITY = "Badhaiyatal Rural Municipality",
+     THAKURBABA_MUNICIPALITY = "Thakurbaba Municipality",
+     BANSAGADHI_MUNICIPALITY = "Bansagadhi Municipality",
+     BARBARDIYA_MUNICIPALITY = "Barbardiya Municipality",
+     RAJAPUR_MUNICIPALITY = "Rajapur Municipality",
+     MADHUWAN_MUNICIPALITY = "Madhuwan Municipality",
+     GULARIYA_MUNICIPALITY = "Gulariya Municipality",
+
 
 }
