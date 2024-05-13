@@ -35,8 +35,8 @@ export class OrganizationsController {
   }
 
   @Post('deleteMany')
-  remove(@Body('ids') ids: string[]) {
-    return this.organizationsService.remove(ids);
+  remove(@Body('ids') ids: string) {
+    return this.organizationsService.remove(JSON.parse(ids));
   }
 
   @Post('restore/:id')

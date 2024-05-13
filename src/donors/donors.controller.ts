@@ -35,8 +35,8 @@ export class DonorsController {
   }
 
   @Post('deleteMany')
-  remove(@Body('ids') ids: string[]) {
-    return this.donorsService.remove(ids);
+  remove(@Body('ids') ids: string) {
+    return this.donorsService.remove(JSON.parse(ids));
   }
 
   @Post('restore/:id')
