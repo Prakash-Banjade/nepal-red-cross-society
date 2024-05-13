@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, HttpCode, HttpStatus } from '@nestjs/common';
 import { DonorsService } from './donors.service';
 import { CreateDonorDto } from './dto/create-donor.dto';
 import { UpdateDonorDto } from './dto/update-donor.dto';
@@ -35,11 +35,13 @@ export class DonorsController {
   }
 
   @Post('deleteMany')
+  @HttpCode(HttpStatus.OK)
   remove(@Body('ids') ids: string) {
     return this.donorsService.remove(JSON.parse(ids));
   }
 
   @Post('restore/:id')
+  @HttpCode(HttpStatus.OK)
   restore(@Param('id', ParseUUIDPipe) id: string) {
     return this.donorsService.restore(id);
   }

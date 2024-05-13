@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, HttpCode, HttpStatus } from '@nestjs/common';
 import { OrganizationsService } from './organizations.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
@@ -35,11 +35,13 @@ export class OrganizationsController {
   }
 
   @Post('deleteMany')
+  @HttpCode(HttpStatus.OK)
   remove(@Body('ids') ids: string) {
     return this.organizationsService.remove(JSON.parse(ids));
   }
 
   @Post('restore/:id')
+  @HttpCode(HttpStatus.OK)
   restore(@Param('id', ParseUUIDPipe) id: string) {
     return this.organizationsService.restore(id);
   }
