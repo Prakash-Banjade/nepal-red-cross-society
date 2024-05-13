@@ -1,5 +1,6 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsPhoneNumber, IsString } from "class-validator";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { IsEmail, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, ValidateIf } from "class-validator";
+import { FileSystemStoredFile, HasMimeType, IsFile } from "nestjs-form-data";
 import { CreateAddressDto } from "src/address/dto/create-address.dto";
 
 export class CreateOrganizationDto extends CreateAddressDto {
@@ -16,10 +17,22 @@ export class CreateOrganizationDto extends CreateAddressDto {
     @ApiProperty({ description: 'Owner of the organization' })
     @IsString()
     @IsNotEmpty()
-    owner: string;
+    representative: string;
 
     @ApiProperty({ description: 'Representative contact of the organization' })
     @IsPhoneNumber('NP', { message: 'Representative contact number is not valid' })
     @IsNotEmpty()
     representativeContact: string;
+
+    @ApiProperty({ type: 'string', format: 'email', description: 'Email of the organization' })
+    @IsEmail()
+    @IsNotEmpty()
+    email!: string;
+
+    @ApiPropertyOptional({ type: 'file', format: 'binary', description: 'Donor image' })
+    @IsOptional()
+    @IsFile({ message: 'Invalid image. Image must be either jpeg or png.' })
+    @HasMimeType(['image/jpeg', 'image/png'])
+    @ValidateIf(o => o.logo)
+    logo: FileSystemStoredFile;
 }

@@ -6,6 +6,7 @@ import { Organization } from './entities/organization.entity';
 import { In, Repository } from 'typeorm';
 import { Donation } from 'src/donations/entities/donation.entity';
 import { Address } from 'src/address/entities/address.entity';
+import getFileName from 'src/core/utils/getImageUrl';
 
 @Injectable()
 export class OrganizationsService {
@@ -23,9 +24,13 @@ export class OrganizationsService {
     const { province, district, municipality, ward, street } = createOrganizationDto;
     const address = this.addressRepo.create({ province, district, municipality, ward, street });
 
+    // evaluate logo
+    const logo = createOrganizationDto.logo ? getFileName(createOrganizationDto.logo) : null;
+
     const createdOrganization = this.organizationRepo.create({
       ...createOrganizationDto,
       address,
+      logo
     });
 
     return await this.organizationRepo.save(createdOrganization);
@@ -51,9 +56,13 @@ export class OrganizationsService {
       }
     }) : null;
 
+    // retrieving logo file name
+    const logo = updateOrganizationDto.logo ? getFileName(updateOrganizationDto.logo) : foundOrganization.logo;
+
     Object.assign(foundOrganization, {
       ...updateOrganizationDto,
-      donations
+      donations,
+      logo
     })
 
     return await this.organizationRepo.save(foundOrganization);
