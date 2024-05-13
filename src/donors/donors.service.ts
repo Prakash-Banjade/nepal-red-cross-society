@@ -6,6 +6,7 @@ import { Donor } from './entities/donor.entity';
 import { Repository } from 'typeorm';
 import { AddressService } from 'src/address/address.service';
 import { UpdateAddressDto } from 'src/address/dto/update-address.dto';
+import getFileName from 'src/core/utils/getImageUrl';
 
 @Injectable()
 export class DonorsService {
@@ -15,16 +16,19 @@ export class DonorsService {
   ) { }
 
   async create(createDonorDto: CreateDonorDto) {
-    // console.log(createDonorDto)
     const existingDonor = await this.donorRepo.findOneBy({ email: createDonorDto.email });
     if (existingDonor) throw new BadRequestException('Donor with this email already exists');
 
     // evaluating address
     const address = await this.addressService.create(this.extractAddress(createDonorDto));
 
+    // getting image pathname
+    const image = getFileName(createDonorDto.image);
+
     const donor = this.donorRepo.create({
       ...createDonorDto,
       address,
+      image, // TODO: implement image upload
     });
 
     address.donor = donor;
@@ -47,12 +51,17 @@ export class DonorsService {
 
   async update(id: string, updateDonorDto: UpdateDonorDto) {
     const existingDonor = await this.findOne(id);
-    // console.log(updateDonorDto.image)
 
     // setting if address is updated
-    await this.addressService.update(existingDonor.address.id, this.extractAddress(updateDonorDto))
+    updateDonorDto.country && await this.addressService.update(existingDonor.address.id, this.extractAddress(updateDonorDto))
 
-    Object.assign(existingDonor, updateDonorDto);
+    // setting if image is updated
+    updateDonorDto.image && (existingDonor.image = getFileName(updateDonorDto.image));
+
+    Object.assign(existingDonor, {
+      ...updateDonorDto,
+      image: existingDonor.image,
+    });
 
     await this.donorRepo.save(existingDonor);
 
