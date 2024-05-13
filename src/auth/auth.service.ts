@@ -55,7 +55,7 @@ export class AuthService {
 
     await this.usersRepository.save(foundUser);
 
-    return { access_token, refresh_token };
+    return { access_token, refresh_token, payload };
   }
 
   async createAccessToken(payload: AuthUser) {

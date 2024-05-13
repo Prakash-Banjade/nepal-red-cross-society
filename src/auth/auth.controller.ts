@@ -23,11 +23,11 @@ export class AuthController {
     @Post('login')
     @ApiOperation({ description: 'Login with email and password. Returns access token.', summary: 'Login' })
     async signIn(@Body() signInDto: SignInDto, @Res({ passthrough: true }) res: Response, @Req() req: Request) {
-        const { access_token, refresh_token } = await this.authService.signIn(signInDto);
+        const { access_token, refresh_token, payload } = await this.authService.signIn(signInDto);
 
         res.cookie('refresh_token', refresh_token, this.cookieOptions);
 
-        return { access_token };
+        return { access_token, payload };
     }
 
     @Public()
