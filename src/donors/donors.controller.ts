@@ -34,7 +34,7 @@ export class DonorsController {
     return this.donorsService.update(id, updateDonorDto);
   }
 
-  @Delete('deleteMany')
+  @Post('deleteMany')
   remove(@Body('ids') ids: string[]) {
     return this.donorsService.remove(ids);
   }
