@@ -81,4 +81,14 @@ export class OrganizationsService {
       message: 'Organizations deleted successfully',
     }
   }
+
+  async restore(id: string) {
+    const existingDonor = await this.organizationRepo.findOne({
+      where: { id },
+      withDeleted: true,
+    })
+    if (!existingDonor) throw new BadRequestException('Orgaization not found');
+
+    return await this.organizationRepo.restore(existingDonor.id);
+  }
 }

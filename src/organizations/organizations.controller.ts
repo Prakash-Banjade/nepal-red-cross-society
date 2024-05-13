@@ -38,4 +38,9 @@ export class OrganizationsController {
   remove(@Body('ids') ids: string[]) {
     return this.organizationsService.remove(ids);
   }
+
+  @Post('restore/:id')
+  restore(@Param('id', ParseUUIDPipe) id: string) {
+    return this.organizationsService.restore(id);
+  }
 }

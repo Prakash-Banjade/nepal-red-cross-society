@@ -38,4 +38,9 @@ export class DonorsController {
   remove(@Body('ids') ids: string[]) {
     return this.donorsService.remove(ids);
   }
+
+  @Post('restore/:id')
+  restore(@Param('id', ParseUUIDPipe) id: string) {
+    return this.donorsService.restore(id);
+  }
 }

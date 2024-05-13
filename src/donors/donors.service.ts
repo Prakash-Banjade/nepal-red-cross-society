@@ -89,6 +89,16 @@ export class DonorsService {
     }
   }
 
+  async restore(id: string) {
+    const existingDonor = await this.donorRepo.findOne({
+      where: { id },
+      withDeleted: true,
+    })
+    if (!existingDonor) throw new BadRequestException('Donor not found');
+
+    return await this.donorRepo.restore(existingDonor.id);
+  }
+
   public extractAddress(dto: CreateDonorDto | UpdateAddressDto) {
     const { country, province, district, municipality, ward, street } = dto;
     return { country, province, district, municipality, ward, street };
