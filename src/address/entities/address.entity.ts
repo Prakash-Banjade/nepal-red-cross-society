@@ -31,19 +31,19 @@ export class Address extends BaseEntity {
     @Column({ type: 'varchar' })
     street: string;
 
-    @OneToOne(() => Donor, (donor) => donor.address, { nullable: true })
+    @OneToOne(() => Donor, (donor) => donor.address, { nullable: true, onDelete: 'CASCADE' })
     @JoinColumn()
     donor: Donor
 
-    @OneToOne(() => Volunteer, (volunteer) => volunteer.address, { nullable: true })
+    @OneToOne(() => Volunteer, (volunteer) => volunteer.address, { nullable: true, onDelete: 'CASCADE' })
     @JoinColumn()
     volunteer: Volunteer
 
-    @OneToOne(() => Organization, (organization) => organization.address, { nullable: true })
+    @OneToOne(() => Organization, (organization) => organization.address, { nullable: true, onDelete: 'CASCADE' })
     @JoinColumn()
     organization: Organization
 
-    @OneToOne(() => DonationEvent, (donationEvent) => donationEvent.address, { nullable: true })
+    @OneToOne(() => DonationEvent, (donationEvent) => donationEvent.address, { nullable: true, onDelete: 'CASCADE' })
     @JoinColumn()
     donationEvent: DonationEvent
 
