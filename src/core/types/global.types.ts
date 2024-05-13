@@ -26,6 +26,7 @@ export enum Gender {
 }
 
 export enum Race {
+    NONE = 'none',
     MAHILA = 'mahila',
     JANAJATI = 'janajati',
     ADIWASHI = 'adiwashi',
