@@ -51,9 +51,9 @@ export class DonationEventsController {
     return this.donationEventsService.update(id, updateDonationEventDto);
   }
 
-  @Delete(':id')
+  @Post('deleteMany')
   @ApiOperation({ description: "Delete a donation event", summary: "Delete a donation event" })
-  remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.donationEventsService.remove(id);
+  remove(@Body('ids') ids: string[]) {
+    return this.donationEventsService.remove(ids);
   }
 }

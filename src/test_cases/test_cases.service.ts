@@ -3,7 +3,7 @@ import { CreateTestCaseDto } from './dto/create-test_case.dto';
 import { UpdateTestCaseDto } from './dto/update-test_case.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TestCase } from './entities/test_case.entity';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 
 @Injectable()
 export class TestCasesService {
@@ -41,9 +41,18 @@ export class TestCasesService {
     return await this.testCaseRepo.save(existingTestCase);
   }
 
-  async remove(id: string) {
-    const existingTestCase = await this.findOne(id);
+  async remove(ids: string[]) {
+    const foundTestCases = await this.testCaseRepo.find({
+      where: {
+        id: In(ids),
+      }
+    })
 
-    return await this.testCaseRepo.softRemove(existingTestCase);
+    await this.testCaseRepo.softRemove(foundTestCases);
+
+    return {
+      success: true,
+      message: 'Test cases deleted',
+    }
   }
 }

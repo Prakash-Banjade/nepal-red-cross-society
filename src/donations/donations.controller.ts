@@ -34,8 +34,8 @@ export class DonationsController {
     return this.donationsService.update(id, updateDonationDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.donationsService.remove(id);
+  @Post('deleteMany')
+  remove(@Body('ids') ids: string[]) {
+    return this.donationsService.remove(ids);
   }
 }

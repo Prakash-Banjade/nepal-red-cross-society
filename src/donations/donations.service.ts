@@ -3,7 +3,7 @@ import { CreateDonationDto } from './dto/create-donation.dto';
 import { UpdateDonationDto } from './dto/update-donation.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Donation } from './entities/donation.entity';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Certificate } from 'src/certificate/entities/certificate.entity';
 import { DonorsService } from 'src/donors/donors.service';
 import { OrganizationsService } from 'src/organizations/organizations.service';
@@ -65,13 +65,17 @@ export class DonationsService {
     return await this.donationRepo.save(foundDonation);
   }
 
-  async remove(id: string) {
-    const foundDonation = await this.findOne(id);
-    await this.donationRepo.softRemove(foundDonation);
+  async remove(ids: string[]) {
+    const existingDonations = await this.donationRepo.find({
+      where: {
+        id: In(ids)
+      }
+    })
+    await this.donationRepo.softRemove(existingDonations);
 
     return {
       success: true,
-      message: 'Donation deleted successfully',
+      message: 'Donations deleted successfully',
     }
   }
 

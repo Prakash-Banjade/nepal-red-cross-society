@@ -85,13 +85,17 @@ export class DonationEventsService {
     return await this.donationEventsRepo.save(existingEvent);    
   }
 
-  async remove(id: string) {
-    const existingEvent = await this.findOne(id);
-    await this.donationEventsRepo.softRemove(existingEvent);
+  async remove(ids: string[]) {
+    const existingEvents = await this.donationEventsRepo.find({
+      where: {
+        id: In(ids),
+      },
+    });
+    await this.donationEventsRepo.softRemove(existingEvents);
 
     return {
       success: true,
-      message: 'Event deleted successfully',
+      message: 'Events deleted successfully',
     }
   }
 

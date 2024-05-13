@@ -51,8 +51,8 @@ export class VolunteersController {
     return this.volunteersService.update(id, updateVolunteerDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.volunteersService.remove(id);
+  @Post('deleteMany')
+  remove(@Body('ids') ids: string[]) {
+    return this.volunteersService.remove(ids);
   }
 }

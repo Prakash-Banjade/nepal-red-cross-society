@@ -3,7 +3,7 @@ import { CreateVolunteerDto } from './dto/create-volunteer.dto';
 import { UpdateVolunteerDto } from './dto/update-volunteer.dto';
 import { Volunteer } from './entities/volunteer.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { In, Repository, SelectQueryBuilder } from 'typeorm';
 import { DonationEvent } from 'src/donation_events/entities/donation_event.entity';
 import { Address } from 'src/address/entities/address.entity';
 import { PageDto } from 'src/core/dto/page.dto.';
@@ -41,8 +41,8 @@ export class VolunteersService {
   async findAll(pageOptionsDto: PageOptionsDto): Promise<PageDto<Volunteer>> {
 
     const queryBuilder = this.queryBuilder();
-    
-    
+
+
     queryBuilder
       .orderBy("volunteer.createdAt", pageOptionsDto.order)
       .skip(pageOptionsDto.skip)
@@ -78,13 +78,17 @@ export class VolunteersService {
     return await this.volunteerRepo.save(existingVolunteer);
   }
 
-  async remove(id: string) {
-    await this.findOne(id);
-    this.queryBuilder().softDelete().where({ id }).execute()
+  async remove(ids: string[]) {
+    const foundVolunteers = await this.volunteerRepo.find({
+      where: {
+        id: In(ids)
+      }
+    })
+    await this.volunteerRepo.softRemove(foundVolunteers);
 
     return {
       success: true,
-      message: 'Volunteer deleted successfully',
+      message: 'Volunteers deleted successfully',
     }
   }
 

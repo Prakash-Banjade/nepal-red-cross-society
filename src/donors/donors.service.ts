@@ -3,7 +3,7 @@ import { CreateDonorDto } from './dto/create-donor.dto';
 import { UpdateDonorDto } from './dto/update-donor.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Donor } from './entities/donor.entity';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { AddressService } from 'src/address/address.service';
 import { UpdateAddressDto } from 'src/address/dto/update-address.dto';
 import getFileName from 'src/core/utils/getImageUrl';
@@ -28,7 +28,7 @@ export class DonorsService {
     const donor = this.donorRepo.create({
       ...createDonorDto,
       address,
-      image, // TODO: implement image upload
+      image,
     });
 
     address.donor = donor;
@@ -37,7 +37,11 @@ export class DonorsService {
   }
 
   async findAll() {
-    return await this.donorRepo.find();
+    return await this.donorRepo.find({
+      relations: {
+        address: true,
+      }
+    });
   }
 
   async findOne(id: string) {
@@ -56,7 +60,7 @@ export class DonorsService {
     updateDonorDto.country && await this.addressService.update(existingDonor.address.id, this.extractAddress(updateDonorDto))
 
     // setting if image is updated
-    updateDonorDto.image && (existingDonor.image = getFileName(updateDonorDto.image));
+    updateDonorDto.image && (existingDonor.image = getFileName(updateDonorDto.image)); // this might be a better solution
 
     Object.assign(existingDonor, {
       ...updateDonorDto,
@@ -71,9 +75,18 @@ export class DonorsService {
     }
   }
 
-  async remove(id: string) {
-    const existingDonor = await this.findOne(id);
-    return await this.donorRepo.remove(existingDonor);
+  async remove(ids: string[]) {
+    const existingDonors = await this.donorRepo.find({
+      where: {
+        id: In(ids)
+      }
+    });
+    await this.donorRepo.softRemove(existingDonors);
+
+    return {
+      success: true,
+      message: 'Donors removed',
+    }
   }
 
   public extractAddress(dto: CreateDonorDto | UpdateAddressDto) {

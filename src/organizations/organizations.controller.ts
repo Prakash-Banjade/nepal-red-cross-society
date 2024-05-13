@@ -34,8 +34,8 @@ export class OrganizationsController {
     return this.organizationsService.update(id, updateOrganizationDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.organizationsService.remove(id);
+  @Post('deleteMany')
+  remove(@Body('ids') ids: string[]) {
+    return this.organizationsService.remove(ids);
   }
 }

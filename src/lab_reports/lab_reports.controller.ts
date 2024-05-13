@@ -34,8 +34,8 @@ export class LabReportsController {
     return this.labReportsService.update(id, updateLabReportDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.labReportsService.remove(id);
+  @Post('deleteMany')
+  remove(@Body('ids') ids: string[]) {
+    return this.labReportsService.remove(ids);
   }
 }

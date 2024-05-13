@@ -29,8 +29,8 @@ export class TestCasesController {
     return this.testCasesService.update(id, updateTestCaseDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.testCasesService.remove(id);
+  @Post('deleteMany')
+  remove(@Body('ids') ids: string[]) {
+    return this.testCasesService.remove(ids);
   }
 }

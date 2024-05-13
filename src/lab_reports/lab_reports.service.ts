@@ -67,9 +67,18 @@ export class LabReportsService {
     return await this.labReportRepo.save(existingLabReport);
   }
 
-  async remove(id: string) {
-    const existingLabReport = await this.findOne(id);
-    return await this.labReportRepo.softRemove(existingLabReport);
+  async remove(ids: string[]) {
+    const existingLabReports = await this.labReportRepo.find({
+      where: {
+        id: In(ids)
+      }
+    })
+    await this.labReportRepo.softRemove(existingLabReports);
+
+    return {
+      success: true,
+      message: 'Lab reports deleted successfully',
+    }
   }
 
   async donation(id: string) {

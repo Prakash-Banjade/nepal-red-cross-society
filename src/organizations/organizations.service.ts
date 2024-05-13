@@ -68,8 +68,17 @@ export class OrganizationsService {
     return await this.organizationRepo.save(foundOrganization);
   }
 
-  async remove(id: string) {
-    const foundOrganization = await this.findOne(id);
-    return await this.organizationRepo.softRemove(foundOrganization);
+  async remove(ids: string[]) {
+    const foundOrganizations = await this.organizationRepo.find({
+      where: {
+        id: In(ids)
+      }
+    });
+    await this.organizationRepo.softRemove(foundOrganizations);
+
+    return {
+      success: true,
+      message: 'Organizations deleted successfully',
+    }
   }
 }
