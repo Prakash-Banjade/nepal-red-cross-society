@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IsDateString, IsEmail, IsEnum, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, Length } from "class-validator";
+import { IsDateString, IsEmail, IsEnum, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, Length, ValidateIf } from "class-validator";
 import { FileSystemStoredFile, HasMimeType, IsFile } from "nestjs-form-data";
 import { CreateAddressDto } from "src/address/dto/create-address.dto";
 import { BloodType, Caste, Gender, Race, Religion, RhFactor } from "src/core/types/global.types";
@@ -62,8 +62,10 @@ export class CreateDonorDto extends CreateAddressDto {
     @IsEnum(RhFactor, { message: 'Invalid rh factor. Rh factor must be either ' + Object.values(RhFactor).join(', ') })
     rhFactor!: RhFactor;
 
-    @ApiProperty({ type: 'file', format: 'binary', description: 'Donor image' })
+    @ApiPropertyOptional({ type: 'file', format: 'binary', description: 'Donor image' })
+    @IsOptional()
     @IsFile({ message: 'Invalid image. Image must be either jpeg or png.' })
     @HasMimeType(['image/jpeg', 'image/png'])
+    // @ValidateIf(o => o.image)
     image: FileSystemStoredFile;
 }

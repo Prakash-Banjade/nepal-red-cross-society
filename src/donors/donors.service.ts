@@ -23,7 +23,7 @@ export class DonorsService {
     const address = await this.addressService.create(this.extractAddress(createDonorDto));
 
     // getting image pathname
-    const image = getFileName(createDonorDto.image);
+    const image = createDonorDto.image ? getFileName(createDonorDto.image) : null;
 
     const donor = this.donorRepo.create({
       ...createDonorDto,
