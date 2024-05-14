@@ -21,6 +21,8 @@ import { DonorCardModule } from './donor_card/donor_card.module';
 import { OrganizationsModule } from './organizations/organizations.module';
 import { AddressModule } from './address/address.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -35,6 +37,9 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
       ttl: 60000, // 10 requests per minute
       limit: 60,
     }]),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
+    }),
     UsersModule,
     AuthModule,
     CaslModule,
