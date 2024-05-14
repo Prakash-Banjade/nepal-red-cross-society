@@ -18,6 +18,8 @@ export class AuthController {
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 day
     }
 
+    ACCESS_TOKEN_EXPIRES = new Date(Date.now() + 1 * 60 * 1000) // adding 1 minute
+
     @Public()
     @HttpCode(HttpStatus.OK)
     @Post('login')
@@ -27,7 +29,9 @@ export class AuthController {
 
         res.cookie('refresh_token', refresh_token, this.cookieOptions);
 
-        return { access_token, payload };
+        const expiresIn = this.ACCESS_TOKEN_EXPIRES;
+
+        return { access_token, payload, expiresIn };
     }
 
     @Public()
@@ -38,11 +42,13 @@ export class AuthController {
         const refresh_token = req.cookies?.refresh_token;
         if (!refresh_token) throw new UnauthorizedException('No refresh token provided');
 
-        const { new_access_token, new_refresh_token } = await this.authService.refresh(refresh_token);
+        const { new_access_token, new_refresh_token, payload } = await this.authService.refresh(refresh_token);
 
         res.cookie('refresh_token', new_refresh_token, this.cookieOptions);
 
-        return { access_token: new_access_token };
+        const expiresIn = this.ACCESS_TOKEN_EXPIRES;
+
+        return { access_token: new_access_token, expiresIn, payload };
     }
 
     @Public()
