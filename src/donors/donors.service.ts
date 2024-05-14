@@ -3,10 +3,12 @@ import { CreateDonorDto } from './dto/create-donor.dto';
 import { UpdateDonorDto } from './dto/update-donor.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Donor } from './entities/donor.entity';
-import { In, Repository } from 'typeorm';
+import { In, IsNull, Not, Repository, SelectQueryBuilder } from 'typeorm';
 import { AddressService } from 'src/address/address.service';
 import { UpdateAddressDto } from 'src/address/dto/update-address.dto';
 import getFileName from 'src/core/utils/getImageUrl';
+import { PageOptionsDto } from 'src/core/dto/pageOptions.dto';
+import paginatedData from 'src/core/utils/paginatedData';
 
 @Injectable()
 export class DonorsService {
@@ -36,12 +38,18 @@ export class DonorsService {
     return await this.donorRepo.save(donor);
   }
 
-  async findAll() {
-    return await this.donorRepo.find({
-      relations: {
-        address: true,
-      }
-    });
+  async findAll(pageOptionsDto: PageOptionsDto, deleted = false) {
+    const queryBuilder = this.queryBuilder();
+
+    queryBuilder
+      .orderBy("donor.createdAt", pageOptionsDto.order)
+      .skip(pageOptionsDto.skip)
+      .take(pageOptionsDto.take)
+      .withDeleted()
+      .where({ deletedAt: deleted ? Not(IsNull()) : IsNull() });
+
+    return paginatedData(pageOptionsDto, queryBuilder)
+
   }
 
   async findOne(id: string) {
@@ -102,5 +110,9 @@ export class DonorsService {
   public extractAddress(dto: CreateDonorDto | UpdateAddressDto) {
     const { country, province, district, municipality, ward, street } = dto;
     return { country, province, district, municipality, ward, street };
+  }
+
+  private queryBuilder(): SelectQueryBuilder<Donor> {
+    return this.donorRepo.createQueryBuilder("donor")
   }
 }

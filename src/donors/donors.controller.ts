@@ -1,9 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, HttpCode, HttpStatus, Query } from '@nestjs/common';
 import { DonorsService } from './donors.service';
 import { CreateDonorDto } from './dto/create-donor.dto';
 import { UpdateDonorDto } from './dto/update-donor.dto';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { FileSystemStoredFile, FormDataRequest } from 'nestjs-form-data';
+import { PageOptionsDto } from 'src/core/dto/pageOptions.dto';
+import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.decorator';
 
 @ApiTags('Donors')
 @Controller('donors')
@@ -18,8 +20,9 @@ export class DonorsController {
   }
 
   @Get()
-  findAll() {
-    return this.donorsService.findAll();
+  @ApiPaginatedResponse(CreateDonorDto)
+  findAll(@Query() pageOptionsDto: PageOptionsDto, @Query('deleted') deleted: boolean = false) {
+    return this.donorsService.findAll(pageOptionsDto, deleted);
   }
 
   @Get(':id')
@@ -35,7 +38,7 @@ export class DonorsController {
   }
 
   @Post('deleteMany')
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Body('ids') ids: string) {
     return this.donorsService.remove(JSON.parse(ids));
   }
