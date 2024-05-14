@@ -33,7 +33,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
     }),
     ThrottlerModule.forRoot([{
       ttl: 60000, // 10 requests per minute
-      limit: 10,
+      limit: 60,
     }]),
     UsersModule,
     AuthModule,
@@ -55,7 +55,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard
-    }
+    },
     // {
     //   provide: APP_GUARD,
     //   useClass: AuthGuard,
