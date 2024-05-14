@@ -12,7 +12,7 @@ export class CreateDonorDto extends CreateAddressDto {
 
     @ApiProperty({ description: 'Donor last name' })
     @IsString()
-    @Length(3, 20)
+    @Length(2, 20)
     lastName!: string;
 
     @ApiProperty({ type: 'enum', enum: Gender, description: 'Donor gender' })
