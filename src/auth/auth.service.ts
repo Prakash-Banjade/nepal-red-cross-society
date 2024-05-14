@@ -21,7 +21,10 @@ export class AuthService {
   constructor(
     @InjectRepository(User) private usersRepository: Repository<User>,
     private jwtService: JwtService,
-  ) {}
+  ) { }
+
+  REFRESH_TOKEN_EXPIRE = '7d';
+  ACCESS_TOKEN_EXPIRE = '1m';
 
   async signIn(signInDto: SignInDto) {
     const foundUser = await this.usersRepository.findOneBy({
@@ -55,12 +58,12 @@ export class AuthService {
 
     await this.usersRepository.save(foundUser);
 
-    return { access_token, refresh_token, payload };
+    return { access_token, refresh_token, payload, expiresIn: this.ACCESS_TOKEN_EXPIRE };
   }
 
   async createAccessToken(payload: AuthUser) {
     return await this.jwtService.signAsync(payload, {
-      expiresIn: '10s',
+      expiresIn: this.ACCESS_TOKEN_EXPIRE,
       secret: process.env.ACCESS_TOKEN_SECRET,
     });
   }
@@ -69,7 +72,7 @@ export class AuthService {
     const tokenId = uuidv4();
     return await this.jwtService.signAsync(
       { id: userId, tokenId: tokenId },
-      { expiresIn: '7d', secret: process.env.REFRESH_TOKEN_SECRET },
+      { expiresIn: this.REFRESH_TOKEN_EXPIRE, secret: process.env.REFRESH_TOKEN_SECRET },
     );
   }
 
@@ -129,6 +132,7 @@ export class AuthService {
     return {
       new_access_token,
       new_refresh_token,
+      payload,
     };
   }
 
@@ -146,7 +150,7 @@ export class AuthService {
     }
 
     // delete refresh token in db
-	foundUser.refresh_token = null;
+    foundUser.refresh_token = null;
     await this.usersRepository.save(foundUser);
   }
 
