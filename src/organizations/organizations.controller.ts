@@ -1,9 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, HttpCode, HttpStatus, Query } from '@nestjs/common';
 import { OrganizationsService } from './organizations.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { FileSystemStoredFile, FormDataRequest } from 'nestjs-form-data';
+import { QueryDto } from 'src/core/dto/queryDto';
+import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.decorator';
 
 @ApiTags('Organizations')
 @Controller('organizations')
@@ -18,8 +20,9 @@ export class OrganizationsController {
   }
 
   @Get()
-  findAll() {
-    return this.organizationsService.findAll();
+  @ApiPaginatedResponse(CreateOrganizationDto)
+  findAll(@Query() queryDto: QueryDto) {
+    return this.organizationsService.findAll(queryDto);
   }
 
   @Get(':id')
