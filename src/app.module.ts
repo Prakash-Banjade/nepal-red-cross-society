@@ -32,14 +32,15 @@ import { join } from 'path';
       isGlobal: true,
       fileSystemStoragePath: 'public',
       autoDeleteFile: false,
+      cleanupAfterSuccessHandle: false, // !important
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'), // serve static files eg: localhost:3000/filename.png
     }),
     ThrottlerModule.forRoot([{
       ttl: 60000, // 10 requests per minute
       limit: 60,
     }]),
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'public'),
-    }),
     UsersModule,
     AuthModule,
     CaslModule,
