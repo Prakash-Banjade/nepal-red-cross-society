@@ -22,7 +22,10 @@ export class OrganizationsService {
   ) { }
 
   async create(createOrganizationDto: CreateOrganizationDto) {
-    const foundOrganizationWithSameNameOrEmail = await this.organizationRepo.findOne({ where: { name: createOrganizationDto.name } || { email: createOrganizationDto.email } });
+    const foundOrganizationWithSameNameOrEmail = await this.organizationRepo.findOne({ where: [
+      { name: createOrganizationDto.name },
+      { email: createOrganizationDto.email },
+    ] });
 
     if (foundOrganizationWithSameNameOrEmail) throw new BadRequestException('Organization with this name or email already exists');
 
