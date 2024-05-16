@@ -73,3 +73,14 @@ export enum DonationStatus {
     SUCCESS = 'success',
     FAILED = 'failed',
 }
+
+export enum Education {
+    NONE = 'none',
+    PRIMARY = 'primary',
+    SECONDARY = 'secondary',
+    SEE = 'see',
+    TWELVE = '+2',
+    BACHELOR = 'bachelor',
+    DIPLOMA = 'diploma',
+    MASTER = 'master',
+}
