@@ -29,10 +29,8 @@ export class CreateOrganizationDto extends CreateAddressDto {
     @IsNotEmpty()
     email!: string;
 
-    @ApiPropertyOptional({ type: 'file', format: 'binary', description: 'Donor image' })
-    @IsOptional()
+    @ApiProperty({ type: 'file', format: 'binary', description: 'Donor image' })
     @IsFile({ message: 'Invalid image. Image must be either jpeg or png.' })
     @HasMimeType(['image/jpeg', 'image/png'])
-    @ValidateIf(o => o.logo)
     logo: FileSystemStoredFile;
 }
