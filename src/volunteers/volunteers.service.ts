@@ -1,15 +1,19 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateVolunteerDto } from './dto/create-volunteer.dto';
 import { UpdateVolunteerDto } from './dto/update-volunteer.dto';
 import { Volunteer } from './entities/volunteer.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository, SelectQueryBuilder } from 'typeorm';
+import { In, IsNull, Not, Or, Repository, SelectQueryBuilder } from 'typeorm';
 import { DonationEvent } from 'src/donation_events/entities/donation_event.entity';
 import { Address } from 'src/address/entities/address.entity';
 import { PageDto } from 'src/core/dto/page.dto.';
 import { PageOptionsDto } from 'src/core/dto/pageOptions.dto';
 import paginatedData from 'src/core/utils/paginatedData';
 import { PageMetaDto } from 'src/core/dto/pageMeta.dto';
+import { AddressService } from 'src/address/address.service';
+import { extractAddress } from 'src/core/utils/extractAddress';
+import getFileName from 'src/core/utils/getImageUrl';
+import { Deleted, QueryDto } from 'src/core/dto/queryDto';
 
 @Injectable()
 export class VolunteersService {
@@ -18,44 +22,37 @@ export class VolunteersService {
     private volunteerRepo: Repository<Volunteer>,
     @InjectRepository(DonationEvent)
     private donationEventRepo: Repository<DonationEvent>,
-    @InjectRepository(Address)
-    private addressRepo: Repository<Address>,
+    private readonly addressService: AddressService,
   ) { }
 
   async create(createVolunteerDto: CreateVolunteerDto) {
     // evaluate address
-    const { province, district, municipality, ward, street } = createVolunteerDto;
-    const address = this.addressRepo.create({ province, district, municipality, ward, street });
+    const address = await this.addressService.create(extractAddress(createVolunteerDto));
+
+    // evalutating image
+    const image = createVolunteerDto.image ? getFileName(createVolunteerDto.image) : null;
 
     const volunteer = this.volunteerRepo.create({
       ...createVolunteerDto,
       address,
+      image
     });
-
-    address.volunteer = volunteer;
-    await this.addressRepo.save(address);
 
     return await this.volunteerRepo.save(volunteer);
   }
 
-  async findAll(pageOptionsDto: PageOptionsDto): Promise<PageDto<Volunteer>> {
-
-    const queryBuilder = this.queryBuilder();
-
+  async findAll(queryDto: QueryDto) {
+    const queryBuilder = this.volunteerRepo.createQueryBuilder('volunteer');
+    const deletedAt = queryDto.deleted === Deleted.ONLY ? Not(IsNull()) : queryDto.deleted === Deleted.NONE ? IsNull() : Or(IsNull(), Not(IsNull()));
 
     queryBuilder
-      .orderBy("volunteer.createdAt", pageOptionsDto.order)
-      .skip(pageOptionsDto.skip)
-      .take(pageOptionsDto.take)
+      .orderBy("volunteer.createdAt", queryDto.order)
+      .skip(queryDto.skip)
+      .take(queryDto.take)
+      .withDeleted()
+      .where({ deletedAt })
 
-    return paginatedData(pageOptionsDto, queryBuilder);
-
-    // const itemCount = await queryBuilder.getCount();
-    // const { entities } = await queryBuilder.getRawAndEntities();
-
-    // const pageMetaDto = new PageMetaDto({ itemCount, pageOptionsDto });
-
-    // return new PageDto(entities, pageMetaDto);
+    return paginatedData(queryDto, queryBuilder);
   }
 
   async findOne(id: string) {
@@ -68,11 +65,16 @@ export class VolunteersService {
   async update(id: string, updateVolunteerDto: UpdateVolunteerDto) {
     const existingVolunteer = await this.findOne(id);
 
+    // evaluating donation event
     const donationEvent = updateVolunteerDto.donationEvent ? await this.donationEventRepo.findOneBy({ id: updateVolunteerDto.donationEvent }) : null;
+
+    // evaluating address
+    const image = updateVolunteerDto.image ? getFileName(updateVolunteerDto.image) : null;
 
     Object.assign(existingVolunteer, {
       ...updateVolunteerDto,
       donationEvent,
+      image,
     })
 
     return await this.volunteerRepo.save(existingVolunteer);
@@ -92,7 +94,13 @@ export class VolunteersService {
     }
   }
 
-  private queryBuilder(): SelectQueryBuilder<Volunteer> {
-    return this.volunteerRepo.createQueryBuilder("volunteer")
+  async restore(id: string) {
+    const existingVolunteer = await this.volunteerRepo.findOne({
+      where: { id },
+      withDeleted: true,
+    })
+    if (!existingVolunteer) throw new BadRequestException('Volunteer not found');
+
+    return await this.volunteerRepo.restore(existingVolunteer.id);
   }
 }
