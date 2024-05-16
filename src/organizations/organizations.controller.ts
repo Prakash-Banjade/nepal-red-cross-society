@@ -6,6 +6,8 @@ import { ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { FileSystemStoredFile, FormDataRequest } from 'nestjs-form-data';
 import { QueryDto } from 'src/core/dto/queryDto';
 import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.decorator';
+import { ChekcAbilities } from 'src/core/decorators/abilities.decorator';
+import { Action } from 'src/core/types/global.types';
 
 @ApiTags('Organizations')
 @Controller('organizations')
@@ -44,6 +46,7 @@ export class OrganizationsController {
   }
 
   @Post('restore/:id')
+  @ChekcAbilities({ action: Action.DELETE, subject: 'all' })
   @HttpCode(HttpStatus.OK)
   restore(@Param('id', ParseUUIDPipe) id: string) {
     return this.organizationsService.restore(id);
