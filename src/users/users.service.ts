@@ -3,6 +3,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
+import getFileName from 'src/core/utils/getImageUrl';
 
 @Injectable()
 export class UsersService {
@@ -35,13 +36,14 @@ export class UsersService {
   async update(id: string, updateUserDto: UpdateUserDto) {
     const existingUser = await this.findOne(id);
 
-    // TODO: finalize how to store image
+    // evaluate image
+    const image = getFileName(updateUserDto.image);
 
     Object.assign(existingUser, {
       firstName: updateUserDto.firstName,
       lastName: updateUserDto.lastName,
       email: updateUserDto.email,
-      // image: updateUserDto.image
+      image,
     });
 
     return await this.usersRepository.save(existingUser);
