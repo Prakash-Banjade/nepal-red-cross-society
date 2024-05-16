@@ -20,6 +20,8 @@ async function bootstrap() {
 
   app.use(helmet()); // header security
 
+  app.setGlobalPrefix('api') // global prefix
+
   // security header middleware
   const securityHeadersMiddleware = new SecurityHeadersMiddleware();
   app.use(securityHeadersMiddleware.use.bind(securityHeadersMiddleware));
