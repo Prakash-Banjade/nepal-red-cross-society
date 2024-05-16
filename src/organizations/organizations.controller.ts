@@ -17,17 +17,20 @@ export class OrganizationsController {
   @Post()
   @ApiConsumes('multipart/form-data')
   @FormDataRequest({ storage: FileSystemStoredFile })
+  @ChekcAbilities({ action: Action.CREATE, subject: 'all' })
   create(@Body() createOrganizationDto: CreateOrganizationDto) {
     return this.organizationsService.create(createOrganizationDto);
   }
 
   @Get()
   @ApiPaginatedResponse(CreateOrganizationDto)
+  @ChekcAbilities({ action: Action.READ, subject: 'all' })
   findAll(@Query() queryDto: QueryDto) {
     return this.organizationsService.findAll(queryDto);
   }
 
   @Get(':id')
+  @ChekcAbilities({ action: Action.READ, subject: 'all' })
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.organizationsService.findOne(id);
   }
@@ -35,12 +38,14 @@ export class OrganizationsController {
   @Patch(':id')
   @ApiConsumes('multipart/form-data')
   @FormDataRequest({ storage: FileSystemStoredFile })
+  @ChekcAbilities({ action: Action.UPDATE, subject: 'all' })
   update(@Param('id', ParseUUIDPipe) id: string, @Body() updateOrganizationDto: UpdateOrganizationDto) {
     return this.organizationsService.update(id, updateOrganizationDto);
   }
 
   @Post('deleteMany')
   @HttpCode(HttpStatus.OK)
+  @ChekcAbilities({ action: Action.DELETE, subject: 'all' })
   remove(@Body('ids') ids: string) {
     return this.organizationsService.remove(JSON.parse(ids));
   }
