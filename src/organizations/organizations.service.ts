@@ -71,7 +71,7 @@ export class OrganizationsService {
     const foundOrganization = await this.findOne(id);
 
     // retrieving donations
-    const donations = updateOrganizationDto.donations.length ? await this.donationRepo.find({
+    const donations = updateOrganizationDto.donations?.length ? await this.donationRepo.find({
       where: {
         id: In(updateOrganizationDto.donations)
       }
