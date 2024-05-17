@@ -95,7 +95,7 @@ export class VolunteersService {
   }
 
   async restore(ids: string[]) {
-    const existingVolunteers = await this.volunteerRepo.findOne({
+    const existingVolunteers = await this.volunteerRepo.find({
       where: { id: In(ids) },
       withDeleted: true,
     })

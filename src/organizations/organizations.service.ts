@@ -1,14 +1,12 @@
-import { BadRequestException, Delete, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Organization } from './entities/organization.entity';
-import { In, IsNull, Not, Or, Repository, SelectQueryBuilder } from 'typeorm';
+import { In, IsNull, Not, Or, Repository } from 'typeorm';
 import { Donation } from 'src/donations/entities/donation.entity';
-import { Address } from 'src/address/entities/address.entity';
 import getFileName from 'src/core/utils/getImageUrl';
 import { Deleted, QueryDto } from 'src/core/dto/queryDto';
-import { Volunteer } from 'src/volunteers/entities/volunteer.entity';
 import paginatedData from 'src/core/utils/paginatedData';
 import { extractAddress } from 'src/core/utils/extractAddress';
 import { AddressService } from 'src/address/address.service';
@@ -109,7 +107,7 @@ export class OrganizationsService {
   }
 
   async restore(ids: string[]) {
-    const existingOrganizations = await this.organizationRepo.findOne({
+    const existingOrganizations = await this.organizationRepo.find({
       where: { id: In(ids) },
       withDeleted: true,
     })
