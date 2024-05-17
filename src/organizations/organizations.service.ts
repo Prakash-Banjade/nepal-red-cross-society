@@ -22,10 +22,12 @@ export class OrganizationsService {
   ) { }
 
   async create(createOrganizationDto: CreateOrganizationDto) {
-    const foundOrganizationWithSameNameOrEmail = await this.organizationRepo.findOne({ where: [
-      { name: createOrganizationDto.name },
-      { email: createOrganizationDto.email },
-    ] });
+    const foundOrganizationWithSameNameOrEmail = await this.organizationRepo.findOne({
+      where: [
+        { name: createOrganizationDto.name },
+        { email: createOrganizationDto.email },
+      ]
+    });
 
     if (foundOrganizationWithSameNameOrEmail) throw new BadRequestException('Organization with this name or email already exists');
 
@@ -106,13 +108,19 @@ export class OrganizationsService {
     }
   }
 
-  async restore(id: string) {
-    const existingDonor = await this.organizationRepo.findOne({
-      where: { id },
+  async restore(ids: string[]) {
+    const existingOrganizations = await this.organizationRepo.findOne({
+      where: { id: In(ids) },
       withDeleted: true,
     })
-    if (!existingDonor) throw new BadRequestException('Orgaization not found');
+    if (!existingOrganizations) throw new BadRequestException('Organization not found');
 
-    return await this.organizationRepo.restore(existingDonor.id);
+    return await this.organizationRepo.restore(ids);
+  }
+
+  async clearTrash() {
+    return await this.organizationRepo.delete({
+      deletedAt: Not(IsNull())
+    })
   }
 }

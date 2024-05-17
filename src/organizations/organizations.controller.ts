@@ -50,10 +50,17 @@ export class OrganizationsController {
     return this.organizationsService.remove(JSON.parse(ids));
   }
 
-  @Post('restore/:id')
-  @ChekcAbilities({ action: Action.DELETE, subject: 'all' })
+  @Post('restoreMany')
+  @ChekcAbilities({ action: Action.RESTORE, subject: 'all' })
   @HttpCode(HttpStatus.OK)
-  restore(@Param('id', ParseUUIDPipe) id: string) {
-    return this.organizationsService.restore(id);
+  restore(@Body('ids') ids: string) {
+    return this.organizationsService.restore(JSON.parse(ids));
+  }
+
+  @Post('emptyTrash')
+  @HttpCode(HttpStatus.OK)
+  @ChekcAbilities({ action: Action.DELETE, subject: 'all' })
+  emptyTrash() {
+    return this.organizationsService.clearTrash();
   }
 }
