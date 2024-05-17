@@ -4,6 +4,13 @@ export enum Roles {
     USER = 'user',
 }
 
+export interface RequestUser {
+    name: string;
+    userId: string;
+    email: string;
+    role: Roles;
+}
+
 export interface AuthUser {
     userId: string;
     name: string;

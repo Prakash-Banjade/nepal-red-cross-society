@@ -13,7 +13,7 @@ import { JwtService } from '@nestjs/jwt';
 import { RegisterDto } from './dto/register.dto';
 import { v4 as uuidv4 } from 'uuid';
 import { CookieOptions, Request, Response } from 'express';
-import { AuthUser } from 'src/core/types/global.types';
+import { AuthUser, RequestUser } from 'src/core/types/global.types';
 require('dotenv').config();
 
 @Injectable()
@@ -43,7 +43,7 @@ export class AuthService {
 
     if (!isPasswordValid) throw new BadRequestException('Invalid password');
 
-    const payload = {
+    const payload: RequestUser = {
       email: foundUser.email,
       userId: foundUser.id,
       name: foundUser.firstName + ' ' + foundUser.lastName,
@@ -93,7 +93,7 @@ export class AuthService {
     if (!foundUser) throw new UnauthorizedException('Access Denied');
 
     // create new access token & refresh token
-    const payload = {
+    const payload: RequestUser = {
       email: foundUser.email,
       userId: foundUser.id,
       name: foundUser.firstName + ' ' + foundUser.lastName,
