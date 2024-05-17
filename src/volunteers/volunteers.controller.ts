@@ -73,7 +73,8 @@ export class VolunteersController {
   }
 
   @Post('emptyTrash')
-  @ChekcAbilities({ action: Action.RESTORE, subject: 'all' })
+  @HttpCode(HttpStatus.OK)
+  @ChekcAbilities({ action: Action.DELETE, subject: 'all' })
   emptyTrash() {
     return this.volunteersService.clearTrash();
   }

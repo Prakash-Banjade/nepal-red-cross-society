@@ -101,7 +101,7 @@ export class VolunteersService {
     })
     if (!existingVolunteers) throw new BadRequestException('Volunteer not found');
 
-    return await this.volunteerRepo.restore(existingVolunteers);
+    return await this.volunteerRepo.restore(ids);
   }
 
   async clearTrash() {
