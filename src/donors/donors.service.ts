@@ -9,6 +9,7 @@ import { UpdateAddressDto } from 'src/address/dto/update-address.dto';
 import getFileName from 'src/core/utils/getImageUrl';
 import { PageOptionsDto } from 'src/core/dto/pageOptions.dto';
 import paginatedData from 'src/core/utils/paginatedData';
+import { extractAddress } from 'src/core/utils/extractAddress';
 
 @Injectable()
 export class DonorsService {
@@ -22,7 +23,7 @@ export class DonorsService {
     if (existingDonor) throw new BadRequestException('Donor with this email already exists');
 
     // evaluating address
-    const address = await this.addressService.create(this.extractAddress(createDonorDto));
+    const address = await this.addressService.create(extractAddress(createDonorDto));
 
     // getting image pathname
     const image = createDonorDto.image ? getFileName(createDonorDto.image) : null;
@@ -65,7 +66,7 @@ export class DonorsService {
     const existingDonor = await this.findOne(id);
 
     // setting if address is updated
-    updateDonorDto.country && await this.addressService.update(existingDonor.address.id, this.extractAddress(updateDonorDto))
+    updateDonorDto.country && await this.addressService.update(existingDonor.address.id, extractAddress(updateDonorDto))
 
     // setting if image is updated
     updateDonorDto.image && (existingDonor.image = getFileName(updateDonorDto.image)); // this might be a better solution
@@ -97,19 +98,20 @@ export class DonorsService {
     }
   }
 
-  async restore(id: string) {
-    const existingDonor = await this.donorRepo.findOne({
-      where: { id },
+  async restore(ids: string[]) {
+    const existingDonors = await this.donorRepo.findOne({
+      where: { id: In(ids) },
       withDeleted: true,
     })
-    if (!existingDonor) throw new BadRequestException('Donor not found');
+    if (!existingDonors) throw new BadRequestException('Donor not found');
 
-    return await this.donorRepo.restore(existingDonor.id);
+    return await this.donorRepo.restore(ids);
   }
 
-  public extractAddress(dto: CreateDonorDto | UpdateAddressDto) {
-    const { country, province, district, municipality, ward, street } = dto;
-    return { country, province, district, municipality, ward, street };
+  async clearTrash() {
+    return await this.donorRepo.delete({
+      deletedAt: Not(IsNull())
+    })
   }
 
   private queryBuilder(): SelectQueryBuilder<Donor> {

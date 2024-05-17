@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, ParseUUIDPipe, HttpCode, Htt
 import { DonorsService } from './donors.service';
 import { CreateDonorDto } from './dto/create-donor.dto';
 import { UpdateDonorDto } from './dto/update-donor.dto';
-import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { FileSystemStoredFile, FormDataRequest } from 'nestjs-form-data';
 import { PageOptionsDto } from 'src/core/dto/pageOptions.dto';
 import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.decorator';
@@ -50,10 +50,17 @@ export class DonorsController {
     return this.donorsService.remove(JSON.parse(ids));
   }
 
-  @Post('restore/:id')
-  @HttpCode(HttpStatus.OK)
+  @Post('restoreMany')
   @ChekcAbilities({ action: Action.RESTORE, subject: 'all' })
-  restore(@Param('id', ParseUUIDPipe) id: string) {
-    return this.donorsService.restore(id);
+  @HttpCode(HttpStatus.OK)
+  restore(@Body('ids') ids: string) {
+    return this.donorsService.restore(JSON.parse(ids));
+  }
+
+  @Post('emptyTrash')
+  @HttpCode(HttpStatus.OK)
+  @ChekcAbilities({ action: Action.DELETE, subject: 'all' })
+  emptyTrash() {
+    return this.donorsService.clearTrash();
   }
 }
