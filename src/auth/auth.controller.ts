@@ -2,7 +2,6 @@ import { Body, Controller, HttpCode, HttpStatus, Post, Req, Res, UnauthorizedExc
 import { AuthService } from './auth.service';
 import { SignInDto } from './dto/signIn.dto';
 import { CookieOptions, Request, Response } from 'express';
-import { RegisterDto } from './dto/register.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Public } from 'src/core/decorators/setPublicRoute.decorator';
 
@@ -51,12 +50,12 @@ export class AuthController {
         return { access_token: new_access_token, expiresIn, payload };
     }
 
-    @Public()
-    @Post('register')
-    @ApiOperation({ description: 'Register new user. Returns access token.', summary: 'Register' })
-    async register(@Body() registerDto: RegisterDto) {
-        return await this.authService.register(registerDto);
-    }
+    // @Public()
+    // @Post('register')
+    // @ApiOperation({ description: 'Register new user. Returns access token.', summary: 'Register' })
+    // async register(@Body() registerDto: RegisterDto) {
+    //     return await this.authService.register(registerDto);
+    // }
 
     @Post('logout')
     @HttpCode(HttpStatus.NO_CONTENT)

@@ -1,15 +1,38 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import getFileName from 'src/core/utils/getImageUrl';
+import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private usersRepository: Repository<User>,
   ) { }
+
+  async create(createUserDto: CreateUserDto) {
+    const foundUser = await this.usersRepository.findOneBy({
+      email: createUserDto.email,
+    });
+
+    if (foundUser)
+      throw new BadRequestException('User with this email already exists');
+
+    const createdUser = this.usersRepository.create(createUserDto);
+
+    await this.usersRepository.save(createdUser);
+
+    return {
+      message: 'User created',
+      user: {
+        id: createdUser.id,
+        email: createdUser.email,
+        name: createdUser.firstName + ' ' + createdUser.lastName,
+      },
+    };
+  }
 
   async findAll() {
     return await this.usersRepository.find({

@@ -76,28 +76,6 @@ export class AuthService {
     );
   }
 
-  async register(registerDto: RegisterDto) {
-    const foundUser = await this.usersRepository.findOneBy({
-      email: registerDto.email,
-    });
-
-    if (foundUser)
-      throw new BadRequestException('User with this email already exists');
-
-    const createdUser = this.usersRepository.create(registerDto);
-
-    await this.usersRepository.save(createdUser);
-
-    return {
-      message: 'User created',
-      user: {
-        id: createdUser.id,
-        email: createdUser.email,
-        name: createdUser.firstName + ' ' + createdUser.lastName,
-      },
-    };
-  }
-
   async refresh(refresh_token: string) {
     // verifying the refresh token
     const decoded = await this.jwtService.verifyAsync(refresh_token, {

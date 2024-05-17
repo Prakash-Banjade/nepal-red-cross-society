@@ -1,4 +1,4 @@
-import { Controller, Get, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Body, Patch, Param, Delete, Post } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
@@ -6,6 +6,7 @@ import { FormDataRequest, MemoryStoredFile } from 'nestjs-form-data';
 import { CaslAbilityFactory } from 'src/casl/casl-ability.factory/casl-ability.factory';
 import { ChekcAbilities } from 'src/core/decorators/abilities.decorator';
 import { Action } from 'src/core/types/global.types';
+import { CreateUserDto } from './dto/create-user.dto';
 
 @ApiBearerAuth()
 @ApiTags('Users')
@@ -16,21 +17,29 @@ export class UsersController {
     private readonly abilityFactory: CaslAbilityFactory
   ) { }
 
-  // Users are created from auth/register
+  @Post()
+  @ChekcAbilities({ action: Action.CREATE, subject: 'all' })
+  @FormDataRequest({ storage: MemoryStoredFile })
+  create(@Body() createUserDto: CreateUserDto) {
+    return this.usersService.create(createUserDto)
+  }
 
   @Get()
+  @ChekcAbilities({ action: Action.READ, subject: 'all' })
   public findAll() {
     return this.usersService.findAll()
   }
 
   @Get(':id')
+  @ChekcAbilities({ action: Action.READ, subject: 'all' })
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
   }
 
-  @FormDataRequest({ storage: MemoryStoredFile })
   @Patch(':id')
+  @FormDataRequest({ storage: MemoryStoredFile })
   @ApiConsumes('multipart/form-data')
+  @ChekcAbilities({ action: Action.UPDATE, subject: 'all' })
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(id, updateUserDto);
   }
