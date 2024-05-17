@@ -3,13 +3,14 @@ import { CreateDonorDto } from './dto/create-donor.dto';
 import { UpdateDonorDto } from './dto/update-donor.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Donor } from './entities/donor.entity';
-import { In, IsNull, Not, Repository, SelectQueryBuilder } from 'typeorm';
+import { In, IsNull, Not, Or, Repository, SelectQueryBuilder } from 'typeorm';
 import { AddressService } from 'src/address/address.service';
 import { UpdateAddressDto } from 'src/address/dto/update-address.dto';
 import getFileName from 'src/core/utils/getImageUrl';
 import { PageOptionsDto } from 'src/core/dto/pageOptions.dto';
 import paginatedData from 'src/core/utils/paginatedData';
 import { extractAddress } from 'src/core/utils/extractAddress';
+import { Deleted, QueryDto } from 'src/core/dto/queryDto';
 
 @Injectable()
 export class DonorsService {
@@ -39,18 +40,18 @@ export class DonorsService {
     return await this.donorRepo.save(donor);
   }
 
-  async findAll(pageOptionsDto: PageOptionsDto, deleted = false) {
-    const queryBuilder = this.queryBuilder();
+  async findAll(queryDto: QueryDto) {
+    const queryBuilder = this.donorRepo.createQueryBuilder('donor');
+    const deletedAt = queryDto.deleted === Deleted.ONLY ? Not(IsNull()) : queryDto.deleted === Deleted.NONE ? IsNull() : Or(IsNull(), Not(IsNull()));
 
     queryBuilder
-      .orderBy("donor.createdAt", pageOptionsDto.order)
-      .skip(pageOptionsDto.skip)
-      .take(pageOptionsDto.take)
+      .orderBy("donor.createdAt", queryDto.order)
+      .skip(queryDto.skip)
+      .take(queryDto.take)
       .withDeleted()
-      .where({ deletedAt: deleted ? Not(IsNull()) : IsNull() });
+      .where({ deletedAt })
 
-    return paginatedData(pageOptionsDto, queryBuilder)
-
+    return paginatedData(queryDto, queryBuilder);
   }
 
   async findOne(id: string) {
@@ -99,7 +100,7 @@ export class DonorsService {
   }
 
   async restore(ids: string[]) {
-    const existingDonors = await this.donorRepo.findOne({
+    const existingDonors = await this.donorRepo.find({
       where: { id: In(ids) },
       withDeleted: true,
     })
@@ -112,9 +113,5 @@ export class DonorsService {
     return await this.donorRepo.delete({
       deletedAt: Not(IsNull())
     })
-  }
-
-  private queryBuilder(): SelectQueryBuilder<Donor> {
-    return this.donorRepo.createQueryBuilder("donor")
   }
 }

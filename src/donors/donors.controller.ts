@@ -8,6 +8,7 @@ import { PageOptionsDto } from 'src/core/dto/pageOptions.dto';
 import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.decorator';
 import { ChekcAbilities } from 'src/core/decorators/abilities.decorator';
 import { Action } from 'src/core/types/global.types';
+import { QueryDto } from 'src/core/dto/queryDto';
 
 @ApiTags('Donors')
 @Controller('donors')
@@ -25,8 +26,8 @@ export class DonorsController {
   @Get()
   @ApiPaginatedResponse(CreateDonorDto)
   @ChekcAbilities({ action: Action.READ, subject: 'all' })
-  findAll(@Query() pageOptionsDto: PageOptionsDto, @Query('deleted') deleted: boolean = false) {
-    return this.donorsService.findAll(pageOptionsDto, deleted);
+  findAll(@Query() queryDto: QueryDto) {
+    return this.donorsService.findAll(queryDto);
   }
 
   @Get(':id')
