@@ -14,10 +14,12 @@ export class CaslAbilityFactory {
 
         if (user.role === Roles.ADMIN) {
             can(Action.MANAGE, 'all')
+            can(Action.MANAGE, User)
         } else if (user.role === Roles.MODERATOR) {
             can(Action.CREATE, 'all')
             can(Action.READ, 'all')
             can(Action.UPDATE, 'all')
+            cannot(Action.CREATE, User)
             cannot(Action.DELETE, 'all').because('Only admins are allowed to delete records.')
             cannot(Action.RESTORE, 'all').because('Only admins are allowed to restore records.')
         } else if (user.role === Roles.USER) {
