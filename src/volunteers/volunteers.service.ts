@@ -94,13 +94,19 @@ export class VolunteersService {
     }
   }
 
-  async restore(id: string) {
-    const existingVolunteer = await this.volunteerRepo.findOne({
-      where: { id },
+  async restore(ids: string[]) {
+    const existingVolunteers = await this.volunteerRepo.findOne({
+      where: { id: In(ids) },
       withDeleted: true,
     })
-    if (!existingVolunteer) throw new BadRequestException('Volunteer not found');
+    if (!existingVolunteers) throw new BadRequestException('Volunteer not found');
 
-    return await this.volunteerRepo.restore(existingVolunteer.id);
+    return await this.volunteerRepo.restore(existingVolunteers);
+  }
+
+  async clearTrash() {
+    return await this.volunteerRepo.delete({
+      deletedAt: Not(IsNull())
+    })
   }
 }
