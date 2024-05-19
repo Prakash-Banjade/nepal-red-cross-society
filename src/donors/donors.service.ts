@@ -3,11 +3,9 @@ import { CreateDonorDto } from './dto/create-donor.dto';
 import { UpdateDonorDto } from './dto/update-donor.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Donor } from './entities/donor.entity';
-import { In, IsNull, Not, Or, Repository, SelectQueryBuilder } from 'typeorm';
+import { In, IsNull, Not, Or, Repository } from 'typeorm';
 import { AddressService } from 'src/address/address.service';
-import { UpdateAddressDto } from 'src/address/dto/update-address.dto';
 import getFileName from 'src/core/utils/getImageUrl';
-import { PageOptionsDto } from 'src/core/dto/pageOptions.dto';
 import paginatedData from 'src/core/utils/paginatedData';
 import { extractAddress } from 'src/core/utils/extractAddress';
 import { Deleted, QueryDto } from 'src/core/dto/queryDto';
@@ -50,6 +48,8 @@ export class DonorsService {
       .take(queryDto.take)
       .withDeleted()
       .where({ deletedAt })
+      .leftJoinAndSelect('donor.address', 'address')
+    // .getMany()
 
     return paginatedData(queryDto, queryBuilder);
   }
