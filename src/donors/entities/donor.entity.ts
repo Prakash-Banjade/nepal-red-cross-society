@@ -4,6 +4,7 @@ import { DonorCard } from "src/donor_card/entities/donor_card.entity";
 import { BaseEntity } from "src/core/entities/base.entity";
 import { BloodType, Caste, Gender, Race, Religion, RhFactor } from "src/core/types/global.types";
 import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany, OneToOne } from "typeorm";
+import { User } from "src/users/entities/user.entity";
 
 @Entity()
 export class Donor extends BaseEntity {
@@ -19,8 +20,8 @@ export class Donor extends BaseEntity {
     @Column({ type: 'varchar' })
     email: string;
 
-    // @Column({ type: "varchar" })
-    // password: string;
+    @OneToOne(() => User, (user) => user.donor)
+    account: User
 
     @Column({ type: 'varchar' })
     emergencyContact: string;

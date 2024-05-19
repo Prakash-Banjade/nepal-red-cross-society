@@ -9,12 +9,15 @@ import getFileName from 'src/core/utils/getImageUrl';
 import paginatedData from 'src/core/utils/paginatedData';
 import { extractAddress } from 'src/core/utils/extractAddress';
 import { Deleted, QueryDto } from 'src/core/dto/queryDto';
+import { UsersService } from 'src/users/users.service';
+import { CreateUserDto } from 'src/users/dto/create-user.dto';
 
 @Injectable()
 export class DonorsService {
   constructor(
     @InjectRepository(Donor) private donorRepo: Repository<Donor>,
     private readonly addressService: AddressService,
+    private readonly userService: UsersService
   ) { }
 
   async create(createDonorDto: CreateDonorDto) {
@@ -27,15 +30,30 @@ export class DonorsService {
     // getting image pathname
     const image = createDonorDto.image ? getFileName(createDonorDto.image) : null;
 
+    // creating donor's user account
+    const password = this.generateRandomPassword();
+    const user = await this.userService.create({
+      firstName: createDonorDto.firstName,
+      lastName: createDonorDto.lastName,
+      email: createDonorDto.email,
+      password,
+    } as CreateUserDto);
+
+    const savedUser = await this.userService.findOne(user.user.id); // this approach can be improved as we can directly send the created user after creating
+
     const donor = this.donorRepo.create({
       ...createDonorDto,
       address,
       image,
+      account: savedUser
     });
 
-    address.donor = donor;
-
+    // TODO: send email with password
+    console.log(password);
+    
     return await this.donorRepo.save(donor);
+
+    
   }
 
   async findAll(queryDto: QueryDto) {
@@ -113,5 +131,9 @@ export class DonorsService {
     return await this.donorRepo.delete({
       deletedAt: Not(IsNull())
     })
+  }
+
+  private generateRandomPassword() {
+    return Math.random().toString(36).slice(-8);
   }
 }
