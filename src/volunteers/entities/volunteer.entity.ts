@@ -2,7 +2,7 @@ import { Address } from 'src/address/entities/address.entity';
 import { DonationEvent } from 'src/donation_events/entities/donation_event.entity';
 import { BaseEntity } from 'src/core/entities/base.entity';
 import { Column, Entity, ManyToOne, OneToOne } from 'typeorm';
-import { Education } from 'src/core/types/global.types';
+import { Education, Gender } from 'src/core/types/global.types';
 
 @Entity()
 export class Volunteer extends BaseEntity {
@@ -26,6 +26,9 @@ export class Volunteer extends BaseEntity {
 
   @Column({ type: 'enum', enum: Education })
   education: Education;
+
+  @Column({ type: 'enum', enum: Gender })
+  gender: Gender;
 
   @ManyToOne(() => DonationEvent, (donationEvent) => donationEvent.volunteers, {
     nullable: true,
