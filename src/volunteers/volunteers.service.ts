@@ -56,7 +56,13 @@ export class VolunteersService {
   }
 
   async findOne(id: string) {
-    const existingVolunteer = await this.volunteerRepo.findOneBy({ id });
+    const existingVolunteer = await this.volunteerRepo.findOne({
+      where: { id },
+      relations: {
+        address: true,
+        donationEvent: true
+      }
+    });
     if (!existingVolunteer) throw new NotFoundException('Volunteer not found');
 
     return existingVolunteer;
