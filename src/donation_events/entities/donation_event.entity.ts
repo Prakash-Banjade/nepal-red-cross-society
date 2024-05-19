@@ -7,6 +7,9 @@ import { Organization } from 'src/organizations/entities/organization.entity';
 
 @Entity()
 export class DonationEvent extends BaseEntity {
+  @Column('varchar')
+  name: string;
+  
   @OneToMany(() => Donation, (donation) => donation.donation_event, { nullable: true })
   donations: Donation[];
 
@@ -25,15 +28,15 @@ export class DonationEvent extends BaseEntity {
   @Column()
   leader: string;
 
-  @OneToMany(() => Volunteer, (volunteer) => volunteer.donationEvent)
+  @OneToMany(() => Volunteer, (volunteer) => volunteer.donationEvent, { nullable: true })
   volunteers: Volunteer[];
 
   @Column({ type: 'simple-array', nullable: true })
   gallery: string[]
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', nullable: true })
   coverImage: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   description: string;
 }

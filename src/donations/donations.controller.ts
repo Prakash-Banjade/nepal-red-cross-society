@@ -1,9 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, ParseUUIDPipe, HttpCode, HttpStatus, Query } from '@nestjs/common';
 import { DonationsService } from './donations.service';
 import { CreateDonationDto } from './dto/create-donation.dto';
 import { UpdateDonationDto } from './dto/update-donation.dto';
 import { ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { FileSystemStoredFile, FormDataRequest } from 'nestjs-form-data';
+import { ChekcAbilities } from 'src/core/decorators/abilities.decorator';
+import { Action } from 'src/core/types/global.types';
+import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.decorator';
+import { QueryDto } from 'src/core/dto/queryDto';
 
 @ApiTags('Donations')
 @Controller('donations')
@@ -13,13 +17,17 @@ export class DonationsController {
   @Post()
   @ApiConsumes('multipart/form-data')
   @FormDataRequest({ storage: FileSystemStoredFile })
+  @ChekcAbilities({ action: Action.CREATE, subject: 'all' })
   create(@Body() createDonationDto: CreateDonationDto) {
     return this.donationsService.create(createDonationDto);
   }
 
   @Get()
-  findAll() {
-    return this.donationsService.findAll();
+  @ApiPaginatedResponse(CreateDonationDto)
+  @ChekcAbilities({ action: Action.READ, subject: 'all' })
+
+  findAll(@Query() queryDto: QueryDto) {
+    return this.donationsService.findAll(queryDto);
   }
 
   @Get(':id')
@@ -34,8 +42,24 @@ export class DonationsController {
     return this.donationsService.update(id, updateDonationDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.donationsService.remove(id);
+  @Post('deleteMany')
+  @HttpCode(HttpStatus.OK)
+  @ChekcAbilities({ action: Action.DELETE, subject: 'all' })
+  remove(@Body('ids') ids: string) {
+    return this.donationsService.remove(JSON.parse(ids));
+  }
+
+  @Post('restoreMany')
+  @ChekcAbilities({ action: Action.RESTORE, subject: 'all' })
+  @HttpCode(HttpStatus.OK)
+  restore(@Body('ids') ids: string) {
+    return this.donationsService.restore(JSON.parse(ids));
+  }
+
+  @Post('emptyTrash')
+  @HttpCode(HttpStatus.OK)
+  @ChekcAbilities({ action: Action.DELETE, subject: 'all' })
+  emptyTrash() {
+    return this.donationsService.clearTrash();
   }
 }

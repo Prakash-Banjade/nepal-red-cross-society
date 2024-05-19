@@ -1,8 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
+import { In, IsNull, Not, Or, Repository } from 'typeorm';
+import getFileName from 'src/core/utils/getImageUrl';
+import { CreateUserDto } from './dto/create-user.dto';
+import { Deleted, QueryDto } from 'src/core/dto/queryDto';
+import paginatedData from 'src/core/utils/paginatedData';
+import { RequestUser } from 'src/core/types/global.types';
 
 @Injectable()
 export class UsersService {
@@ -10,19 +15,50 @@ export class UsersService {
     @InjectRepository(User) private usersRepository: Repository<User>,
   ) { }
 
-  async findAll() {
-    return await this.usersRepository.find({
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        role: true,
-        image: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+  async create(createUserDto: CreateUserDto) {
+    const foundUser = await this.usersRepository.findOneBy({
+      email: createUserDto.email,
     });
+
+    if (foundUser)
+      throw new BadRequestException('User with this email already exists');
+
+    const createdUser = this.usersRepository.create(createUserDto);
+
+    await this.usersRepository.save(createdUser);
+
+    return {
+      message: 'User created',
+      user: {
+        id: createdUser.id,
+        email: createdUser.email,
+        name: createdUser.firstName + ' ' + createdUser.lastName,
+      },
+    };
+  }
+
+  async findAll(queryDto: QueryDto) {
+    const queryBuilder = this.usersRepository.createQueryBuilder('user');
+    const deletedAt = queryDto.deleted === Deleted.ONLY ? Not(IsNull()) : queryDto.deleted === Deleted.NONE ? IsNull() : Or(IsNull(), Not(IsNull()));
+
+    queryBuilder
+      .orderBy("user.createdAt", queryDto.order)
+      .skip(queryDto.skip)
+      .take(queryDto.take)
+      .withDeleted()
+      .where({ deletedAt })
+      .select([
+        'user.id',
+        'user.firstName',
+        'user.lastName',
+        'user.email',
+        'user.role',
+        'user.image',
+        'user.createdAt',
+        'user.updatedAt',
+      ])
+
+    return paginatedData(queryDto, queryBuilder);
   }
 
   async findOne(id: string) {
@@ -35,27 +71,32 @@ export class UsersService {
   async update(id: string, updateUserDto: UpdateUserDto) {
     const existingUser = await this.findOne(id);
 
-    // TODO: finalize how to store image
+    // evaluate image
+    const image = getFileName(updateUserDto.image);
 
     Object.assign(existingUser, {
-      firstName: updateUserDto.lastName,
+      firstName: updateUserDto.firstName,
       lastName: updateUserDto.lastName,
       email: updateUserDto.email,
-      // image: updateUserDto.image
+      image,
     });
 
     return await this.usersRepository.save(existingUser);
   }
 
-  async remove(id: string) {
-    const existingUser = await this.findOne(id);
-    await this.usersRepository.softRemove(existingUser);
+  async remove(ids: string[], user: RequestUser) {
+    if (ids?.length && ids.includes(user.userId)) throw new BadRequestException('You cannot delete yourself');
+    
+    const foundUsers = await this.usersRepository.find({
+      where: {
+        id: In(ids)
+      }
+    });
+    await this.usersRepository.remove(foundUsers);
 
     return {
-      message: 'User removed',
-      user: {
-        email: existingUser.email,
-      },
-    };
+      success: true,
+      message: 'Deleted successfully',
+    }
   }
 }

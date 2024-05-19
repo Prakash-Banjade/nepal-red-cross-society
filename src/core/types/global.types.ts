@@ -4,6 +4,13 @@ export enum Roles {
     USER = 'user',
 }
 
+export interface RequestUser {
+    name: string;
+    userId: string;
+    email: string;
+    role: Roles;
+}
+
 export interface AuthUser {
     userId: string;
     name: string;
@@ -17,6 +24,7 @@ export enum Action {
     READ = 'read',
     UPDATE = 'update',
     DELETE = 'delete',
+    RESTORE = 'restore',
 }
 
 export enum Gender {
@@ -26,6 +34,7 @@ export enum Gender {
 }
 
 export enum Race {
+    NONE = 'none',
     MAHILA = 'mahila',
     JANAJATI = 'janajati',
     ADIWASHI = 'adiwashi',
@@ -70,4 +79,15 @@ export enum DonationStatus {
     PENDING = 'pending',
     SUCCESS = 'success',
     FAILED = 'failed',
+}
+
+export enum Education {
+    NONE = 'none',
+    PRIMARY = 'primary',
+    SECONDARY = 'secondary',
+    SEE = 'see',
+    TWELVE = '+2',
+    BACHELOR = 'bachelor',
+    DIPLOMA = 'diploma',
+    MASTER = 'master',
 }

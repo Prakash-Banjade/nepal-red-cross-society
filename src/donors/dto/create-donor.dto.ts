@@ -1,7 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IsDateString, IsEmail, IsEnum, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, Length } from "class-validator";
+import { IsDateString, IsEmail, IsEnum, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, Length, ValidateIf } from "class-validator";
+import { FileSystemStoredFile, HasMimeType, IsFile } from "nestjs-form-data";
 import { CreateAddressDto } from "src/address/dto/create-address.dto";
-import { BloodType, Caste, Gender, Race, RhFactor } from "src/core/types/global.types";
+import { BloodType, Caste, Gender, Race, Religion, RhFactor } from "src/core/types/global.types";
 
 export class CreateDonorDto extends CreateAddressDto {
     @ApiProperty({ description: 'Donor first name' })
@@ -11,7 +12,7 @@ export class CreateDonorDto extends CreateAddressDto {
 
     @ApiProperty({ description: 'Donor last name' })
     @IsString()
-    @Length(3, 20)
+    @Length(2, 20)
     lastName!: string;
 
     @ApiProperty({ type: 'enum', enum: Gender, description: 'Donor gender' })
@@ -32,9 +33,17 @@ export class CreateDonorDto extends CreateAddressDto {
     @IsEnum(Caste, { message: 'Invalid caste. Caste must be either ' + Object.values(Caste).join(', ') })
     caste!: Caste;
 
+    @ApiProperty({ type: 'enum', enum: Religion, description: 'Donor religion' })
+    @IsEnum(Religion, { message: 'Invalid religion. Religion must be either ' + Object.values(Religion).join(', ') })
+    religion!: Religion;
+
     @ApiProperty({ description: 'Donor phone number (NP)', example: '9841234567' })
     @IsPhoneNumber('NP')
     phone!: string;
+
+    @ApiProperty({ description: 'Emergency contact (NP)', example: '9841234567' })
+    @IsPhoneNumber('NP')
+    emergencyContact: string;
 
     @ApiProperty({ description: 'Donor date of birth', example: '2024-05-09T07:12:13.012Z' })
     @IsString()
@@ -52,4 +61,11 @@ export class CreateDonorDto extends CreateAddressDto {
     @ApiProperty({ type: 'enum', enum: RhFactor, description: 'Donor blood RH-factor' })
     @IsEnum(RhFactor, { message: 'Invalid rh factor. Rh factor must be either ' + Object.values(RhFactor).join(', ') })
     rhFactor!: RhFactor;
+
+    @ApiPropertyOptional({ type: 'file', format: 'binary', description: 'Donor image' })
+    @IsOptional()
+    @IsFile({ message: 'Invalid image. Image must be either jpeg or png.' })
+    @HasMimeType(['image/jpeg', 'image/png'])
+    // @ValidateIf(o => o.image)
+    image: FileSystemStoredFile;
 }

@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 3001;
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors({
-    origin: ['http://localhost:5173'],
+    origin: ['http://localhost:5173', 'https://redcrossbhw.vercel.app'],
     credentials: true,
     optionsSuccessStatus: 200,
     preflightContinue: false, // enforce CORS policy consistently across the application's endpoints.
@@ -19,6 +19,8 @@ async function bootstrap() {
   });
 
   app.use(helmet()); // header security
+
+  app.setGlobalPrefix('api') // global prefix
 
   // security header middleware
   const securityHeadersMiddleware = new SecurityHeadersMiddleware();
@@ -28,7 +30,7 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
   app.use(cookieParser());
 
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }))
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true, stopAtFirstError: true }));
 
   setupSwagger(app);
 

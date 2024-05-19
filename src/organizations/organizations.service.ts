@@ -3,40 +3,66 @@ import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Organization } from './entities/organization.entity';
-import { In, Repository } from 'typeorm';
+import { In, IsNull, Not, Or, Repository } from 'typeorm';
 import { Donation } from 'src/donations/entities/donation.entity';
-import { Address } from 'src/address/entities/address.entity';
+import getFileName from 'src/core/utils/getImageUrl';
+import { Deleted, QueryDto } from 'src/core/dto/queryDto';
+import paginatedData from 'src/core/utils/paginatedData';
+import { extractAddress } from 'src/core/utils/extractAddress';
+import { AddressService } from 'src/address/address.service';
 
 @Injectable()
 export class OrganizationsService {
   constructor(
     @InjectRepository(Organization) private organizationRepo: Repository<Organization>,
     @InjectRepository(Donation) private donationRepo: Repository<Donation>,
-    @InjectRepository(Address) private addressRepo: Repository<Address>,
+    private readonly addressService: AddressService,
   ) { }
 
   async create(createOrganizationDto: CreateOrganizationDto) {
-    const foundOrganizationWithSameName = await this.organizationRepo.findOne({ where: { name: createOrganizationDto.name } });
-    if (foundOrganizationWithSameName) throw new BadRequestException('Organization with this name already exists');
+    const foundOrganizationWithSameNameOrEmail = await this.organizationRepo.findOne({
+      where: [
+        { name: createOrganizationDto.name },
+        { email: createOrganizationDto.email },
+      ]
+    });
+
+    if (foundOrganizationWithSameNameOrEmail) throw new BadRequestException('Organization with this name or email already exists');
 
     // evaluating address
-    const { province, district, municipality, ward, street } = createOrganizationDto;
-    const address = this.addressRepo.create({ province, district, municipality, ward, street });
+    const address = await this.addressService.create(extractAddress(createOrganizationDto));
+
+    // evaluate logo
+    const logo = createOrganizationDto.logo ? getFileName(createOrganizationDto.logo) : null;
 
     const createdOrganization = this.organizationRepo.create({
       ...createOrganizationDto,
       address,
+      logo
     });
 
     return await this.organizationRepo.save(createdOrganization);
   }
 
-  async findAll() {
-    return await this.organizationRepo.find();
+  async findAll(queryDto: QueryDto) {
+    const queryBuilder = this.organizationRepo.createQueryBuilder('organization');
+    const deletedAt = queryDto.deleted === Deleted.ONLY ? Not(IsNull()) : queryDto.deleted === Deleted.NONE ? IsNull() : Or(IsNull(), Not(IsNull()));
+
+    queryBuilder
+      .orderBy("organization.createdAt", queryDto.order)
+      .skip(queryDto.skip)
+      .take(queryDto.take)
+      .withDeleted()
+      .where({ deletedAt })
+
+    return paginatedData(queryDto, queryBuilder);
   }
 
   async findOne(id: string) {
-    const foundOrganization = await this.organizationRepo.findOneBy({ id });
+    const foundOrganization = await this.organizationRepo.findOne({
+      where: { id },
+      relations: { address: true },
+    });
     if (!foundOrganization) throw new BadRequestException('Organization not found');
     return foundOrganization;
   }
@@ -45,22 +71,54 @@ export class OrganizationsService {
     const foundOrganization = await this.findOne(id);
 
     // retrieving donations
-    const donations = updateOrganizationDto.donations.length ? await this.donationRepo.find({
+    const donations = updateOrganizationDto.donations?.length ? await this.donationRepo.find({
       where: {
         id: In(updateOrganizationDto.donations)
       }
     }) : null;
 
+    // retrieving logo file name
+    const logo = updateOrganizationDto.logo ? getFileName(updateOrganizationDto.logo) : foundOrganization.logo;
+
+    // updating address
+    updateOrganizationDto.country && await this.addressService.update(foundOrganization.address.id, extractAddress(updateOrganizationDto))
+
     Object.assign(foundOrganization, {
       ...updateOrganizationDto,
-      donations
+      donations,
+      logo
     })
 
     return await this.organizationRepo.save(foundOrganization);
   }
 
-  async remove(id: string) {
-    const foundOrganization = await this.findOne(id);
-    return await this.organizationRepo.softRemove(foundOrganization);
+  async remove(ids: string[]) {
+    const foundOrganizations = await this.organizationRepo.find({
+      where: {
+        id: In(ids)
+      }
+    });
+    await this.organizationRepo.softRemove(foundOrganizations);
+
+    return {
+      success: true,
+      message: 'Organizations deleted successfully',
+    }
+  }
+
+  async restore(ids: string[]) {
+    const existingOrganizations = await this.organizationRepo.find({
+      where: { id: In(ids) },
+      withDeleted: true,
+    })
+    if (!existingOrganizations) throw new BadRequestException('Organization not found');
+
+    return await this.organizationRepo.restore(ids);
+  }
+
+  async clearTrash() {
+    return await this.organizationRepo.delete({
+      deletedAt: Not(IsNull())
+    })
   }
 }

@@ -1,24 +1,10 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { IsEmail, IsOptional, IsString } from 'class-validator';
 import { FileSystemStoredFile } from 'nestjs-form-data';
+import { CreateUserDto } from './create-user.dto';
 
-export class UpdateUserDto {
-    @ApiPropertyOptional({ type: 'string', description: 'firstName' })
-    @IsString()
-    @IsOptional()
-    firstName: string;
-
-    @ApiPropertyOptional({ type: 'string', description: 'lastName' })
-    @IsString()
-    @IsOptional()
-    lastName: string;
-
-    @ApiPropertyOptional({ type: 'string', description: 'Email' })
-    @IsEmail()
-    @IsOptional()
-    email: string;
-
+export class UpdateUserDto extends PartialType(CreateUserDto) {
     @ApiPropertyOptional({ type: 'string', format: 'binary', description: 'Profile Image' })
     @IsOptional()
-    image: string | FileSystemStoredFile
+    image?: string | FileSystemStoredFile
 }

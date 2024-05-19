@@ -2,9 +2,9 @@ import { Address } from "src/address/entities/address.entity";
 import { Donation } from "src/donations/entities/donation.entity";
 import { DonorCard } from "src/donor_card/entities/donor_card.entity";
 import { BaseEntity } from "src/core/entities/base.entity";
-import { BloodType, Caste, Gender, Race, RhFactor } from "src/core/types/global.types";
-import * as bcrypt from 'bcrypt';
-import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany, OneToOne } from "typeorm";
+import { BloodType, Caste, Gender, Race, Religion, RhFactor } from "src/core/types/global.types";
+import { BeforeInsert, BeforeUpdate, Column, Entity, JoinColumn, OneToMany, OneToOne } from "typeorm";
+import { User } from "src/users/entities/user.entity";
 
 @Entity()
 export class Donor extends BaseEntity {
@@ -20,14 +20,21 @@ export class Donor extends BaseEntity {
     @Column({ type: 'varchar' })
     email: string;
 
-    // @Column({ type: "varchar" })
-    // password: string;
+    @OneToOne(() => User, (user) => user.donor)
+    @JoinColumn()
+    account: User
+
+    @Column({ type: 'varchar' })
+    emergencyContact: string;
 
     @Column({ type: 'enum', enum: Race, nullable: true })
     race: Race;
 
     @Column({ type: 'enum', enum: Caste })
     caste: Caste;
+
+    @Column({ type: 'enum', enum: Religion })
+    religion: Religion;
 
     @Column({ type: 'varchar', length: 10 })
     phone: string;
@@ -47,6 +54,9 @@ export class Donor extends BaseEntity {
 
     @Column({ type: 'enum', enum: RhFactor })
     rhFactor: RhFactor;
+
+    @Column({ type: 'varchar', nullable: true })
+    image: string;
 
     // circular dependencies
     @OneToMany(() => Donation, (donation) => donation.donor, { nullable: true })

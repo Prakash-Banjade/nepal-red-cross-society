@@ -3,7 +3,7 @@ import { CreateCertificateDto } from './dto/create-certificate.dto';
 import { UpdateCertificateDto } from './dto/update-certificate.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Certificate } from './entities/certificate.entity';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { In, Repository, SelectQueryBuilder } from 'typeorm';
 import { Donation } from 'src/donations/entities/donation.entity';
 import { PageOptionsDto } from 'src/core/dto/pageOptions.dto';
 import paginatedData from 'src/core/utils/paginatedData';
@@ -61,9 +61,19 @@ export class CertificateService {
     return await this.certificateRepo.save(foundCertificate);
   }
 
-  async remove(id: string) {
-    const foundCertificate = await this.findOne(id);
-    return await this.certificateRepo.softRemove(foundCertificate);
+  async remove(ids: string[]) {
+    const foundCertificates = await this.certificateRepo.find({
+      where: {
+        id: In(ids),
+      }
+    })
+
+    await this.certificateRepo.softRemove(foundCertificates);
+    
+    return {
+      success: true,
+      message: 'Certificates deleted successfully',
+    }
   }
 
   // To avoid circular dependency, we need to retrieve donation in this service too

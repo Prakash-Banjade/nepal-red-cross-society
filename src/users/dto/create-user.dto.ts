@@ -1,1 +1,31 @@
-export class CreateUserDto {}
+import { ApiProperty } from "@nestjs/swagger";
+import { IsEmail, IsEnum, IsNotEmpty, IsString, Length } from "class-validator";
+import { Roles } from "src/core/types/global.types";
+
+export class CreateUserDto {
+    @ApiProperty({ type: 'string', description: 'First name must be at least 3 characters long' })
+    @IsString()
+    @IsNotEmpty()
+    @Length(3)
+    firstName: string;
+
+    @ApiProperty({ type: 'string', description: 'Last name must be at least 2 characters long' })
+    @IsString()
+    @IsNotEmpty()
+    @Length(2)
+    lastName: string;
+
+    @ApiProperty({ type: 'string', format: 'email', description: 'Valid email' })
+    @IsEmail()
+    @IsNotEmpty()
+    email: string;
+
+    @ApiProperty({ type: 'string', description: 'Password must be at least 8 characters long' })
+    @IsString()
+    @Length(8)
+    password: string;
+
+    @ApiProperty({ type: 'string', enum: Roles })
+    @IsEnum(Roles, { message: 'Invalid role' })
+    role: Roles;
+}

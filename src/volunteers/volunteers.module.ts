@@ -5,14 +5,15 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Volunteer } from './entities/volunteer.entity';
 import { DonationEvent } from 'src/donation_events/entities/donation_event.entity';
 import { Address } from 'src/address/entities/address.entity';
+import { AddressModule } from 'src/address/address.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       Volunteer,
       DonationEvent,
-      Address,
-    ])
+    ]),
+    AddressModule,
   ],
   controllers: [VolunteersController],
   providers: [VolunteersService],

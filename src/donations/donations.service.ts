@@ -3,13 +3,15 @@ import { CreateDonationDto } from './dto/create-donation.dto';
 import { UpdateDonationDto } from './dto/update-donation.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Donation } from './entities/donation.entity';
-import { Repository } from 'typeorm';
+import { In, IsNull, Not, Or, Repository } from 'typeorm';
 import { Certificate } from 'src/certificate/entities/certificate.entity';
 import { DonorsService } from 'src/donors/donors.service';
 import { OrganizationsService } from 'src/organizations/organizations.service';
 import { DonationEventsService } from 'src/donation_events/donation_events.service';
 import { LabReportsService } from 'src/lab_reports/lab_reports.service';
 import { CertificateService } from 'src/certificate/certificate.service';
+import { Deleted, QueryDto } from 'src/core/dto/queryDto';
+import paginatedData from 'src/core/utils/paginatedData';
 
 @Injectable()
 export class DonationsService {
@@ -39,8 +41,18 @@ export class DonationsService {
     return await this.donationRepo.save(donation);
   }
 
-  async findAll() {
-    return await this.donationRepo.find();
+  async findAll(queryDto: QueryDto) {
+    const queryBuilder = this.donationRepo.createQueryBuilder('donation');
+    const deletedAt = queryDto.deleted === Deleted.ONLY ? Not(IsNull()) : queryDto.deleted === Deleted.NONE ? IsNull() : Or(IsNull(), Not(IsNull()));
+
+    queryBuilder
+      .orderBy("donation.createdAt", queryDto.order)
+      .skip(queryDto.skip)
+      .take(queryDto.take)
+      .withDeleted()
+      .where({ deletedAt })
+
+    return paginatedData(queryDto, queryBuilder);
   }
 
   async findOne(id: string) {
@@ -65,14 +77,34 @@ export class DonationsService {
     return await this.donationRepo.save(foundDonation);
   }
 
-  async remove(id: string) {
-    const foundDonation = await this.findOne(id);
-    await this.donationRepo.softRemove(foundDonation);
+  async remove(ids: string[]) {
+    const existingDonations = await this.donationRepo.find({
+      where: {
+        id: In(ids)
+      }
+    })
+    await this.donationRepo.softRemove(existingDonations);
 
     return {
       success: true,
-      message: 'Donation deleted successfully',
+      message: 'Donations deleted successfully',
     }
+  }
+
+  async restore(ids: string[]) {
+    const existingDonations = await this.donationRepo.find({
+      where: { id: In(ids) },
+      withDeleted: true,
+    })
+    if (!existingDonations) throw new BadRequestException('Donation not found');
+
+    return await this.donationRepo.restore(ids);
+  }
+
+  async clearTrash() {
+    return await this.donationRepo.delete({
+      deletedAt: Not(IsNull())
+    })
   }
 
   private async retrieveCreateDependencies(createDonationDto: CreateDonationDto) {

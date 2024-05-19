@@ -38,9 +38,9 @@ export class DonorCardController {
     return this.donorCardService.update(id, updateDonorCardDto);
   }
 
-  @Delete(':id')
-  @ApiOperation({ description: 'Delete a donor card', summary: 'Delete Donor Card' })
-  remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.donorCardService.remove(id);
+  @Post('deleteMany')
+  @ApiOperation({ description: 'Delete multiple donor card', summary: 'Delete Donor Cards' })
+  remove(@Body('ids') ids: string[]) {
+    return this.donorCardService.remove(ids);
   }
 }

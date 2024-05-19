@@ -41,9 +41,9 @@ export class CertificateController {
     return this.certificateService.update(id, updateCertificateDto);
   }
 
-  @Delete(':id')
+  @Post('deleteMany')
   @ApiOperation({ description: 'Delete certificate by id', summary: "Delete existing certificate" })
-  remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.certificateService.remove(id);
+  remove(@Body('ids') ids: string[]) {
+    return this.certificateService.remove(ids);
   }
 }

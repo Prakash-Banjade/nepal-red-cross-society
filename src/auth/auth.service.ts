@@ -13,7 +13,7 @@ import { JwtService } from '@nestjs/jwt';
 import { RegisterDto } from './dto/register.dto';
 import { v4 as uuidv4 } from 'uuid';
 import { CookieOptions, Request, Response } from 'express';
-import { AuthUser } from 'src/core/types/global.types';
+import { AuthUser, RequestUser } from 'src/core/types/global.types';
 require('dotenv').config();
 
 @Injectable()
@@ -21,7 +21,10 @@ export class AuthService {
   constructor(
     @InjectRepository(User) private usersRepository: Repository<User>,
     private jwtService: JwtService,
-  ) {}
+  ) { }
+
+  REFRESH_TOKEN_EXPIRE = '7d';
+  ACCESS_TOKEN_EXPIRE = '1m';
 
   async signIn(signInDto: SignInDto) {
     const foundUser = await this.usersRepository.findOneBy({
@@ -40,7 +43,7 @@ export class AuthService {
 
     if (!isPasswordValid) throw new BadRequestException('Invalid password');
 
-    const payload = {
+    const payload: RequestUser = {
       email: foundUser.email,
       userId: foundUser.id,
       name: foundUser.firstName + ' ' + foundUser.lastName,
@@ -55,12 +58,12 @@ export class AuthService {
 
     await this.usersRepository.save(foundUser);
 
-    return { access_token, refresh_token };
+    return { access_token, refresh_token, payload, expiresIn: this.ACCESS_TOKEN_EXPIRE };
   }
 
   async createAccessToken(payload: AuthUser) {
     return await this.jwtService.signAsync(payload, {
-      expiresIn: '10s',
+      expiresIn: this.ACCESS_TOKEN_EXPIRE,
       secret: process.env.ACCESS_TOKEN_SECRET,
     });
   }
@@ -69,30 +72,8 @@ export class AuthService {
     const tokenId = uuidv4();
     return await this.jwtService.signAsync(
       { id: userId, tokenId: tokenId },
-      { expiresIn: '7d', secret: process.env.REFRESH_TOKEN_SECRET },
+      { expiresIn: this.REFRESH_TOKEN_EXPIRE, secret: process.env.REFRESH_TOKEN_SECRET },
     );
-  }
-
-  async register(registerDto: RegisterDto) {
-    const foundUser = await this.usersRepository.findOneBy({
-      email: registerDto.email,
-    });
-
-    if (foundUser)
-      throw new BadRequestException('User with this email already exists');
-
-    const createdUser = this.usersRepository.create(registerDto);
-
-    await this.usersRepository.save(createdUser);
-
-    return {
-      message: 'User created',
-      user: {
-        id: createdUser.id,
-        email: createdUser.email,
-        name: createdUser.firstName + ' ' + createdUser.lastName,
-      },
-    };
   }
 
   async refresh(refresh_token: string) {
@@ -112,7 +93,7 @@ export class AuthService {
     if (!foundUser) throw new UnauthorizedException('Access Denied');
 
     // create new access token & refresh token
-    const payload = {
+    const payload: RequestUser = {
       email: foundUser.email,
       userId: foundUser.id,
       name: foundUser.firstName + ' ' + foundUser.lastName,
@@ -129,6 +110,7 @@ export class AuthService {
     return {
       new_access_token,
       new_refresh_token,
+      payload,
     };
   }
 
@@ -146,7 +128,7 @@ export class AuthService {
     }
 
     // delete refresh token in db
-	foundUser.refresh_token = null;
+    foundUser.refresh_token = null;
     await this.usersRepository.save(foundUser);
   }
 

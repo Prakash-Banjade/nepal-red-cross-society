@@ -19,7 +19,13 @@ export class Organization extends BaseEntity {
     contact: string;
 
     @Column({ type: 'varchar' })
-    owner: string;
+    representative: string;
+
+    @Column({ type: 'varchar' })
+    email: string;
+
+    @Column({ type: 'varchar' })
+    logo: string;
 
     @Column({ type: 'varchar' })
     representativeContact: string;

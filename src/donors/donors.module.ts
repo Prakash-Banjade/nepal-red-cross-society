@@ -5,11 +5,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Donor } from './entities/donor.entity';
 import { Address } from 'src/address/entities/address.entity';
 import { AddressModule } from 'src/address/address.module';
+import { UsersModule } from 'src/users/users.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Donor]),
     AddressModule,
+    UsersModule,
   ],
   controllers: [DonorsController],
   providers: [DonorsService],

@@ -21,6 +21,8 @@ import { DonorCardModule } from './donor_card/donor_card.module';
 import { OrganizationsModule } from './organizations/organizations.module';
 import { AddressModule } from './address/address.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -30,10 +32,14 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
       isGlobal: true,
       fileSystemStoragePath: 'public',
       autoDeleteFile: false,
+      cleanupAfterSuccessHandle: false, // !important
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'), // serve static files eg: localhost:3000/filename.png
     }),
     ThrottlerModule.forRoot([{
       ttl: 60000, // 10 requests per minute
-      limit: 10,
+      limit: 60,
     }]),
     UsersModule,
     AuthModule,
@@ -55,15 +61,15 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard
+    },
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: AbilitiesGuard, // global
     }
-    // {
-    //   provide: APP_GUARD,
-    //   useClass: AuthGuard,
-    // },
-    // {
-    //   provide: APP_GUARD,
-    //   useClass: AbilitiesGuard, // global
-    // }
   ],
 })
 export class AppModule { }

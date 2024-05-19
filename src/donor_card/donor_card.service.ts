@@ -3,7 +3,7 @@ import { CreateDonorCardDto } from './dto/create-donor_card.dto';
 import { UpdateDonorCardDto } from './dto/update-donor_card.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DonorCard } from './entities/donor_card.entity';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Donor } from 'src/donors/entities/donor.entity';
 
 @Injectable()
@@ -51,8 +51,18 @@ export class DonorCardService {
     await this.donorCardRepo.save(existingCard);
   }
 
-  async remove(id: string) {
-    return `This action removes a #${id} donorCard`;
+  async remove(ids: string[]) {
+    const existingCards = await this.donorCardRepo.find({
+      where: {
+        id: In(ids)
+      }
+    });
+    await this.donorCardRepo.softRemove(existingCards);
+
+    return {
+      success: true,
+      message: 'Cards removed',
+    }
   }
 
   async findDonor(id: string): Promise<Donor> {
