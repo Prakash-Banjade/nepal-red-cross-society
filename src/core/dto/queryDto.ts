@@ -13,4 +13,8 @@ export class QueryDto extends PageOptionsDto {
     @IsEnum(Deleted, { message: "Invalid deleted option" })
     @IsOptional()
     deleted: Deleted = Deleted.NONE
+
+    @ApiPropertyOptional({ type: String, description: "Search query", default: "" })
+    @IsOptional()
+    search?: string
 }

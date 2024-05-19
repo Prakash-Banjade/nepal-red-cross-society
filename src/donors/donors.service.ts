@@ -3,7 +3,7 @@ import { CreateDonorDto } from './dto/create-donor.dto';
 import { UpdateDonorDto } from './dto/update-donor.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Donor } from './entities/donor.entity';
-import { In, IsNull, Not, Or, Repository } from 'typeorm';
+import { ILike, In, IsNull, Not, Or, Repository } from 'typeorm';
 import { AddressService } from 'src/address/address.service';
 import getFileName from 'src/core/utils/getImageUrl';
 import paginatedData from 'src/core/utils/paginatedData';
@@ -61,10 +61,14 @@ export class DonorsService {
 
     queryBuilder
       .orderBy("donor.createdAt", queryDto.order)
-      .skip(queryDto.skip)
-      .take(queryDto.take)
+      .skip(queryDto.search ? undefined : queryDto.page)
+      .take(queryDto.search ? undefined : queryDto.take)
       .withDeleted()
       .where({ deletedAt })
+      .andWhere([
+        { firstName: ILike(`%${queryDto.search ?? ''}%`) },
+        { lastName: ILike(`%${queryDto.search ?? ''}%`) },
+      ])
       .leftJoinAndSelect('donor.address', 'address')
       .getMany()
 
