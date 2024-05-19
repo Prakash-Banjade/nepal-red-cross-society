@@ -11,6 +11,7 @@ import { extractAddress } from 'src/core/utils/extractAddress';
 import { Deleted, QueryDto } from 'src/core/dto/queryDto';
 import { UsersService } from 'src/users/users.service';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import generator from 'generate-password-ts';
 
 @Injectable()
 export class DonorsService {
@@ -50,10 +51,8 @@ export class DonorsService {
 
     // TODO: send email with password
     console.log(password);
-    
-    return await this.donorRepo.save(donor);
 
-    
+    return await this.donorRepo.save(donor);
   }
 
   async findAll(queryDto: QueryDto) {
@@ -134,6 +133,10 @@ export class DonorsService {
   }
 
   private generateRandomPassword() {
-    return Math.random().toString(36).slice(-8);
+    const password = generator.generate({
+      length: 8,
+      numbers: true
+    });
+    return password;
   }
 }
