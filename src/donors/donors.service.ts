@@ -49,7 +49,7 @@ export class DonorsService {
       .withDeleted()
       .where({ deletedAt })
       .leftJoinAndSelect('donor.address', 'address')
-    // .getMany()
+      .getMany()
 
     return paginatedData(queryDto, queryBuilder);
   }
