@@ -27,7 +27,7 @@ export class Donor extends BaseEntity {
     @Column({ type: 'varchar' })
     emergencyContact: string;
 
-    @Column({ type: 'enum', enum: Race, nullable: true })
+    @Column({ type: 'enum', enum: Race, default: Race.NONE })
     race: Race;
 
     @Column({ type: 'enum', enum: Caste })

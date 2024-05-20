@@ -24,10 +24,10 @@ export class CreateDonorDto extends CreateAddressDto {
     @IsNotEmpty()
     email!: string;
 
-    @ApiPropertyOptional({ type: 'enum', enum: Race, description: 'Donor race' })
+    @ApiPropertyOptional({ type: 'enum', enum: Race, description: 'Donor race', default: Race.NONE })
     @IsEnum(Race, { message: 'Invalid race. Race must be either mahila, janajati, adiwashi, dalit.' })
     @IsOptional()
-    race?: Race = null;
+    race?: Race = Race.NONE;
 
     @ApiProperty({ type: 'enum', enum: Caste, description: 'Donor caste' })
     @IsEnum(Caste, { message: 'Invalid caste. Caste must be either ' + Object.values(Caste).join(', ') })
