@@ -3,7 +3,7 @@ import { CreateDonationEventDto } from './dto/create-donation_event.dto';
 import { UpdateDonationEventDto } from './dto/update-donation_event.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DonationEvent } from './entities/donation_event.entity';
-import { In, IsNull, Not, Or, Repository } from 'typeorm';
+import { ILike, In, IsNull, Not, Or, Repository } from 'typeorm';
 import { Volunteer } from 'src/volunteers/entities/volunteer.entity';
 import { OrganizationsService } from 'src/organizations/organizations.service';
 import { AddressService } from 'src/address/address.service';
@@ -57,10 +57,11 @@ export class DonationEventsService {
 
     queryBuilder
       .orderBy("donationEvent.createdAt", queryDto.order)
-      .skip(queryDto.skip)
-      .take(queryDto.take)
+      .skip(queryDto.search ? undefined : queryDto.page)
+      .take(queryDto.search ? undefined : queryDto.take)
       .withDeleted()
       .where({ deletedAt })
+      .andWhere({ name: ILike(`%${queryDto.search}%`) })
       .leftJoinAndSelect('donationEvent.address', 'address')
       .leftJoinAndSelect('donationEvent.organization', 'organization')
       .getMany()

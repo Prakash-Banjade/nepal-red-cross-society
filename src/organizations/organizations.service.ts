@@ -3,7 +3,7 @@ import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Organization } from './entities/organization.entity';
-import { In, IsNull, Not, Or, Repository } from 'typeorm';
+import { ILike, In, IsNull, Not, Or, Repository } from 'typeorm';
 import { Donation } from 'src/donations/entities/donation.entity';
 import getFileName from 'src/core/utils/getImageUrl';
 import { Deleted, QueryDto } from 'src/core/dto/queryDto';
@@ -50,10 +50,13 @@ export class OrganizationsService {
 
     queryBuilder
       .orderBy("organization.createdAt", queryDto.order)
-      .skip(queryDto.skip)
-      .take(queryDto.take)
+      .skip(queryDto.search ? undefined : queryDto.page)
+      .take(queryDto.search ? undefined : queryDto.take)
       .withDeleted()
       .where({ deletedAt })
+      .andWhere({
+        name: ILike(`%${queryDto.search}%`),
+      })
 
     return paginatedData(queryDto, queryBuilder);
   }
