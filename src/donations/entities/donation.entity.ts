@@ -35,7 +35,7 @@ export class Donation extends BaseEntity {
     @Column({ type: "simple-array", nullable: true })
     failedReason: string[]
 
-    @Column({ type: "varchar" })
+    @Column({ type: "varchar", nullable: true })
     verifiedBy: string
 
     @OneToOne(() => LabReport, lab_report => lab_report.donation, { nullable: true })
@@ -46,6 +46,14 @@ export class Donation extends BaseEntity {
     async validate() {
         if (this.donationType === DonationType.INDIVIDUAL) {
             this.organization = null;
+        }
+
+        if (this.status !== DonationStatus.FAILED) {
+            this.failedReason = null;
+        }
+
+        if (this.verifiedBy === null) {
+            this.labReport = null;
         }
     }
 }
