@@ -61,7 +61,7 @@ export class DonationEventsService {
       .take(queryDto.search ? undefined : queryDto.take)
       .withDeleted()
       .where({ deletedAt })
-      .andWhere({ name: ILike(`%${queryDto.search}%`) })
+      .andWhere({ name: ILike(`%${queryDto.search ?? ''}%`) })
       .leftJoinAndSelect('donationEvent.address', 'address')
       .leftJoinAndSelect('donationEvent.organization', 'organization')
       .getMany()
