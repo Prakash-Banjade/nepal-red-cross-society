@@ -4,39 +4,38 @@ import { Global, Module } from '@nestjs/common';
 import { MailService } from './mail.service';
 import { join } from 'path';
 import { ConfigService } from '@nestjs/config';
+import * as nodemailer from 'nodemailer';
 
 @Global()
 @Module({
   imports: [
     MailerModule.forRootAsync({
-      // imports: [ConfigModule], // import module if not enabled globally
-      useFactory: async (configService: ConfigService) => ({
-        // transport: config.get("MAIL_TRANSPORT"),
-        // or
-        transport: {
-          host: configService.get<string>('MAIL_HOST'),
-          port: +configService.get<string>('MAIL_PORT'),
-          secure: false, // TLS requires secureConnection to be false
-          auth: {
-            user: configService.get<string>('MAIL_USER'),
-            pass: configService.get<string>('MAIL_PASSWORD'),
+      useFactory: async () => {
+        const testAccount = await nodemailer.createTestAccount();
+
+        console.log('Ethereal Test Account:', testAccount);
+
+        return {
+          transport: {
+            host: 'smtp.ethereal.email',
+            port: 587,
+            auth: {
+              user: 'emilie.bode41@ethereal.email',
+              pass: '2FUZWBjpdGZjHBerGB'
+            }
           },
-          tls: {
-            rejectUnauthorized: false, // Allow self-signed certificates
+          defaults: {
+            from: `"No Reply" <${testAccount.user}>`,
           },
-        },
-        defaults: {
-          from: `"No Reply" <${configService.get('MAIL_FROM')}>`,
-        },
-        template: {
-          dir: join(__dirname, 'templates'),
-          adapter: new HandlebarsAdapter(),
-          options: {
-            strict: false,
+          template: {
+            dir: join(__dirname, 'templates'),
+            adapter: new HandlebarsAdapter(),
+            options: {
+              strict: true,
+            },
           },
-        },
-      }),
-      inject: [ConfigService],
+        };
+      },
     }),
   ],
   providers: [MailService],

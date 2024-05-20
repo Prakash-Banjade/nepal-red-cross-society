@@ -2,6 +2,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { User } from 'src/users/entities/user.entity';
+import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class MailService {
@@ -11,10 +12,7 @@ export class MailService {
     ) { }
 
     async sendUserCredentials(user: User, password: string) {
-        console.log(user.email, password);
-        console.log(this.configService.get('MAIL_PASSWORD'))
-
-        return await this.mailerService.sendMail({
+        const result = await this.mailerService.sendMail({
             to: user.email,
             subject: 'Welcome to Nepal Red Cross ! Confirm your Email',
             template: './sendUserCredentials', // `.hbs` extension is appended automatically
@@ -24,5 +22,10 @@ export class MailService {
                 password,
             },
         });
+
+        const previewUrl = nodemailer.getTestMessageUrl(result);
+        console.log('Preview URL:', previewUrl);
+
+        return result;
     }
 }

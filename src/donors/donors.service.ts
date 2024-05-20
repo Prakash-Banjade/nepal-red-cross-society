@@ -35,6 +35,31 @@ export class DonorsService {
 
     // creating donor's user account
     const password = this.generateRandomPassword();
+
+    const savedUser = await this.createUserAccount(createDonorDto, password);
+
+    const donor = this.donorRepo.create({
+      ...createDonorDto,
+      address,
+      image,
+      account: savedUser
+    });
+
+    await this.mailService.sendUserCredentials(savedUser, password); // sending credentials via email
+
+    const createdDonor = await this.donorRepo.save(donor);
+
+    return {
+      success: true,
+      message: 'Donor created',
+      donor: {
+        name: createdDonor.firstName + ' ' + createdDonor.lastName,
+        email: createdDonor.email,
+      }
+    }
+  }
+
+  async createUserAccount(createDonorDto: CreateDonorDto, password: string) {
     const user = await this.userService.create({
       firstName: createDonorDto.firstName,
       lastName: createDonorDto.lastName,
@@ -44,19 +69,7 @@ export class DonorsService {
 
     const savedUser = await this.userService.findOne(user.user.id); // this approach can be improved as we can directly send the created user after creating
 
-    const donor = this.donorRepo.create({
-      ...createDonorDto,
-      address,
-      image,
-      account: savedUser
-    });
-
-    // TODO: send email with password
-    console.log(password);
-    await this.mailService.sendUserCredentials(savedUser, password)
-    
-
-    return await this.donorRepo.save(donor);
+    return savedUser;
   }
 
   async findAll(queryDto: QueryDto) {
