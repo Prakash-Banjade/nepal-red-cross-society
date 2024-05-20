@@ -23,9 +23,14 @@ import { AddressModule } from './address/address.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { MailModule } from './mail/mail.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true, // no need to import into other modules
+    }),
     TypeOrmModule.forRoot(configService),
     NestjsFormDataModule.config({
       storage: FileSystemStoredFile,
@@ -54,6 +59,7 @@ import { join } from 'path';
     DonorCardModule,
     OrganizationsModule,
     AddressModule,
+    MailModule,
   ],
   controllers: [AppController],
   providers: [
@@ -62,14 +68,14 @@ import { join } from 'path';
       provide: APP_GUARD,
       useClass: ThrottlerGuard
     },
-    {
-      provide: APP_GUARD,
-      useClass: AuthGuard,
-    },
-    {
-      provide: APP_GUARD,
-      useClass: AbilitiesGuard, // global
-    }
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: AuthGuard,
+    // },
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: AbilitiesGuard, // global
+    // }
   ],
 })
 export class AppModule { }
