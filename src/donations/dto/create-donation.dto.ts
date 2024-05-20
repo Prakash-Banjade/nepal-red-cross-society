@@ -33,8 +33,9 @@ export class CreateDonationDto {
     @IsOptional()
     status?: DonationStatus;
 
-    @ApiProperty({ type: String })
+    @ApiPropertyOptional({ type: String })
     @IsString()
     @IsNotEmpty()
+    @IsOptional()
     verifiedBy: string;
 }
