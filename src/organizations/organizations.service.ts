@@ -55,7 +55,7 @@ export class OrganizationsService {
       .withDeleted()
       .where({ deletedAt })
       .andWhere({
-        name: ILike(`%${queryDto.search}%`),
+        name: ILike(`%${queryDto.search ?? ''}%`),
       })
 
     return paginatedData(queryDto, queryBuilder);
