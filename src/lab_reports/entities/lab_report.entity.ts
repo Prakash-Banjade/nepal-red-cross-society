@@ -1,6 +1,5 @@
 import { Donation } from "src/donations/entities/donation.entity";
 import { BaseEntity } from "src/core/entities/base.entity";
-import { TestCase } from "src/test_cases/entities/test_case.entity";
 import { TestResult } from "src/test_cases/entities/test_result.entity";
 import { Column, Entity, OneToMany, OneToOne } from "typeorm";
 
