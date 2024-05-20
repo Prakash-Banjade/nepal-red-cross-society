@@ -119,9 +119,7 @@ export class DonationsService {
     const donor = await this.donorsService.findOne(updateDonationDto.donor);
     const organization = await this.organizationsService.findOne(updateDonationDto.organization);
     const donationEvent = await this.donationEventsService.findOne(updateDonationDto.donation_event);
-    const certificate = await this.certificateService.findOne(updateDonationDto.certificate);
-    const labReport = await this.labReportsService.findOne(updateDonationDto.labReport);
 
-    return { donor, organization, donation_event: donationEvent, certificate, labReport };
+    return { donor, organization, donation_event: donationEvent };
   }
 }
