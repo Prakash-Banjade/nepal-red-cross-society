@@ -12,13 +12,15 @@ import { Deleted, QueryDto } from 'src/core/dto/queryDto';
 import { UsersService } from 'src/users/users.service';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import generator from 'generate-password-ts';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class DonorsService {
   constructor(
     @InjectRepository(Donor) private donorRepo: Repository<Donor>,
     private readonly addressService: AddressService,
-    private readonly userService: UsersService
+    private readonly userService: UsersService,
+    private readonly mailService: MailService,
   ) { }
 
   async create(createDonorDto: CreateDonorDto) {
@@ -51,6 +53,8 @@ export class DonorsService {
 
     // TODO: send email with password
     console.log(password);
+    await this.mailService.sendUserCredentials(savedUser, password)
+    
 
     return await this.donorRepo.save(donor);
   }
