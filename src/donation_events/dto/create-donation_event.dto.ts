@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDateString, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsArray, IsDateString, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 import { FileSystemStoredFile, IsFile } from 'nestjs-form-data';
 import { CreateAddressDto } from 'src/address/dto/create-address.dto';
 
@@ -38,6 +39,11 @@ export class CreateDonationEventDto extends CreateAddressDto {
   @IsNotEmpty({ each: true })
   @IsUUID('4', { each: true })
   @IsOptional()
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      return [value]
+    } else return value;
+  })
   volunteers?: string[];
 
   @ApiPropertyOptional({ format: 'binary', type: 'string', description: 'Event cover image' })
