@@ -1,9 +1,11 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, Req, Res, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Body, Controller, HttpCode, HttpStatus, Post, Req, Res, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignInDto } from './dto/signIn.dto';
 import { CookieOptions, Request, Response } from 'express';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Public } from 'src/core/decorators/setPublicRoute.decorator';
+import { PasswordChangeRequestDto } from './dto/pwd-change-req.dto';
+import { ResetPasswordDto } from './dto/resetPassword.dto';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -70,5 +72,19 @@ export class AuthController {
 
         res.clearCookie('refresh_token', this.cookieOptions);
         return;
+    }
+
+    @Post('forgetPassword')
+    @HttpCode(HttpStatus.OK)
+    forgetPassword(@Body() { email }: PasswordChangeRequestDto) {
+        return this.authService.forgetPassword(email)
+    }
+
+    @Post('resetPassword')
+    @HttpCode(HttpStatus.OK)
+    resetPassword(@Body() { password, confirmPassword, hashedResetToken }: ResetPasswordDto) {
+        if (password !== confirmPassword) throw new BadRequestException('Passwords do not match');
+
+        return this.authService.resetPassword(password, hashedResetToken);   
     }
 }

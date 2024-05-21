@@ -28,4 +28,21 @@ export class MailService {
 
         return result;
     }
+
+    async sendResetPasswordLink(user: User, resetToken: string) {
+        const result = await this.mailerService.sendMail({
+            to: user.email,
+            subject: 'Reset your password',
+            template: './sendResetPasswordLink', // `.hbs` extension is appended automatically
+            context: { // ✏️ filling curly brackets with content
+                name: user.firstName + ' ' + user.lastName,
+                resetLink: `${this.configService.get('CLIENT_URL')}/reset-password/${resetToken}`,
+            },
+        });
+
+        const previewUrl = nodemailer.getTestMessageUrl(result);
+        console.log('Preview URL:', previewUrl);
+        
+        return result;
+    }
 }

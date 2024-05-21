@@ -12,9 +12,6 @@ import * as nodemailer from 'nodemailer';
     MailerModule.forRootAsync({
       useFactory: async () => {
         const testAccount = await nodemailer.createTestAccount();
-
-        console.log('Ethereal Test Account:', testAccount);
-
         return {
           transport: {
             host: 'smtp.ethereal.email',

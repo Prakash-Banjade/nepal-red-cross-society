@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -14,13 +15,18 @@ import { RegisterDto } from './dto/register.dto';
 import { v4 as uuidv4 } from 'uuid';
 import { CookieOptions, Request, Response } from 'express';
 import { AuthUser, RequestUser } from 'src/core/types/global.types';
+import crypto from 'crypto'
+import { PasswordChangeRequest } from './entities/password-change-request.entity';
+import { MailService } from 'src/mail/mail.service';
 require('dotenv').config();
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User) private usersRepository: Repository<User>,
+    @InjectRepository(PasswordChangeRequest) private passwordChangeRequestRepo: Repository<PasswordChangeRequest>,
     private jwtService: JwtService,
+    private mailService: MailService,
   ) { }
 
   REFRESH_TOKEN_EXPIRE = '7d';
@@ -132,7 +138,70 @@ export class AuthService {
     await this.usersRepository.save(foundUser);
   }
 
-  async deleteUsers() {
-    await this.usersRepository.delete({});
+  async forgetPassword(email: string) {
+    const foundUser = await this.usersRepository.findOneBy({ email });
+    if (!foundUser) throw new BadRequestException('User not found');
+
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const hashedResetToken = crypto
+      .createHash('sha256')
+      .update(resetToken)
+      .digest('hex');
+
+    console.log({ hashedResetToken, resetToken })
+
+    // existing request
+    const existingRequest = await this.passwordChangeRequestRepo.findOneBy({ email });
+    if (existingRequest) {
+      await this.passwordChangeRequestRepo.delete({ email });
+    }
+
+    const passwordChangeRequest = this.passwordChangeRequestRepo.create({
+      email: foundUser.email,
+      hashedResetToken,
+    });
+    await this.passwordChangeRequestRepo.save(passwordChangeRequest);
+
+    // TODO: return a reset link
+    await this.mailService.sendResetPasswordLink(foundUser, resetToken);
+    return {
+      message: 'Token is valid for 5 minutes',
+      resetToken,
+    };
+  }
+
+  async resetPassword(password: string, providedResetToken: string) {
+    // Retrieve the hashed reset token from the database
+    const passwordChangeRequest = await this.passwordChangeRequestRepo.findOneBy({ hashedResetToken: providedResetToken });
+
+    if (!passwordChangeRequest) {
+      throw new BadRequestException('Invalid reset token');
+    }
+
+    // Check if the reset token has expired
+    const now = new Date();
+    const resetTokenExpiration = new Date(passwordChangeRequest.createdAt);
+    resetTokenExpiration.setMinutes(resetTokenExpiration.getMinutes() + 5); // 5 minutes
+    if (now > resetTokenExpiration) {
+      await this.passwordChangeRequestRepo.delete({ email: passwordChangeRequest.email });
+      throw new BadRequestException('Reset token has expired');
+    }
+
+    // retrieve the user from the database
+    const user = await this.usersRepository.findOneBy({ email: passwordChangeRequest.email });
+    if (!user) throw new InternalServerErrorException('The requested User was not available in the database.');
+
+    // hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // update the user password
+    user.password = hashedPassword;
+    await this.usersRepository.save(user);
+
+    // clear the reset token from the database
+    await this.passwordChangeRequestRepo.delete({ email: passwordChangeRequest.email });
+
+    // Return success response
+    return { message: 'Password reset successful' };
   }
 }
