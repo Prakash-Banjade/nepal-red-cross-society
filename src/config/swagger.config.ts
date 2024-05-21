@@ -46,6 +46,7 @@ export function setupSwagger(app: INestApplication): void {
             LabReportsModule,
             TestCasesModule,
             VolunteersModule,
+            TestCasesModule,
         ],
     });
     SwaggerModule.setup('api', app, document, {
