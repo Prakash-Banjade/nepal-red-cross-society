@@ -84,9 +84,9 @@ export class AuthController {
     @Public()
     @Post('resetPassword')
     @HttpCode(HttpStatus.OK)
-    resetPassword(@Body() { password, confirmPassword, hashedResetToken }: ResetPasswordDto) {
+    resetPassword(@Body() { password, confirmPassword, token }: ResetPasswordDto) {
         if (password !== confirmPassword) throw new BadRequestException('Passwords do not match');
 
-        return this.authService.resetPassword(password, hashedResetToken);   
+        return this.authService.resetPassword(password, token);   
     }
 }
