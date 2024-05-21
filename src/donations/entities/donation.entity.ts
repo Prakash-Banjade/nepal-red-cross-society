@@ -6,6 +6,7 @@ import { LabReport } from "src/lab_reports/entities/lab_report.entity";
 import { Organization } from "src/organizations/entities/organization.entity";
 import { DonationStatus, DonationType } from "src/core/types/global.types";
 import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne, OneToOne } from "typeorm";
+import { BadRequestException } from "@nestjs/common";
 
 @Entity()
 export class Donation extends BaseEntity {
@@ -54,6 +55,10 @@ export class Donation extends BaseEntity {
 
         if (this.verifiedBy === null) {
             this.labReport = null;
+        }
+
+        if (this.donation_event.volunteers.length === 0) {
+            throw new BadRequestException("Donation event must have atleast one volunteer");
         }
     }
 }
