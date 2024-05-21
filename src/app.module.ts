@@ -68,14 +68,14 @@ import { ConfigModule } from '@nestjs/config';
       provide: APP_GUARD,
       useClass: ThrottlerGuard
     },
-    // {
-    //   provide: APP_GUARD,
-    //   useClass: AuthGuard,
-    // },
-    // {
-    //   provide: APP_GUARD,
-    //   useClass: AbilitiesGuard, // global
-    // }
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: AbilitiesGuard, // global
+    }
   ],
 })
 export class AppModule { }
