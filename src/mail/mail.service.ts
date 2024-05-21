@@ -42,7 +42,7 @@ export class MailService {
 
         const previewUrl = nodemailer.getTestMessageUrl(result);
         console.log('Preview URL:', previewUrl);
-        
-        return result;
+
+        return { result, previewUrl };
     }
 }

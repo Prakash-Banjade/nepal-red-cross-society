@@ -11,5 +11,5 @@ export class ResetPasswordDto {
 
     @IsString()
     @IsNotEmpty()
-    hashedResetToken!: string;
+    token!: string;
 }

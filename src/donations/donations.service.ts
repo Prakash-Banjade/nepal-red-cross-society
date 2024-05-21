@@ -51,6 +51,7 @@ export class DonationsService {
       .take(queryDto.take)
       .withDeleted()
       .where({ deletedAt })
+      .leftJoinAndSelect('donation.donor', 'donor')
 
     return paginatedData(queryDto, queryBuilder);
   }

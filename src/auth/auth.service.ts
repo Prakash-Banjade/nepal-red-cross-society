@@ -140,15 +140,19 @@ export class AuthService {
 
   async forgetPassword(email: string) {
     const foundUser = await this.usersRepository.findOneBy({ email });
-    if (!foundUser) throw new BadRequestException('User not found');
+    if (!foundUser) {
+      await new Promise(res => setTimeout(res, 3000)); // fake delay
+
+      return {
+        message: 'Mail sent successfully. Please check your inbox.', // for security purpose
+      }
+    }
 
     const resetToken = crypto.randomBytes(32).toString('hex');
     const hashedResetToken = crypto
       .createHash('sha256')
       .update(resetToken)
       .digest('hex');
-
-    console.log({ hashedResetToken, resetToken })
 
     // existing request
     const existingRequest = await this.passwordChangeRequestRepo.findOneBy({ email });
@@ -162,17 +166,23 @@ export class AuthService {
     });
     await this.passwordChangeRequestRepo.save(passwordChangeRequest);
 
-    // TODO: return a reset link
-    await this.mailService.sendResetPasswordLink(foundUser, resetToken);
+    const { previewUrl } = await this.mailService.sendResetPasswordLink(foundUser, resetToken);
     return {
       message: 'Token is valid for 5 minutes',
       resetToken,
+      previewUrl,
     };
   }
 
   async resetPassword(password: string, providedResetToken: string) {
+    // hash the provided token to check in database
+    const hashedResetToken = crypto
+      .createHash('sha256')
+      .update(providedResetToken)
+      .digest('hex');
+
     // Retrieve the hashed reset token from the database
-    const passwordChangeRequest = await this.passwordChangeRequestRepo.findOneBy({ hashedResetToken: providedResetToken });
+    const passwordChangeRequest = await this.passwordChangeRequestRepo.findOneBy({ hashedResetToken });
 
     if (!passwordChangeRequest) {
       throw new BadRequestException('Invalid reset token');
