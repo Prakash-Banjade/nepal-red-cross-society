@@ -6,6 +6,7 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Public } from 'src/core/decorators/setPublicRoute.decorator';
 import { PasswordChangeRequestDto } from './dto/pwd-change-req.dto';
 import { ResetPasswordDto } from './dto/resetPassword.dto';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -77,6 +78,7 @@ export class AuthController {
     @Public()
     @Post('forgetPassword')
     @HttpCode(HttpStatus.OK)
+    @Throttle({ default: { limit: 3, ttl: 60000 } }) // override the default rate limit for password reset
     forgetPassword(@Body() { email }: PasswordChangeRequestDto) {
         return this.authService.forgetPassword(email)
     }
@@ -84,6 +86,7 @@ export class AuthController {
     @Public()
     @Post('resetPassword')
     @HttpCode(HttpStatus.OK)
+    @Throttle({ default: { limit: 3, ttl: 60000 } }) // override the default rate limit for password reset
     resetPassword(@Body() { password, confirmPassword, token }: ResetPasswordDto) {
         if (password !== confirmPassword) throw new BadRequestException('Passwords do not match');
 
