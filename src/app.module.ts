@@ -44,7 +44,7 @@ import { ConfigModule } from '@nestjs/config';
     }),
     ThrottlerModule.forRoot([{
       ttl: 60000, // 10 requests per minute
-      limit: 60,
+      limit: 10,
     }]),
     UsersModule,
     AuthModule,
