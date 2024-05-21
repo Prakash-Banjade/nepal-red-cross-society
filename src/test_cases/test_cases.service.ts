@@ -41,18 +41,14 @@ export class TestCasesService {
     return await this.testCaseRepo.save(existingTestCase);
   }
 
-  async remove(ids: string[]) {
-    const foundTestCases = await this.testCaseRepo.find({
-      where: {
-        id: In(ids),
-      }
-    })
+  async remove(id: string) {
+    const foundTestCase = await this.findOne(id);
 
-    await this.testCaseRepo.softRemove(foundTestCases);
+    await this.testCaseRepo.remove(foundTestCase);
 
     return {
       success: true,
-      message: 'Test cases deleted',
+      message: 'Test case deleted',
     }
   }
 }
