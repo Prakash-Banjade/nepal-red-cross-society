@@ -20,7 +20,7 @@ export class Donor extends BaseEntity {
     @Column({ type: 'varchar' })
     email: string;
 
-    @OneToOne(() => User, (user) => user.donor)
+    @OneToOne(() => User, (user) => user.donor, { nullable: true, onDelete: 'SET NULL' })
     @JoinColumn()
     account: User
 
