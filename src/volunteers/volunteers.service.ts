@@ -3,7 +3,7 @@ import { CreateVolunteerDto } from './dto/create-volunteer.dto';
 import { UpdateVolunteerDto } from './dto/update-volunteer.dto';
 import { Volunteer } from './entities/volunteer.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, IsNull, Not, Or, Repository, SelectQueryBuilder } from 'typeorm';
+import { ILike, In, IsNull, Not, Or, Repository, SelectQueryBuilder } from 'typeorm';
 import { DonationEvent } from 'src/donation_events/entities/donation_event.entity';
 import { Address } from 'src/address/entities/address.entity';
 import { PageDto } from 'src/core/dto/page.dto.';
@@ -47,10 +47,14 @@ export class VolunteersService {
 
     queryBuilder
       .orderBy("volunteer.createdAt", queryDto.order)
-      .skip(queryDto.skip)
-      .take(queryDto.take)
+      .skip(queryDto.search ? undefined : queryDto.page)
+      .take(queryDto.search ? undefined : queryDto.take)
       .withDeleted()
       .where({ deletedAt })
+      .andWhere([
+        { firstName: ILike(`%${queryDto.search ?? ''}%`) },
+        { lastName: ILike(`%${queryDto.search ?? ''}%`) },
+      ])
 
     return paginatedData(queryDto, queryBuilder);
   }
