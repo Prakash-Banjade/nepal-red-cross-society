@@ -5,11 +5,11 @@ export abstract class BaseEntity {
     id: string;
 
     @CreateDateColumn()
-    createdAt: string;
+    createdAt: Date;
 
     @UpdateDateColumn({ nullable: true })
-    updatedAt: string;
+    updatedAt: Date;
 
     @DeleteDateColumn({ nullable: true })
-    deletedAt: string;
+    deletedAt: Date;
 }

@@ -157,7 +157,7 @@ export class AuthService {
     // existing request
     const existingRequest = await this.passwordChangeRequestRepo.findOneBy({ email });
     if (existingRequest) {
-      await this.passwordChangeRequestRepo.delete({ email });
+      await this.passwordChangeRequestRepo.remove(existingRequest);
     }
 
     const passwordChangeRequest = this.passwordChangeRequestRepo.create({
@@ -193,13 +193,19 @@ export class AuthService {
     const resetTokenExpiration = new Date(passwordChangeRequest.createdAt);
     resetTokenExpiration.setMinutes(resetTokenExpiration.getMinutes() + 5); // 5 minutes
     if (now > resetTokenExpiration) {
-      await this.passwordChangeRequestRepo.delete({ email: passwordChangeRequest.email });
+      await this.passwordChangeRequestRepo.remove(passwordChangeRequest);
       throw new BadRequestException('Reset token has expired');
     }
 
     // retrieve the user from the database
     const user = await this.usersRepository.findOneBy({ email: passwordChangeRequest.email });
     if (!user) throw new InternalServerErrorException('The requested User was not available in the database.');
+
+    // check if the new password is the same as the old one
+    const samePassword = await bcrypt.compare(password, user.password);
+    if (samePassword) {
+      throw new BadRequestException('New password cannot be the same as the old one');
+    }
 
     // hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -209,7 +215,7 @@ export class AuthService {
     await this.usersRepository.save(user);
 
     // clear the reset token from the database
-    await this.passwordChangeRequestRepo.delete({ email: passwordChangeRequest.email });
+    await this.passwordChangeRequestRepo.remove(passwordChangeRequest);
 
     // Return success response
     return { message: 'Password reset successful' };

@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { BeforeInsert, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class PasswordChangeRequest {
@@ -11,6 +11,11 @@ export class PasswordChangeRequest {
     @Column('varchar')
     hashedResetToken: string;
 
-    @CreateDateColumn()
-    createdAt: string;
+    @Column('timestamp')
+    createdAt: Date;
+
+    @BeforeInsert()
+    setCreatedAt() {
+        this.createdAt = new Date();
+    }
 }
