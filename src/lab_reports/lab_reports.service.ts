@@ -3,11 +3,13 @@ import { CreateLabReportDto } from './dto/create-lab_report.dto';
 import { UpdateLabReportDto } from './dto/update-lab_report.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LabReport } from './entities/lab_report.entity';
-import { In, Repository } from 'typeorm';
+import { In, IsNull, Not, Or, Repository } from 'typeorm';
 import { Donation } from 'src/donations/entities/donation.entity';
 import { TestCase } from 'src/test_cases/entities/test_case.entity';
 import { CreateTestCaseDto } from 'src/test_cases/dto/create-test_case.dto';
 import { TestResult } from 'src/test_cases/entities/test_result.entity';
+import { Deleted, QueryDto } from 'src/core/dto/queryDto';
+import paginatedData from 'src/core/utils/paginatedData';
 
 @Injectable()
 export class LabReportsService {
@@ -19,7 +21,9 @@ export class LabReportsService {
   ) { }
 
   async create(createLabReportDto: CreateLabReportDto) {
+    // console.log(createLabReportDto)
     const donation = await this.donation(createLabReportDto.donation)
+    console.log(donation)
 
     const labReport = this.labReportRepo.create({
       date: createLabReportDto.date,
@@ -27,18 +31,34 @@ export class LabReportsService {
       donation: donation,
     })
 
-    // evaluating testcases
+    console.log(labReport)
 
+    const savedLabReport = await this.labReportRepo.save(labReport);
 
-    const testResults = await this.evaluateTestResults(createLabReportDto)
+    console.log(savedLabReport)
 
-    labReport.testResults = testResults;
+    await this.evaluateTestResults(createLabReportDto, savedLabReport);
 
-    return await this.labReportRepo.save(labReport);
+    return {
+      success: true,
+      message: 'Lab report created successfully',
+    }
+
   }
 
-  async findAll() {
-    return await this.labReportRepo.find();
+  async findAll(queryDto: QueryDto) {
+    const queryBuilder = this.labReportRepo.createQueryBuilder('labReport');
+    const deletedAt = queryDto.deleted === Deleted.ONLY ? Not(IsNull()) : queryDto.deleted === Deleted.NONE ? IsNull() : Or(IsNull(), Not(IsNull()));
+
+    queryBuilder
+      .orderBy("labReport.createdAt", queryDto.order)
+      .skip(queryDto.search ? undefined : queryDto.page)
+      .take(queryDto.search ? undefined : queryDto.take)
+      .withDeleted()
+      .where({ deletedAt })
+
+    return paginatedData(queryDto, queryBuilder);
+
   }
 
   async findOne(id: string) {
@@ -88,29 +108,21 @@ export class LabReportsService {
     return existingDonation
   }
 
-  async evaluateTestResults(createLabReportDto: CreateLabReportDto) {
+  async evaluateTestResults(createLabReportDto: CreateLabReportDto, labReport: LabReport) {
     const testCaseIds = createLabReportDto?.testCases?.map(testCase => testCase.testCase)
     const testCases = await this.testCaseRepo.findBy({ id: In(testCaseIds) })
 
-    // const testCaseWithResult = testCases.map((testCase, ind) => ({
-    //   testCase,
-    //   result: 
-    // }))
-
-    const queryBuilder = this.testResultRepo.createQueryBuilder("testResult")
-
-    // there can be a bug here if all the provided testcase id are not valid
-    queryBuilder
-      .insert()
-      .values([
-        ...createLabReportDto.testCases.map((testcase, ind) => ({
-          testcase: testCases[ind],
-          result: testcase.obtainedResult
-        }))
-      ])
-
-    const { entities } = await queryBuilder.getRawAndEntities()
-
-    return entities
+    console.log(createLabReportDto?.testCases)
+    
+    createLabReportDto?.testCases.forEach(async (testCase, i) => {
+      await (async () => {
+        await this.testResultRepo.save({
+          labReport,
+          testCase: testCases[i],
+          result: testCase.obtainedResult,
+          status: testCase.status
+        })
+      })();
+    })
   }
 }

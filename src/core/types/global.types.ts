@@ -53,6 +53,11 @@ export enum RhFactor {
     NEGATIVE = 'negative',
 }
 
+export enum TestCaseStatus {
+    PASS = 'pass',
+    FAIL = 'fail',
+}
+
 export enum Caste {
     BRAHMIN = 'brahmin',
     CHHETRI = 'chhetri',

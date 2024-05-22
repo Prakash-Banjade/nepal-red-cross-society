@@ -1,6 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsDate, IsDefined, IsNotEmpty, IsNotEmptyObject, IsObject, IsString, IsUUID, ValidateNested } from "class-validator";
+import { IsDate, IsDefined, IsEnum, IsNotEmpty, IsNotEmptyObject, IsObject, IsString, IsUUID, ValidateNested } from "class-validator";
+import { TestCaseStatus } from "src/core/types/global.types";
 
 class TestCase {
     @ApiProperty({ format: 'uuidv4' })
@@ -12,11 +13,15 @@ class TestCase {
     @IsString()
     @IsNotEmpty()
     obtainedResult: string;
+
+    @ApiProperty({ type: 'enum', enum: TestCaseStatus, description: 'Test Case Status' })
+    @IsEnum(TestCaseStatus)
+    @IsNotEmpty()
+    status: TestCaseStatus;
 }
 
 export class CreateLabReportDto {
     @ApiProperty({ format: 'date-time' })
-    @IsDate()
     @IsNotEmpty()
     date: string;
 
@@ -32,9 +37,6 @@ export class CreateLabReportDto {
 
     @ApiProperty({ isArray: true, description: 'Array of test case ids' })
     @IsDefined()
-    @IsNotEmptyObject()
-    @IsObject()
-    @ValidateNested()
     @Type(() => TestCase)
     testCases: TestCase[];
 }

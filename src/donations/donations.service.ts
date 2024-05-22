@@ -4,22 +4,18 @@ import { UpdateDonationDto } from './dto/update-donation.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Donation } from './entities/donation.entity';
 import { In, IsNull, Not, Or, Repository } from 'typeorm';
-import { Certificate } from 'src/certificate/entities/certificate.entity';
 import { DonorsService } from 'src/donors/donors.service';
 import { OrganizationsService } from 'src/organizations/organizations.service';
 import { DonationEventsService } from 'src/donation_events/donation_events.service';
-import { LabReportsService } from 'src/lab_reports/lab_reports.service';
-import { CertificateService } from 'src/certificate/certificate.service';
 import { Deleted, QueryDto } from 'src/core/dto/queryDto';
 import paginatedData from 'src/core/utils/paginatedData';
+import { Donor } from 'src/donors/entities/donor.entity';
 
 @Injectable()
 export class DonationsService {
 
   constructor(
     @InjectRepository(Donation) private donationRepo: Repository<Donation>,
-    private readonly certificateService: CertificateService,
-    private readonly labReportsService: LabReportsService,
     private readonly donationEventsService: DonationEventsService,
     private readonly donorsService: DonorsService,
     private readonly organizationsService: OrganizationsService,
@@ -30,7 +26,10 @@ export class DonationsService {
     if (foundDonationWithSameBloodBagNo) throw new BadRequestException('Donation with same blood bag number already exists');
 
     // finding dependent entities
-    const dependentColumns = await this.retrieveCreateDependencies(createDonationDto);
+    const dependentColumns = await this.retrieveDependencies(createDonationDto);
+
+    // check if donor can donate (checking if last donation has crossed 3 months)
+    this.checkIfEligibleDonor(dependentColumns.donor);
 
     // create donation
     const donation = this.donationRepo.create({
@@ -51,13 +50,22 @@ export class DonationsService {
       .take(queryDto.take)
       .withDeleted()
       .where({ deletedAt })
-      .leftJoinAndSelect('donation.donor', 'donor')
+      .leftJoinAndSelect('donation.donor', 'donor') // TODO: send only donor name
 
     return paginatedData(queryDto, queryBuilder);
   }
 
   async findOne(id: string) {
-    const foundDonation = await this.donationRepo.findOneBy({ id });
+    const foundDonation = await this.donationRepo.findOne({
+      where: { id },
+      relations: {
+        donation_event: true,
+        organization: true,
+        labReport: {
+          testResults: true
+        },
+      }
+    });
     if (!foundDonation) throw new BadRequestException('Donation not found');
 
     return foundDonation;
@@ -67,7 +75,7 @@ export class DonationsService {
     const foundDonation = await this.findOne(id);
 
     // retrieving dependent entities
-    const dependentColumns = await this.retrieveUpdateDependencies(updateDonationDto);
+    const dependentColumns = await this.retrieveDependencies(updateDonationDto);
 
     // update donation
     Object.assign(foundDonation, {
@@ -108,19 +116,23 @@ export class DonationsService {
     })
   }
 
-  private async retrieveCreateDependencies(createDonationDto: CreateDonationDto) {
-    const donor = await this.donorsService.findOne(createDonationDto.donor);
-    const organization = await this.organizationsService.findOne(createDonationDto.organization);
-    const donationEvent = await this.donationEventsService.findOne(createDonationDto.donation_event);
+  private async retrieveDependencies(donationDto: CreateDonationDto | UpdateDonationDto) {
+    const donor = await this.donorsService.findDonorWithDonations(donationDto.donor);
+    const organization = await this.organizationsService.findOne(donationDto.organization);
+    const donationEvent = await this.donationEventsService.findOne(donationDto.donation_event);
 
     return { donor, organization, donation_event: donationEvent };
   }
 
-  private async retrieveUpdateDependencies(updateDonationDto: UpdateDonationDto) {
-    const donor = await this.donorsService.findOne(updateDonationDto.donor);
-    const organization = await this.organizationsService.findOne(updateDonationDto.organization);
-    const donationEvent = await this.donationEventsService.findOne(updateDonationDto.donation_event);
-
-    return { donor, organization, donation_event: donationEvent };
+  private checkIfEligibleDonor(donor: Donor) {
+    const now = new Date();
+    const lastDonation = donor.donations[donor.donations.length - 1];
+    if (lastDonation) {
+      const lastDonationDate = new Date(lastDonation.createdAt);
+      const diffInDays = Math.ceil(Math.abs(now.getTime() - lastDonationDate.getTime()) / (1000 * 60 * 60 * 24));
+      if (diffInDays < 90) {
+        throw new BadRequestException('Donor must wait at least 90 days between donations');
+      }
+    }
   }
 }

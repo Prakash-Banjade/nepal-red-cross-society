@@ -1,17 +1,18 @@
 import { Donation } from "src/donations/entities/donation.entity";
 import { BaseEntity } from "src/core/entities/base.entity";
 import { TestResult } from "src/test_cases/entities/test_result.entity";
-import { Column, Entity, OneToMany, OneToOne } from "typeorm";
+import { Column, Entity, JoinColumn, OneToMany, OneToOne } from "typeorm";
 
 @Entity()
 export class LabReport extends BaseEntity {
-    @Column({ type: 'text' })
-    date: string
+    @Column({ type: 'datetime', nullable: false })
+    date: string;
 
     @Column({ type: 'text' })
     issuedBy: string;
 
     @OneToOne(() => Donation, (donation) => donation.labReport)
+    @JoinColumn()
     donation: Donation;
 
     @OneToMany(() => TestResult, (testResult) => testResult.labReport, { nullable: true })

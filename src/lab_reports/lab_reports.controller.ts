@@ -1,9 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, ParseUUIDPipe, Query } from '@nestjs/common';
 import { LabReportsService } from './lab_reports.service';
 import { CreateLabReportDto } from './dto/create-lab_report.dto';
 import { UpdateLabReportDto } from './dto/update-lab_report.dto';
 import { ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { FileSystemStoredFile, FormDataRequest } from 'nestjs-form-data';
+import { Action } from 'src/core/types/global.types';
+import { ChekcAbilities } from 'src/core/decorators/abilities.decorator';
+import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.decorator';
+import { QueryDto } from 'src/core/dto/queryDto';
 
 @ApiTags('Lab Reports')
 @Controller('lab-reports')
@@ -13,28 +17,34 @@ export class LabReportsController {
   @Post()
   @ApiConsumes('multipart/form-data')
   @FormDataRequest({ storage: FileSystemStoredFile })
+  @ChekcAbilities({ action: Action.CREATE, subject: 'all' })
   create(@Body() createLabReportDto: CreateLabReportDto) {
     return this.labReportsService.create(createLabReportDto);
   }
   
   @Get()
-  findAll() {
-    return this.labReportsService.findAll();
+  @ApiPaginatedResponse(CreateLabReportDto)
+  @ChekcAbilities({ action: Action.READ, subject: 'all' })
+  findAll(@Query() queryDto: QueryDto) {
+    return this.labReportsService.findAll(queryDto);
   }
   
   @Get(':id')
+  @ChekcAbilities({ action: Action.READ, subject: 'all' })
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.labReportsService.findOne(id);
   }
   
   @Patch(':id')
   @ApiConsumes('multipart/form-data')
+  @ChekcAbilities({ action: Action.UPDATE, subject: 'all' })
   @FormDataRequest({ storage: FileSystemStoredFile })
   update(@Param('id', ParseUUIDPipe) id: string, @Body() updateLabReportDto: UpdateLabReportDto) {
     return this.labReportsService.update(id, updateLabReportDto);
   }
 
   @Post('deleteMany')
+  @ChekcAbilities({ action: Action.DELETE, subject: 'all' })
   remove(@Body('ids') ids: string[]) {
     return this.labReportsService.remove(ids);
   }

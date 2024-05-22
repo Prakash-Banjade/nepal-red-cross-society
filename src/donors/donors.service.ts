@@ -160,4 +160,14 @@ export class DonorsService {
     });
     return password;
   }
+
+  async findDonorWithDonations(id: string) {
+    const donor = await this.donorRepo.findOne({
+      where: { id },
+      relations: { address: true, donations: true },
+      order: { donations: { createdAt: 'DESC' } },
+    });
+    if (!donor) throw new BadRequestException('Donor not found');
+    return donor;
+  }
 }
