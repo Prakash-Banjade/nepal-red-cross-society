@@ -13,7 +13,7 @@ export class TestResult extends BaseEntity {
     testCase: TestCase;
 
     @Column({ type: 'text' })
-    result: string;
+    obtainedResult: string;
 
     @Column({ type: 'enum', enum: TestCaseStatus, default: TestCaseStatus.FAIL })
     status: TestCaseStatus;

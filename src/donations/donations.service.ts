@@ -62,7 +62,9 @@ export class DonationsService {
         donation_event: true,
         organization: true,
         labReport: {
-          testResults: true
+          testResults: {
+            testCase: true
+          }
         },
       }
     });

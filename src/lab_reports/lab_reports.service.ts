@@ -21,9 +21,7 @@ export class LabReportsService {
   ) { }
 
   async create(createLabReportDto: CreateLabReportDto) {
-    // console.log(createLabReportDto)
     const donation = await this.donation(createLabReportDto.donation)
-    console.log(donation)
 
     const labReport = this.labReportRepo.create({
       date: createLabReportDto.date,
@@ -31,11 +29,7 @@ export class LabReportsService {
       donation: donation,
     })
 
-    console.log(labReport)
-
     const savedLabReport = await this.labReportRepo.save(labReport);
-
-    console.log(savedLabReport)
 
     await this.evaluateTestResults(createLabReportDto, savedLabReport);
 
@@ -43,7 +37,6 @@ export class LabReportsService {
       success: true,
       message: 'Lab report created successfully',
     }
-
   }
 
   async findAll(queryDto: QueryDto) {
@@ -70,21 +63,23 @@ export class LabReportsService {
 
   async update(id: string, updateLabReportDto: UpdateLabReportDto) {
     const existingLabReport = await this.findOne(id);
-
-    // evaluating testCases
-    const testCases = await this.testCaseRepo.findBy({ id: In(updateLabReportDto?.testCases) });
-
     // evaluating donation
     const existingDonation = await this.donationRepo.findOneBy({ id: updateLabReportDto?.donation });
     if (!existingDonation) throw new BadRequestException('Donation not found');
 
     Object.assign(existingLabReport, {
       ...updateLabReportDto,
-      testCases,
       donation: existingDonation
     });
 
-    return await this.labReportRepo.save(existingLabReport);
+    const savedLabReport = await this.labReportRepo.save(existingLabReport);
+
+    await this.evaluateTestResults_update(updateLabReportDto, savedLabReport);
+
+    return {
+      success: true,
+      message: 'Lab report updated successfully',
+    }
   }
 
   async remove(ids: string[]) {
@@ -112,17 +107,33 @@ export class LabReportsService {
     const testCaseIds = createLabReportDto?.testCases?.map(testCase => testCase.testCase)
     const testCases = await this.testCaseRepo.findBy({ id: In(testCaseIds) })
 
-    console.log(createLabReportDto?.testCases)
-    
     createLabReportDto?.testCases.forEach(async (testCase, i) => {
       await (async () => {
         await this.testResultRepo.save({
           labReport,
           testCase: testCases[i],
-          result: testCase.obtainedResult,
+          obtainedResult: testCase.obtainedResult,
           status: testCase.status
         })
       })();
     })
+  }
+
+  async evaluateTestResults_update(updateLabReportDto: UpdateLabReportDto, labReport: LabReport) {
+    const testCasesId = updateLabReportDto.testCases.map(testResult => testResult.testCase)
+
+    for (const testCaseId of testCasesId) {
+      const testCase = await this.testCaseRepo.findOneBy({ id: testCaseId })
+
+      const testResult = await this.testResultRepo.findOneBy({ testCase, labReport })
+
+      if (testResult) {
+        await this.testResultRepo.save({
+          ...testResult,
+          obtainedResult: updateLabReportDto.testCases.find(testResult => testResult.testCase === testCaseId)?.obtainedResult,
+          status: updateLabReportDto.testCases.find(testResult => testResult.testCase === testCaseId)?.status
+        })
+      }
+    }
   }
 }
