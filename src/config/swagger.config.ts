@@ -2,6 +2,7 @@ import type { INestApplication } from "@nestjs/common";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { AddressModule } from "src/address/address.module";
 import { AuthModule } from "src/auth/auth.module";
+import { BloodRequestModule } from "src/blood_request/blood_request.module";
 import { CertificateModule } from "src/certificate/certificate.module";
 import { DonationEventsModule } from "src/donation_events/donation_events.module";
 import { DonationsModule } from "src/donations/donations.module";
@@ -47,6 +48,7 @@ export function setupSwagger(app: INestApplication): void {
             TestCasesModule,
             VolunteersModule,
             TestCasesModule,
+            BloodRequestModule,
         ],
     });
     SwaggerModule.setup('api', app, document, {

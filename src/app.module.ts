@@ -25,6 +25,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { MailModule } from './mail/mail.module';
 import { ConfigModule } from '@nestjs/config';
+import { BloodRequestModule } from './blood_request/blood_request.module';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { ConfigModule } from '@nestjs/config';
     OrganizationsModule,
     AddressModule,
     MailModule,
+    BloodRequestModule,
   ],
   controllers: [AppController],
   providers: [

@@ -96,3 +96,13 @@ export enum Education {
     DIPLOMA = 'diploma',
     MASTER = 'master',
 }
+
+export enum BloodItems {
+    WHOLE_BLOOD = 'whole_blood',
+    PACKED_BLOOD = 'packed_blood',
+    PRP = 'prp',
+    CRAYO = 'crayo',
+    FFP = 'ffp',
+    PLATELETS = 'platelets',
+    WASHED_RED_CELLS = 'washed_red_cells',
+}
