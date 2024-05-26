@@ -1,10 +1,34 @@
 {
   "name": "blood_bank",
   "version": "0.0.1",
-  "description": "",
+  "description": "Redcross Backend Application",
   "author": "Prakash Banjade",
+  "contributors": [
+    "Prakash Banjade (https://github.com/prakash-banjade)"
+  ],
+  "keywords": [
+    "nestjs",
+    "typescript",
+    "typeorm",
+    "mysql2",
+    "redcross",
+    "blood bank",
+    "blood donation",
+    "orm",
+    "casl",
+    "ability"
+  ],
+  "homepage": "https://github.com/Prakash-Banjade/blood_bank",
   "private": true,
   "license": "UNLICENSED",
+  "directories": {
+    "lib": "src",
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Prakash-Banjade/blood_bank.git"
+  },
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -19,6 +43,9 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json"
+  },
+  "bugs": {
+    "url": "https://github.com/Prakash-Banjade/blood_bank/issues"
   },
   "dependencies": {
     "@casl/ability": "^6.7.1",
