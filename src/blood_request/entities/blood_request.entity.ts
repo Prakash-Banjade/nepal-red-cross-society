@@ -22,11 +22,11 @@ export class BloodRequest extends BaseEntity {
     @Column({ type: 'varchar' })
     inpatientNo: string;
 
-    @Column({ type: 'varchar' })
-    ward: string;
+    @Column({ type: 'int' })
+    ward: number;
 
-    @Column({ type: 'varchar' })
-    bedNo: string;
+    @Column({ type: 'int' })
+    bedNo: number;
 
     @Column({ type: 'varchar' })
     attendingConsultant: string;
