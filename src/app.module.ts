@@ -45,7 +45,7 @@ import { BloodRequestModule } from './blood_request/blood_request.module';
     }),
     ThrottlerModule.forRoot([{
       ttl: 60000, // 10 requests per minute
-      limit: 10,
+      limit: 30,
     }]),
     UsersModule,
     AuthModule,
