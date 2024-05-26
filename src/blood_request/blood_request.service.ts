@@ -10,23 +10,26 @@ import paginatedData from 'src/core/utils/paginatedData';
 @Injectable()
 export class BloodRequestService {
   constructor(
-    @InjectRepository(BloodRequest) private readonly volunteerRepo: Repository<BloodRequest>,
+    @InjectRepository(BloodRequest) private readonly bloodRequestRepo: Repository<BloodRequest>,
   ) { }
 
   async create(createBloodRequestDto: CreateBloodRequestDto) {
-    const createdRequest = this.volunteerRepo.create(createBloodRequestDto);
+    console.log(createBloodRequestDto)
+    const createdRequest = this.bloodRequestRepo.create(createBloodRequestDto);
 
-    return await this.volunteerRepo.save(createdRequest);
+    console.log(createdRequest)
+
+    return await this.bloodRequestRepo.save(createdRequest);
   }
 
   async findAll(queryDto: QueryDto) {
-    const queryBuilder = this.volunteerRepo.createQueryBuilder('volunteer');
+    const queryBuilder = this.bloodRequestRepo.createQueryBuilder('bloodRequest');
     const deletedAt = queryDto.deleted === Deleted.ONLY ? Not(IsNull()) : queryDto.deleted === Deleted.NONE ? IsNull() : Or(IsNull(), Not(IsNull()));
 
     queryBuilder
-      .orderBy("volunteer.createdAt", queryDto.order)
-      .skip(queryDto.search ? undefined : queryDto.page)
-      .take(queryDto.search ? undefined : queryDto.take)
+      .orderBy("bloodRequest.createdAt", queryDto.order)
+      .skip(queryDto.skip)
+      .take(queryDto.take)
       .withDeleted()
       .where({ deletedAt })
 
@@ -34,7 +37,7 @@ export class BloodRequestService {
   }
 
   async findOne(id: string) {
-    const existingRequest = await this.volunteerRepo.findOneBy({ id });
+    const existingRequest = await this.bloodRequestRepo.findOneBy({ id });
     if (!existingRequest) throw new BadRequestException('Request not found');
 
     return existingRequest;
@@ -44,35 +47,35 @@ export class BloodRequestService {
     const existingRequest = await this.findOne(id);
     Object.assign(existingRequest, updateBloodRequestDto);
 
-    return await this.volunteerRepo.save(existingRequest);
+    return await this.bloodRequestRepo.save(existingRequest);
   }
 
   async remove(ids: string[]) {
-    const foundVolunteers = await this.volunteerRepo.find({
+    const foundBloodRequests = await this.bloodRequestRepo.find({
       where: {
         id: In(ids)
       }
     })
-    await this.volunteerRepo.softRemove(foundVolunteers);
+    await this.bloodRequestRepo.softRemove(foundBloodRequests);
 
     return {
       success: true,
-      message: 'Volunteers deleted successfully',
+      message: 'Blood Requests deleted successfully',
     }
   }
 
   async restore(ids: string[]) {
-    const existingVolunteers = await this.volunteerRepo.find({
+    const existingBloodRequests = await this.bloodRequestRepo.find({
       where: { id: In(ids) },
       withDeleted: true,
     })
-    if (!existingVolunteers) throw new BadRequestException('Volunteer not found');
+    if (!existingBloodRequests) throw new BadRequestException('Blood Request not found');
 
-    return await this.volunteerRepo.restore(ids);
+    return await this.bloodRequestRepo.restore(ids);
   }
 
   async clearTrash() {
-    return await this.volunteerRepo.delete({
+    return await this.bloodRequestRepo.delete({
       deletedAt: Not(IsNull())
     })
   }
