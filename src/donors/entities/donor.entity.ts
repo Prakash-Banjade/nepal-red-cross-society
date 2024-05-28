@@ -3,8 +3,9 @@ import { Donation } from "src/donations/entities/donation.entity";
 import { DonorCard } from "src/donor_card/entities/donor_card.entity";
 import { BaseEntity } from "src/core/entities/base.entity";
 import { BloodType, Caste, Gender, Race, Religion, RhFactor } from "src/core/types/global.types";
-import { BeforeInsert, BeforeUpdate, Column, Entity, JoinColumn, OneToMany, OneToOne } from "typeorm";
+import { BeforeInsert, BeforeSoftRemove, BeforeUpdate, Column, Entity, JoinColumn, OneToMany, OneToOne } from "typeorm";
 import { User } from "src/users/entities/user.entity";
+import { BadRequestException } from "@nestjs/common";
 
 @Entity()
 export class Donor extends BaseEntity {
@@ -59,7 +60,7 @@ export class Donor extends BaseEntity {
     image: string;
 
     // circular dependencies
-    @OneToMany(() => Donation, (donation) => donation.donor, { nullable: true })
+    @OneToMany(() => Donation, (donation) => donation.donor, { nullable: true, onDelete: 'SET NULL' })
     donations: Donation[];
 
     @OneToOne(() => DonorCard, (donorCard) => donorCard.donor, { nullable: true })
@@ -78,6 +79,11 @@ export class Donor extends BaseEntity {
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-        if (!emailRegex.test(this.email)) throw new Error('Invalid email');
+        if (!emailRegex.test(this.email)) throw new BadRequestException('Invalid email');
+    }
+
+    @BeforeSoftRemove()
+    async restrictIfHasDonation() {
+        if (this.donations.length > 0) throw new BadRequestException('Donor cannot be deleted as it has donations');
     }
 }

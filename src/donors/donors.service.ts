@@ -3,7 +3,7 @@ import { CreateDonorDto } from './dto/create-donor.dto';
 import { UpdateDonorDto } from './dto/update-donor.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Donor } from './entities/donor.entity';
-import { ILike, In, IsNull, Not, Or, Repository } from 'typeorm';
+import { Brackets, ILike, In, IsNull, Not, Or, Repository } from 'typeorm';
 import { AddressService } from 'src/address/address.service';
 import getFileName from 'src/core/utils/getImageUrl';
 import paginatedData from 'src/core/utils/paginatedData';
@@ -13,6 +13,7 @@ import { UsersService } from 'src/users/users.service';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import generator from 'generate-password-ts';
 import { MailService } from 'src/mail/mail.service';
+import { DonorQueryDto } from './dto/donor-query-dto';
 
 @Injectable()
 export class DonorsService {
@@ -72,9 +73,11 @@ export class DonorsService {
     return savedUser;
   }
 
-  async findAll(queryDto: QueryDto) {
+  async findAll(queryDto: DonorQueryDto) {
     const queryBuilder = this.donorRepo.createQueryBuilder('donor');
     const deletedAt = queryDto.deleted === Deleted.ONLY ? Not(IsNull()) : queryDto.deleted === Deleted.NONE ? IsNull() : Or(IsNull(), Not(IsNull()));
+
+    console.log(queryDto.gender, queryDto.search)
 
     queryBuilder
       .orderBy("donor.createdAt", queryDto.order)
@@ -82,11 +85,29 @@ export class DonorsService {
       .take(queryDto.search ? undefined : queryDto.take)
       .withDeleted()
       .where({ deletedAt })
-      .andWhere([
-        { firstName: ILike(`%${queryDto.search ?? ''}%`) },
-        { lastName: ILike(`%${queryDto.search ?? ''}%`) },
-      ])
+      .andWhere(new Brackets(qb => {
+        qb.where([
+          { firstName: ILike(`%${queryDto.search ?? ''}%`) },
+          { lastName: ILike(`%${queryDto.search ?? ''}%`) },
+          { email: ILike(`%${queryDto.search ?? ''}%`) },
+        ]);
+        if (queryDto.gender) qb.andWhere({ gender: queryDto.gender });
+        if (queryDto.race) qb.andWhere({ race: queryDto.race })
+        // queryDto.religion && qb.andWhere({ religion: queryDto.religion });
+        // queryDto.caste && qb.andWhere({ caste: queryDto.caste });
+        // queryDto.bloodType && qb.andWhere({ bloodType: queryDto.bloodType });
+        // queryDto.rhFactor && qb.andWhere({ rhFactor: queryDto.rhFactor });
+
+      }))
       .leftJoinAndSelect('donor.address', 'address')
+    // .andWhere(new Brackets(qb => {
+    //   qb.where("donor.address.country = :country", { country: queryDto.country ?? '' })
+    //     .orWhere("donor.address.province = :province", { province: queryDto.province ?? '' })
+    //     .orWhere("donor.address.district = :district", { district: queryDto.district ?? '' })
+    //     .orWhere("donor.address.municipality = :municipality", { municipality: queryDto.municipality ?? '' })
+    //     .orWhere("donor.address.ward = :ward", { ward: queryDto.ward ?? '' })
+    //     .orWhere("donor.address.street = :street", { street: queryDto.street ?? '' })
+    // }))
 
     return paginatedData(queryDto, queryBuilder);
   }
@@ -126,6 +147,9 @@ export class DonorsService {
     const existingDonors = await this.donorRepo.find({
       where: {
         id: In(ids)
+      },
+      relations: {
+        donations: true,
       }
     });
     await this.donorRepo.softRemove(existingDonors);

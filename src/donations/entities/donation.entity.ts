@@ -5,12 +5,12 @@ import { BaseEntity } from "src/core/entities/base.entity";
 import { LabReport } from "src/lab_reports/entities/lab_report.entity";
 import { Organization } from "src/organizations/entities/organization.entity";
 import { DonationStatus, DonationType } from "src/core/types/global.types";
-import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne, OneToOne } from "typeorm";
+import { BeforeInsert, BeforeSoftRemove, BeforeUpdate, Column, Entity, ManyToOne, OneToOne } from "typeorm";
 import { BadRequestException } from "@nestjs/common";
 
 @Entity()
 export class Donation extends BaseEntity {
-    @ManyToOne(() => Donor, donor => donor.donations)
+    @ManyToOne(() => Donor, donor => donor.donations, { onDelete: 'RESTRICT' })
     donor: Donor
 
     @ManyToOne(() => DonationEvent, donation_event => donation_event.donations)

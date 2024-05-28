@@ -6,7 +6,6 @@ import { LabReport } from './entities/lab_report.entity';
 import { In, IsNull, Not, Or, Repository } from 'typeorm';
 import { Donation } from 'src/donations/entities/donation.entity';
 import { TestCase } from 'src/test_cases/entities/test_case.entity';
-import { CreateTestCaseDto } from 'src/test_cases/dto/create-test_case.dto';
 import { TestResult } from 'src/test_cases/entities/test_result.entity';
 import { Deleted, QueryDto } from 'src/core/dto/queryDto';
 import paginatedData from 'src/core/utils/paginatedData';
@@ -55,7 +54,10 @@ export class LabReportsService {
   }
 
   async findOne(id: string) {
-    const existingLabReport = await this.labReportRepo.findOneBy({ id });
+    const existingLabReport = await this.labReportRepo.findOne({
+      where: { id },
+      relations: { testResults: { testCase: true } }
+    });
     if (!existingLabReport) throw new BadRequestException('Lab report not found');
 
     return existingLabReport;
@@ -74,7 +76,7 @@ export class LabReportsService {
 
     const savedLabReport = await this.labReportRepo.save(existingLabReport);
 
-    await this.evaluateTestResults_update(updateLabReportDto, savedLabReport);
+    await this.evaluateTestResults_update(updateLabReportDto, savedLabReport.id);
 
     return {
       success: true,
@@ -107,33 +109,31 @@ export class LabReportsService {
     const testCaseIds = createLabReportDto?.testCases?.map(testCase => testCase.testCase)
     const testCases = await this.testCaseRepo.findBy({ id: In(testCaseIds) })
 
-    createLabReportDto?.testCases.forEach(async (testCase, i) => {
-      await (async () => {
-        await this.testResultRepo.save({
-          labReport,
-          testCase: testCases[i],
-          obtainedResult: testCase.obtainedResult,
-          status: testCase.status
-        })
-      })();
-    })
+    for (const testCase of testCases) {
+      await this.testResultRepo.save({
+        labReport,
+        testCase,
+        obtainedResult: createLabReportDto.testCases.find(t => t.testCase === testCase.id).obtainedResult,
+        status: createLabReportDto.testCases.find(t => t.testCase === testCase.id).status
+
+      })
+    }
   }
 
-  async evaluateTestResults_update(updateLabReportDto: UpdateLabReportDto, labReport: LabReport) {
-    const testCasesId = updateLabReportDto.testCases.map(testResult => testResult.testCase)
+  async evaluateTestResults_update(updateLabReportDto: UpdateLabReportDto, labReportId: string) {
+    const labReport = await this.findOne(labReportId)
+    const testResults = labReport.testResults;
 
-    for (const testCaseId of testCasesId) {
-      const testCase = await this.testCaseRepo.findOneBy({ id: testCaseId })
-
-      const testResult = await this.testResultRepo.findOneBy({ testCase, labReport })
-
-      if (testResult) {
-        await this.testResultRepo.save({
-          ...testResult,
-          obtainedResult: updateLabReportDto.testCases.find(testResult => testResult.testCase === testCaseId)?.obtainedResult,
-          status: updateLabReportDto.testCases.find(testResult => testResult.testCase === testCaseId)?.status
-        })
-      }
+    for (const testResult of testResults) {
+      const foundTestResult = await this.testResultRepo.findOne({
+        where: { id: testResult.id },
+        relations: { testCase: true }
+      });
+      Object.assign(foundTestResult, {
+        obtainedResult: updateLabReportDto.testCases.find(t => t.testCase === foundTestResult?.testCase?.id)?.obtainedResult,
+        status: updateLabReportDto.testCases.find(t => t.testCase === foundTestResult?.testCase?.id)?.status,
+      })
+      await this.testResultRepo.save(foundTestResult);
     }
   }
 }

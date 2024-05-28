@@ -9,6 +9,7 @@ import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.d
 import { ChekcAbilities } from 'src/core/decorators/abilities.decorator';
 import { Action } from 'src/core/types/global.types';
 import { QueryDto } from 'src/core/dto/queryDto';
+import { DonorQueryDto } from './dto/donor-query-dto';
 
 @ApiTags('Donors')
 @Controller('donors')
@@ -26,7 +27,7 @@ export class DonorsController {
   @Get()
   @ApiPaginatedResponse(CreateDonorDto)
   @ChekcAbilities({ action: Action.READ, subject: 'all' })
-  findAll(@Query() queryDto: QueryDto) {
+  findAll(@Query() queryDto: DonorQueryDto) {
     return this.donorsService.findAll(queryDto);
   }
 
