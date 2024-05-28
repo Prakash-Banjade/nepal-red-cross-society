@@ -61,6 +61,7 @@ export class DonationsService {
       relations: {
         donation_event: true,
         organization: true,
+        donor: true,
         labReport: {
           testResults: {
             testCase: true
