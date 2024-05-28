@@ -83,7 +83,7 @@ export class VolunteersService {
     const image = updateVolunteerDto.image ? getFileName(updateVolunteerDto.image) : null;
 
     // evaluating address
-    updateVolunteerDto.country && await this.addressService.update(existingVolunteer.address.id, extractAddress(updateVolunteerDto));
+    updateVolunteerDto.country && existingVolunteer.address.id && await this.addressService.update(existingVolunteer.address.id, extractAddress(updateVolunteerDto));
 
     Object.assign(existingVolunteer, {
       ...updateVolunteerDto,
@@ -97,7 +97,8 @@ export class VolunteersService {
   async remove(ids: string[]) {
     const foundVolunteers = await this.volunteerRepo.find({
       where: {
-        id: In(ids)
+        id: In(ids),
+        donationEvent: IsNull()
       }
     })
     await this.volunteerRepo.softRemove(foundVolunteers);
