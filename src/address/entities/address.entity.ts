@@ -16,13 +16,13 @@ export class Address extends BaseEntity {
     @Column({ type: 'enum', enum: Country })
     country: Country;
 
-    @Column({ type: 'enum', enum: Province, nullable: true })
+    @Column({ type: 'varchar', nullable: true })
     province: Province;
 
-    @Column({ type: 'enum', enum: District, nullable: true })
+    @Column({ type: 'varchar', nullable: true })
     district: District;
 
-    @Column({ type: 'enum', enum: Municipal, nullable: true })
+    @Column({ type: 'varchar', nullable: true })
     municipality: Municipal;
 
     @Column({ type: 'int', nullable: true })

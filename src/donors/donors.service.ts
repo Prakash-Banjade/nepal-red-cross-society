@@ -78,7 +78,7 @@ export class DonorsService {
 
     queryBuilder
       .orderBy("donor.createdAt", queryDto.order)
-      .skip(queryDto.search ? undefined : queryDto.page)
+      .skip(queryDto.search ? undefined : queryDto.skip)
       .take(queryDto.search ? undefined : queryDto.take)
       .withDeleted()
       .where({ deletedAt })
@@ -87,7 +87,6 @@ export class DonorsService {
         { lastName: ILike(`%${queryDto.search ?? ''}%`) },
       ])
       .leftJoinAndSelect('donor.address', 'address')
-      .getMany()
 
     return paginatedData(queryDto, queryBuilder);
   }

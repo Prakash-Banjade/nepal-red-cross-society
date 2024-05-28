@@ -47,7 +47,7 @@ export class VolunteersService {
 
     queryBuilder
       .orderBy("volunteer.createdAt", queryDto.order)
-      .skip(queryDto.search ? undefined : queryDto.page)
+      .skip(queryDto.search ? undefined : queryDto.skip)
       .take(queryDto.search ? undefined : queryDto.take)
       .withDeleted()
       .where({ deletedAt })
@@ -55,6 +55,7 @@ export class VolunteersService {
         { firstName: ILike(`%${queryDto.search ?? ''}%`) },
         { lastName: ILike(`%${queryDto.search ?? ''}%`) },
       ])
+      .leftJoinAndSelect('volunteer.address', 'address')
 
     return paginatedData(queryDto, queryBuilder);
   }
@@ -78,8 +79,11 @@ export class VolunteersService {
     // evaluating donation event
     const donationEvent = updateVolunteerDto.donationEvent ? await this.donationEventRepo.findOneBy({ id: updateVolunteerDto.donationEvent }) : null;
 
-    // evaluating address
+    // evaluating image
     const image = updateVolunteerDto.image ? getFileName(updateVolunteerDto.image) : null;
+
+    // evaluating address
+    updateVolunteerDto.country && await this.addressService.update(existingVolunteer.address.id, extractAddress(updateVolunteerDto));
 
     Object.assign(existingVolunteer, {
       ...updateVolunteerDto,
