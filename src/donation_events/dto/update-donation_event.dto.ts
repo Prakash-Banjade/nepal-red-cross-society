@@ -2,6 +2,7 @@ import { ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { CreateDonationEventDto } from './create-donation_event.dto';
 import { IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 import { FileSystemStoredFile, IsFile } from 'nestjs-form-data';
+import { Transform } from 'class-transformer';
 
 export class UpdateDonationEventDto extends PartialType(CreateDonationEventDto) {
     // @ApiPropertyOptional({
@@ -16,7 +17,6 @@ export class UpdateDonationEventDto extends PartialType(CreateDonationEventDto) 
     // donations?: string[]
 
     @ApiPropertyOptional({ format: 'binary', type: 'string', description: 'Event galleries', isArray: true })
-    @IsFile({ message: 'Gallery image be a file', each: true })
     @IsOptional()
-    gallery?: FileSystemStoredFile[];
+    gallery?: FileSystemStoredFile[] | string[];
 }

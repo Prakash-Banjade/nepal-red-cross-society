@@ -47,7 +47,6 @@ export class CreateDonationEventDto extends CreateAddressDto {
   volunteers?: string[];
 
   @ApiPropertyOptional({ format: 'binary', type: 'string', description: 'Event cover image' })
-  @IsFile({ message: 'Cover must be a file' })
   @IsOptional()
   coverImage?: FileSystemStoredFile;
 

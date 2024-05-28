@@ -104,7 +104,7 @@ export class DonationEventsService {
     const coverImage = updateDonationEventDto.coverImage ? getFileName(updateDonationEventDto.coverImage) : existingEvent.coverImage
 
     // retrieving gallery
-    const gallery = updateDonationEventDto?.gallery ? this.getGalleryUrls(updateDonationEventDto.gallery) : existingEvent.gallery
+    const gallery = !!updateDonationEventDto?.gallery ? this.getGalleryUrls(updateDonationEventDto.gallery) : existingEvent.gallery
 
     Object.assign(existingEvent, {
       ...updateDonationEventDto,
@@ -147,8 +147,11 @@ export class DonationEventsService {
     })
   }
 
-  private getGalleryUrls(gallery: FileSystemStoredFile[]) {
-    return gallery.map(image => getFileName(image))
+  private getGalleryUrls(gallery: (FileSystemStoredFile | string)[]) {
+    if (gallery instanceof Array) {
+      return gallery.map(image => getFileName(image))
+    }
+    return null;
   }
 
 }
