@@ -3,13 +3,14 @@ import { CreateDonationDto } from './dto/create-donation.dto';
 import { UpdateDonationDto } from './dto/update-donation.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Donation } from './entities/donation.entity';
-import { In, IsNull, Not, Or, Repository } from 'typeorm';
+import { Brackets, ILike, In, IsNull, Not, Or, Repository } from 'typeorm';
 import { DonorsService } from 'src/donors/donors.service';
 import { OrganizationsService } from 'src/organizations/organizations.service';
 import { DonationEventsService } from 'src/donation_events/donation_events.service';
-import { Deleted, QueryDto } from 'src/core/dto/queryDto';
+import { Deleted } from 'src/core/dto/queryDto';
 import paginatedData from 'src/core/utils/paginatedData';
 import { Donor } from 'src/donors/entities/donor.entity';
+import { DonationQueryDto } from './dto/donation-query.dto';
 
 @Injectable()
 export class DonationsService {
@@ -40,17 +41,32 @@ export class DonationsService {
     return await this.donationRepo.save(donation);
   }
 
-  async findAll(queryDto: QueryDto) {
+  async findAll(queryDto: DonationQueryDto) {
     const queryBuilder = this.donationRepo.createQueryBuilder('donation');
     const deletedAt = queryDto.deleted === Deleted.ONLY ? Not(IsNull()) : queryDto.deleted === Deleted.NONE ? IsNull() : Or(IsNull(), Not(IsNull()));
 
     queryBuilder
       .orderBy("donation.createdAt", queryDto.order)
-      .skip(queryDto.skip)
-      .take(queryDto.take)
+      .skip(queryDto.search ? undefined : queryDto.skip)
+      .take(queryDto.search ? undefined : queryDto.take)
       .withDeleted()
+      .leftJoinAndSelect('donation.donor', 'donor')
+      // .leftJoinAndSelect('donation.organization', 'organization')
+      // .leftJoinAndSelect('donation.donation_event', 'donation_event')
       .where({ deletedAt })
-      .leftJoinAndSelect('donation.donor', 'donor') // TODO: send only donor name
+      .andWhere(new Brackets(qb => {
+        qb.where([
+          { bloodBagNo: ILike(`%${queryDto.search ?? ''}%`) },
+        ]);
+        if (queryDto.search) qb.orWhere("LOWER(donor.firstName) LIKE LOWER(:donorFirstName)", { donorFirstName: `%${queryDto.search ?? ''}%` });
+        if (queryDto.search) qb.orWhere("LOWER(donor.lastName) LIKE LOWER(:donorLastName)", { donorLastName: `%${queryDto.search ?? ''}%` });
+      }))
+      .andWhere(new Brackets(qb => {
+        qb.where({ status: ILike(`%${queryDto.status ?? ''}%`) })
+      }))
+      .andWhere(new Brackets(qb => {
+        qb.where({ donationType: ILike(`%${queryDto.donationType ?? ''}%`) })
+      }))
 
     return paginatedData(queryDto, queryBuilder);
   }

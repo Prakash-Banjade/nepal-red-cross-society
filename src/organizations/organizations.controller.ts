@@ -8,6 +8,7 @@ import { QueryDto } from 'src/core/dto/queryDto';
 import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.decorator';
 import { ChekcAbilities } from 'src/core/decorators/abilities.decorator';
 import { Action } from 'src/core/types/global.types';
+import { OrganizationQueryDto } from './dto/organization-query.dto';
 
 @ApiTags('Organizations')
 @Controller('organizations')
@@ -25,7 +26,7 @@ export class OrganizationsController {
   @Get()
   @ApiPaginatedResponse(CreateOrganizationDto)
   @ChekcAbilities({ action: Action.READ, subject: 'all' })
-  findAll(@Query() queryDto: QueryDto) {
+  findAll(@Query() queryDto: OrganizationQueryDto) {
     return this.organizationsService.findAll(queryDto);
   }
 

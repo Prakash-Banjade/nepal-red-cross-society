@@ -3,13 +3,14 @@ import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Organization } from './entities/organization.entity';
-import { ILike, In, IsNull, Not, Or, Repository } from 'typeorm';
+import { Brackets, ILike, In, IsNull, Not, Or, Repository } from 'typeorm';
 import { Donation } from 'src/donations/entities/donation.entity';
 import getFileName from 'src/core/utils/getImageUrl';
 import { Deleted, QueryDto } from 'src/core/dto/queryDto';
 import paginatedData from 'src/core/utils/paginatedData';
 import { extractAddress } from 'src/core/utils/extractAddress';
 import { AddressService } from 'src/address/address.service';
+import { OrganizationQueryDto } from './dto/organization-query.dto';
 
 @Injectable()
 export class OrganizationsService {
@@ -44,19 +45,33 @@ export class OrganizationsService {
     return await this.organizationRepo.save(createdOrganization);
   }
 
-  async findAll(queryDto: QueryDto) {
+  async findAll(queryDto: OrganizationQueryDto) {
     const queryBuilder = this.organizationRepo.createQueryBuilder('organization');
     const deletedAt = queryDto.deleted === Deleted.ONLY ? Not(IsNull()) : queryDto.deleted === Deleted.NONE ? IsNull() : Or(IsNull(), Not(IsNull()));
 
     queryBuilder
       .orderBy("organization.createdAt", queryDto.order)
-      .skip(queryDto.search ? undefined : queryDto.page)
+      .skip(queryDto.search ? undefined : queryDto.skip)
       .take(queryDto.search ? undefined : queryDto.take)
       .withDeleted()
       .where({ deletedAt })
-      .andWhere({
-        name: ILike(`%${queryDto.search ?? ''}%`),
-      })
+      .andWhere(new Brackets(qb => {
+        qb.where([
+          { name: ILike(`%${queryDto.search ?? ''}%`) },
+          { email: ILike(`%${queryDto.search ?? ''}%`) },
+          { contact: ILike(`%${queryDto.search ?? ''}%`) },
+          { representativeContact: ILike(`%${queryDto.search ?? ''}%`) },
+        ]);
+      }))
+      .leftJoinAndSelect('organization.address', 'address')
+      .andWhere(new Brackets(qb => {
+        if (queryDto.country) qb.andWhere("LOWER(address.country) LIKE LOWER(:country)", { country: `%${queryDto.country ?? ''}%` });
+        if (queryDto.province) qb.andWhere("LOWER(address.province) LIKE LOWER(:province)", { province: `%${queryDto.province ?? ''}%` });
+        if (queryDto.district) qb.andWhere("LOWER(address.district) LIKE LOWER(:district)", { district: `%${queryDto.district ?? ''}%` });
+        if (queryDto.municipality) qb.andWhere("LOWER(address.municipality) LIKE LOWER(:municipality)", { municipality: `%${queryDto.municipality ?? ''}%` });
+        if (queryDto.ward) qb.andWhere("LOWER(address.ward) LIKE LOWER(:ward)", { ward: `%${queryDto.ward ?? ''}%` });
+        if (queryDto.street) qb.andWhere("LOWER(address.street) LIKE LOWER(:street)", { street: `%${queryDto.street ?? ''}%` });
+      }))
 
     return paginatedData(queryDto, queryBuilder);
   }

@@ -8,6 +8,7 @@ import { ChekcAbilities } from 'src/core/decorators/abilities.decorator';
 import { Action } from 'src/core/types/global.types';
 import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.decorator';
 import { QueryDto } from 'src/core/dto/queryDto';
+import { DonationQueryDto } from './dto/donation-query.dto';
 
 @ApiTags('Donations')
 @Controller('donations')
@@ -26,7 +27,7 @@ export class DonationsController {
   @ApiPaginatedResponse(CreateDonationDto)
   @ChekcAbilities({ action: Action.READ, subject: 'all' })
 
-  findAll(@Query() queryDto: QueryDto) {
+  findAll(@Query() queryDto: DonationQueryDto) {
     return this.donationsService.findAll(queryDto);
   }
 

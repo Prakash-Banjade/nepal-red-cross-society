@@ -20,6 +20,7 @@ import { Action } from 'src/core/types/global.types';
 import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.decorator';
 import { QueryDto } from 'src/core/dto/queryDto';
 import { DonationEvent } from './entities/donation_event.entity';
+import { EventQueryDto } from './dto/event-query.dto';
 
 @ApiTags('Donation Event')
 @ApiBearerAuth()
@@ -40,7 +41,7 @@ export class DonationEventsController {
   @ApiOperation({ description: "Get all donation events", summary: "View donation events" })
   @ApiPaginatedResponse(CreateDonationEventDto)
   @ChekcAbilities({ action: Action.READ, subject: DonationEvent })
-  findAll(@Query() queryDto: QueryDto) {
+  findAll(@Query() queryDto: EventQueryDto) {
     return this.donationEventsService.findAll(queryDto);
   }
 

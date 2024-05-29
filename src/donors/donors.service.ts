@@ -77,8 +77,6 @@ export class DonorsService {
     const queryBuilder = this.donorRepo.createQueryBuilder('donor');
     const deletedAt = queryDto.deleted === Deleted.ONLY ? Not(IsNull()) : queryDto.deleted === Deleted.NONE ? IsNull() : Or(IsNull(), Not(IsNull()));
 
-    console.log(queryDto.gender, queryDto.search)
-
     queryBuilder
       .orderBy("donor.createdAt", queryDto.order)
       .skip(queryDto.search ? undefined : queryDto.skip)
@@ -90,24 +88,25 @@ export class DonorsService {
           { firstName: ILike(`%${queryDto.search ?? ''}%`) },
           { lastName: ILike(`%${queryDto.search ?? ''}%`) },
           { email: ILike(`%${queryDto.search ?? ''}%`) },
+          { phone: ILike(`%${queryDto.search ?? ''}%`) },
         ]);
-        if (queryDto.gender) qb.andWhere({ gender: queryDto.gender });
-        if (queryDto.race) qb.andWhere({ race: queryDto.race })
-        // queryDto.religion && qb.andWhere({ religion: queryDto.religion });
-        // queryDto.caste && qb.andWhere({ caste: queryDto.caste });
-        // queryDto.bloodType && qb.andWhere({ bloodType: queryDto.bloodType });
-        // queryDto.rhFactor && qb.andWhere({ rhFactor: queryDto.rhFactor });
+        queryDto.gender && qb.andWhere({ gender: queryDto.gender });
+        queryDto.race && qb.andWhere({ race: queryDto.race })
+        queryDto.religion && qb.andWhere({ religion: queryDto.religion });
+        queryDto.caste && qb.andWhere({ caste: queryDto.caste });
+        queryDto.bloodType && qb.andWhere({ bloodType: queryDto.bloodType });
+        queryDto.rhFactor && qb.andWhere({ rhFactor: queryDto.rhFactor });
 
       }))
       .leftJoinAndSelect('donor.address', 'address')
-    // .andWhere(new Brackets(qb => {
-    //   qb.where("donor.address.country = :country", { country: queryDto.country ?? '' })
-    //     .orWhere("donor.address.province = :province", { province: queryDto.province ?? '' })
-    //     .orWhere("donor.address.district = :district", { district: queryDto.district ?? '' })
-    //     .orWhere("donor.address.municipality = :municipality", { municipality: queryDto.municipality ?? '' })
-    //     .orWhere("donor.address.ward = :ward", { ward: queryDto.ward ?? '' })
-    //     .orWhere("donor.address.street = :street", { street: queryDto.street ?? '' })
-    // }))
+      .andWhere(new Brackets(qb => {
+        if (queryDto.country) qb.andWhere("LOWER(address.country) LIKE LOWER(:country)", { country: `%${queryDto.country ?? ''}%` });
+        if (queryDto.province) qb.andWhere("LOWER(address.province) LIKE LOWER(:province)", { province: `%${queryDto.province ?? ''}%` });
+        if (queryDto.district) qb.andWhere("LOWER(address.district) LIKE LOWER(:district)", { district: `%${queryDto.district ?? ''}%` });
+        if (queryDto.municipality) qb.andWhere("LOWER(address.municipality) LIKE LOWER(:municipality)", { municipality: `%${queryDto.municipality ?? ''}%` });
+        if (queryDto.ward) qb.andWhere("LOWER(address.ward) LIKE LOWER(:ward)", { ward: `%${queryDto.ward ?? ''}%` });
+        if (queryDto.street) qb.andWhere("LOWER(address.street) LIKE LOWER(:street)", { street: `%${queryDto.street ?? ''}%` });
+      }))
 
     return paginatedData(queryDto, queryBuilder);
   }
