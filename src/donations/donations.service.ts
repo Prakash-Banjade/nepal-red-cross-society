@@ -45,10 +45,12 @@ export class DonationsService {
     const queryBuilder = this.donationRepo.createQueryBuilder('donation');
     const deletedAt = queryDto.deleted === Deleted.ONLY ? Not(IsNull()) : queryDto.deleted === Deleted.NONE ? IsNull() : Or(IsNull(), Not(IsNull()));
 
+    const skipPagination: Boolean = !!(queryDto.search || queryDto.status || queryDto.donationType)
+
     queryBuilder
       .orderBy("donation.createdAt", queryDto.order)
-      .skip(queryDto.search ? undefined : queryDto.skip)
-      .take(queryDto.search ? undefined : queryDto.take)
+      .skip(skipPagination ? undefined : queryDto.skip)
+      .take(skipPagination ? undefined : queryDto.take)
       .leftJoinAndSelect('donation.donor', 'donor')
       .withDeleted()
       .where({ deletedAt })
