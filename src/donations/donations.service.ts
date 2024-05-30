@@ -49,10 +49,8 @@ export class DonationsService {
       .orderBy("donation.createdAt", queryDto.order)
       .skip(queryDto.search ? undefined : queryDto.skip)
       .take(queryDto.search ? undefined : queryDto.take)
-      .withDeleted()
       .leftJoinAndSelect('donation.donor', 'donor')
-      // .leftJoinAndSelect('donation.organization', 'organization')
-      // .leftJoinAndSelect('donation.donation_event', 'donation_event')
+      .withDeleted()
       .where({ deletedAt })
       .andWhere(new Brackets(qb => {
         qb.where([
@@ -62,11 +60,11 @@ export class DonationsService {
         if (queryDto.search) qb.orWhere("LOWER(donor.lastName) LIKE LOWER(:donorLastName)", { donorLastName: `%${queryDto.search ?? ''}%` });
       }))
       .andWhere(new Brackets(qb => {
-        qb.where({ status: ILike(`%${queryDto.status ?? ''}%`) })
+        if (queryDto.status) qb.andWhere({ status: ILike(`%${queryDto.status ?? ''}%`) })
+        if (queryDto.donationType) qb.andWhere({ donationType: ILike(`%${queryDto.donationType ?? ''}%`) })
       }))
-      .andWhere(new Brackets(qb => {
-        qb.where({ donationType: ILike(`%${queryDto.donationType ?? ''}%`) })
-      }))
+      .leftJoinAndSelect('donation.organization', 'organization')
+      .leftJoinAndSelect('donation.donation_event', 'donation_event')
 
     return paginatedData(queryDto, queryBuilder);
   }
