@@ -9,6 +9,7 @@ import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.d
 import { ChekcAbilities } from 'src/core/decorators/abilities.decorator';
 import { Action } from 'src/core/types/global.types';
 import { OrganizationQueryDto } from './dto/organization-query.dto';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('Organizations')
 @Controller('organizations')
@@ -17,6 +18,7 @@ export class OrganizationsController {
 
   @Post()
   @ApiConsumes('multipart/form-data')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @FormDataRequest({ storage: FileSystemStoredFile })
   @ChekcAbilities({ action: Action.CREATE, subject: 'all' })
   create(@Body() createOrganizationDto: CreateOrganizationDto) {
@@ -38,6 +40,7 @@ export class OrganizationsController {
 
   @Patch(':id')
   @ApiConsumes('multipart/form-data')
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   @FormDataRequest({ storage: FileSystemStoredFile })
   @ChekcAbilities({ action: Action.UPDATE, subject: 'all' })
   update(@Param('id', ParseUUIDPipe) id: string, @Body() updateOrganizationDto: UpdateOrganizationDto) {

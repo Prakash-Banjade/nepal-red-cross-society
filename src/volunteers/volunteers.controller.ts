@@ -20,6 +20,7 @@ import { QueryDto } from 'src/core/dto/queryDto';
 import { ChekcAbilities } from 'src/core/decorators/abilities.decorator';
 import { Action } from 'src/core/types/global.types';
 import { VolunteerQueryDto } from './dto/volunteer-query.dto';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiBearerAuth()
 @ApiTags('Volunteers')
@@ -29,6 +30,7 @@ export class VolunteersController {
 
   @Post()
   @ApiConsumes('multipart/form-data')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @FormDataRequest({ storage: FileSystemStoredFile })
   @ChekcAbilities({ action: Action.CREATE, subject: 'all' })
   create(@Body() createVolunteerDto: CreateVolunteerDto) {
@@ -50,6 +52,7 @@ export class VolunteersController {
 
   @Patch(':id')
   @ApiConsumes('multipart/form-data')
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   @FormDataRequest({ storage: FileSystemStoredFile })
   @ChekcAbilities({ action: Action.UPDATE, subject: 'all' })
   update(

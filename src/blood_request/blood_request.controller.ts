@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Query, HttpCode, HttpStatus } from '@nestjs/common';
 import { BloodRequestService } from './blood_request.service';
 import { CreateBloodRequestDto } from './dto/create-blood_request.dto';
 import { UpdateBloodRequestDto } from './dto/update-blood_request.dto';
@@ -8,6 +8,7 @@ import { Action } from 'src/core/types/global.types';
 import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.decorator';
 import { QueryDto } from 'src/core/dto/queryDto';
 import { FileSystemStoredFile, FormDataRequest } from 'nestjs-form-data';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('blood-request')
 @ApiTags('Blood Request')
@@ -16,6 +17,7 @@ export class BloodRequestController {
 
   @Post()
   @ApiConsumes('multipart/form-data')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @FormDataRequest({ storage: FileSystemStoredFile })
   @ChekcAbilities({ action: Action.CREATE, subject: 'all' })
   create(@Body() createBloodRequestDto: CreateBloodRequestDto) {
@@ -37,6 +39,7 @@ export class BloodRequestController {
 
   @Patch(':id')
   @ApiConsumes('multipart/form-data')
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   @ChekcAbilities({ action: Action.UPDATE, subject: 'all' })
   @FormDataRequest({ storage: FileSystemStoredFile })
   update(@Param('id') id: string, @Body() updateBloodRequestDto: UpdateBloodRequestDto) {

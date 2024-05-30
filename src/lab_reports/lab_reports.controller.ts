@@ -8,6 +8,7 @@ import { Action } from 'src/core/types/global.types';
 import { ChekcAbilities } from 'src/core/decorators/abilities.decorator';
 import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.decorator';
 import { QueryDto } from 'src/core/dto/queryDto';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('Lab Reports')
 @Controller('lab-reports')
@@ -16,6 +17,7 @@ export class LabReportsController {
 
   @Post()
   @ApiConsumes('multipart/form-data')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @FormDataRequest({ storage: FileSystemStoredFile })
   @ChekcAbilities({ action: Action.CREATE, subject: 'all' })
   create(@Body() createLabReportDto: CreateLabReportDto) {
@@ -37,6 +39,7 @@ export class LabReportsController {
   
   @Patch(':id')
   @ApiConsumes('multipart/form-data')
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   @ChekcAbilities({ action: Action.UPDATE, subject: 'all' })
   @FormDataRequest({ storage: FileSystemStoredFile })
   update(@Param('id', ParseUUIDPipe) id: string, @Body() updateLabReportDto: UpdateLabReportDto) {

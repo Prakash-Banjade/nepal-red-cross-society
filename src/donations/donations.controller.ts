@@ -9,6 +9,7 @@ import { Action } from 'src/core/types/global.types';
 import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.decorator';
 import { QueryDto } from 'src/core/dto/queryDto';
 import { DonationQueryDto } from './dto/donation-query.dto';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('Donations')
 @Controller('donations')
@@ -17,6 +18,7 @@ export class DonationsController {
 
   @Post()
   @ApiConsumes('multipart/form-data')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @FormDataRequest({ storage: FileSystemStoredFile })
   @ChekcAbilities({ action: Action.CREATE, subject: 'all' })
   create(@Body() createDonationDto: CreateDonationDto) {
@@ -38,7 +40,9 @@ export class DonationsController {
 
   @Patch(':id')
   @ApiConsumes('multipart/form-data')
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   @FormDataRequest({ storage: FileSystemStoredFile })
+  @ChekcAbilities({ action: Action.UPDATE, subject: 'all' })
   update(@Param('id', ParseUUIDPipe) id: string, @Body() updateDonationDto: UpdateDonationDto) {
     return this.donationsService.update(id, updateDonationDto);
   }

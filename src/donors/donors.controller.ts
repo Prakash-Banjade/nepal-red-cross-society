@@ -4,12 +4,11 @@ import { CreateDonorDto } from './dto/create-donor.dto';
 import { UpdateDonorDto } from './dto/update-donor.dto';
 import { ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { FileSystemStoredFile, FormDataRequest } from 'nestjs-form-data';
-import { PageOptionsDto } from 'src/core/dto/pageOptions.dto';
 import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.decorator';
 import { ChekcAbilities } from 'src/core/decorators/abilities.decorator';
 import { Action } from 'src/core/types/global.types';
-import { QueryDto } from 'src/core/dto/queryDto';
 import { DonorQueryDto } from './dto/donor-query-dto';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('Donors')
 @Controller('donors')
@@ -18,6 +17,7 @@ export class DonorsController {
 
   @Post()
   @ApiConsumes('multipart/form-data')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @ChekcAbilities({ action: Action.CREATE, subject: 'all' })
   @FormDataRequest({ storage: FileSystemStoredFile })
   create(@Body() createDonorDto: CreateDonorDto) {
@@ -39,6 +39,7 @@ export class DonorsController {
 
   @Patch(':id')
   @ApiConsumes('multipart/form-data')
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   @ChekcAbilities({ action: Action.UPDATE, subject: 'all' })
   @FormDataRequest({ storage: FileSystemStoredFile })
   update(@Param('id', ParseUUIDPipe) id: string, @Body() updateDonorDto: UpdateDonorDto) {

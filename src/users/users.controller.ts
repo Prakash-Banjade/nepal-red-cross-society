@@ -1,9 +1,8 @@
-import { Controller, Get, Body, Patch, Param, Delete, Post, Query, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Body, Patch, Param, Post, Query, HttpCode, HttpStatus } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { FormDataRequest, MemoryStoredFile } from 'nestjs-form-data';
-import { CaslAbilityFactory } from 'src/casl/casl-ability.factory/casl-ability.factory';
 import { ChekcAbilities } from 'src/core/decorators/abilities.decorator';
 import { Action, RequestUser } from 'src/core/types/global.types';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -12,6 +11,7 @@ import { CreateOrganizationDto } from 'src/organizations/dto/create-organization
 import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.decorator';
 import { QueryDto } from 'src/core/dto/queryDto';
 import { CurrentUser } from 'src/core/decorators/user.decorator';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiBearerAuth()
 @ApiTags('Users')
@@ -23,6 +23,7 @@ export class UsersController {
   ) { }
 
   @Post()
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @ChekcAbilities({ action: Action.CREATE, subject: User })
   @FormDataRequest({ storage: MemoryStoredFile })
   create(@Body() createUserDto: CreateUserDto) {
@@ -44,6 +45,7 @@ export class UsersController {
 
   @Patch(':id')
   @FormDataRequest({ storage: MemoryStoredFile })
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   @ApiConsumes('multipart/form-data')
   @ChekcAbilities({ action: Action.UPDATE, subject: 'all' })
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {

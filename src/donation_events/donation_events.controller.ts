@@ -21,6 +21,7 @@ import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.d
 import { QueryDto } from 'src/core/dto/queryDto';
 import { DonationEvent } from './entities/donation_event.entity';
 import { EventQueryDto } from './dto/event-query.dto';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('Donation Event')
 @ApiBearerAuth()
@@ -30,6 +31,7 @@ export class DonationEventsController {
 
   @Post()
   @ApiConsumes('multipart/form-data')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @FormDataRequest({ storage: FileSystemStoredFile })
   @ApiOperation({ description: "Add a new donation event", summary: "Create new donation event" })
   @ChekcAbilities({ action: Action.CREATE, subject: 'all' })
@@ -54,6 +56,7 @@ export class DonationEventsController {
 
   @Patch(':id')
   @FormDataRequest({ storage: FileSystemStoredFile })
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   @ApiOperation({ description: "Update a donation event", summary: "Edit existing donation event" })
   @ApiConsumes('multipart/form-data')
   @ChekcAbilities({ action: Action.UPDATE, subject: 'all' })
