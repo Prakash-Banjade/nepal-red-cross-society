@@ -19,6 +19,7 @@ import { FileSystemStoredFile, FormDataRequest } from 'nestjs-form-data';
 import { QueryDto } from 'src/core/dto/queryDto';
 import { ChekcAbilities } from 'src/core/decorators/abilities.decorator';
 import { Action } from 'src/core/types/global.types';
+import { VolunteerQueryDto } from './dto/volunteer-query.dto';
 
 @ApiBearerAuth()
 @ApiTags('Volunteers')
@@ -37,7 +38,7 @@ export class VolunteersController {
   @Get()
   @ApiPaginatedResponse(CreateVolunteerDto)
   @ChekcAbilities({ action: Action.READ, subject: 'all' })
-  findAll(@Query() queryDto: QueryDto) {
+  findAll(@Query() queryDto: VolunteerQueryDto) {
     return this.volunteersService.findAll(queryDto);
   }
 

@@ -3,7 +3,7 @@ import { CreateVolunteerDto } from './dto/create-volunteer.dto';
 import { UpdateVolunteerDto } from './dto/update-volunteer.dto';
 import { Volunteer } from './entities/volunteer.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ILike, In, IsNull, Not, Or, Repository, SelectQueryBuilder } from 'typeorm';
+import { Brackets, ILike, In, IsNull, Not, Or, Repository, SelectQueryBuilder } from 'typeorm';
 import { DonationEvent } from 'src/donation_events/entities/donation_event.entity';
 import { Address } from 'src/address/entities/address.entity';
 import { PageDto } from 'src/core/dto/page.dto.';
@@ -14,6 +14,7 @@ import { AddressService } from 'src/address/address.service';
 import { extractAddress } from 'src/core/utils/extractAddress';
 import getFileName from 'src/core/utils/getImageUrl';
 import { Deleted, QueryDto } from 'src/core/dto/queryDto';
+import { VolunteerQueryDto } from './dto/volunteer-query.dto';
 
 @Injectable()
 export class VolunteersService {
@@ -41,7 +42,7 @@ export class VolunteersService {
     return await this.volunteerRepo.save(volunteer);
   }
 
-  async findAll(queryDto: QueryDto) {
+  async findAll(queryDto: VolunteerQueryDto) {
     const queryBuilder = this.volunteerRepo.createQueryBuilder('volunteer');
     const deletedAt = queryDto.deleted === Deleted.ONLY ? Not(IsNull()) : queryDto.deleted === Deleted.NONE ? IsNull() : Or(IsNull(), Not(IsNull()));
 
@@ -51,11 +52,22 @@ export class VolunteersService {
       .take(queryDto.search ? undefined : queryDto.take)
       .withDeleted()
       .where({ deletedAt })
-      .andWhere([
-        { firstName: ILike(`%${queryDto.search ?? ''}%`) },
-        { lastName: ILike(`%${queryDto.search ?? ''}%`) },
-      ])
+      .andWhere(new Brackets(qb => {
+        qb.where([
+          { firstName: ILike(`%${queryDto.search ?? ''}%`) },
+          { lastName: ILike(`%${queryDto.search ?? ''}%`) },
+          { phone: ILike(`%${queryDto.search ?? ''}%`) },
+        ]);
+      }))
       .leftJoinAndSelect('volunteer.address', 'address')
+      .andWhere(new Brackets(qb => {
+        if (queryDto.country) qb.andWhere("LOWER(address.country) LIKE LOWER(:country)", { country: `%${queryDto.country ?? ''}%` });
+        if (queryDto.province) qb.andWhere("LOWER(address.province) LIKE LOWER(:province)", { province: `%${queryDto.province ?? ''}%` });
+        if (queryDto.district) qb.andWhere("LOWER(address.district) LIKE LOWER(:district)", { district: `%${queryDto.district ?? ''}%` });
+        if (queryDto.municipality) qb.andWhere("LOWER(address.municipality) LIKE LOWER(:municipality)", { municipality: `%${queryDto.municipality ?? ''}%` });
+        if (queryDto.ward) qb.andWhere("LOWER(address.ward) LIKE LOWER(:ward)", { ward: `%${queryDto.ward ?? ''}%` });
+        if (queryDto.street) qb.andWhere("LOWER(address.street) LIKE LOWER(:street)", { street: `%${queryDto.street ?? ''}%` });
+      }))
 
     return paginatedData(queryDto, queryBuilder);
   }
