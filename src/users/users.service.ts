@@ -23,7 +23,13 @@ export class UsersService {
     if (foundUser)
       throw new BadRequestException('User with this email already exists');
 
-    const createdUser = this.usersRepository.create(createUserDto);
+    // evaluating image
+    const image = createUserDto.image ? getFileName(createUserDto.image) : null;
+
+    const createdUser = this.usersRepository.create({
+      ...createUserDto,
+      image
+    });
 
     await this.usersRepository.save(createdUser);
 

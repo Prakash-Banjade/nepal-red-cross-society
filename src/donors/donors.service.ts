@@ -61,10 +61,13 @@ export class DonorsService {
   }
 
   async createUserAccount(createDonorDto: CreateDonorDto, password: string) {
+    const image = createDonorDto.image ? getFileName(createDonorDto.image) : null;
+
     const user = await this.userService.create({
       firstName: createDonorDto.firstName,
       lastName: createDonorDto.lastName,
       email: createDonorDto.email,
+      image,
       password,
     } as CreateUserDto);
 
@@ -114,7 +117,8 @@ export class DonorsService {
   async findOne(id: string) {
     const existingDonor = await this.donorRepo.findOne({
       where: { id },
-      relations: { address: true },
+      relations: { address: true, donations: true },
+      order: { donations: { createdAt: 'DESC' } },
     });
     if (!existingDonor) throw new BadRequestException('Donor not found');
     return existingDonor;

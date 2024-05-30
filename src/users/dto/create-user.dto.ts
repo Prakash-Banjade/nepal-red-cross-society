@@ -1,5 +1,6 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsEnum, IsNotEmpty, IsString, Length } from "class-validator";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, Length } from "class-validator";
+import { FileSystemStoredFile } from "nestjs-form-data";
 import { Roles } from "src/core/types/global.types";
 
 export class CreateUserDto {
@@ -28,4 +29,8 @@ export class CreateUserDto {
     @ApiProperty({ type: 'string', enum: Roles })
     @IsEnum(Roles, { message: 'Invalid role' })
     role: Roles;
+
+    @ApiPropertyOptional({ type: 'string', format: 'binary', description: 'Profile Image' })
+    @IsOptional()
+    image?: string | FileSystemStoredFile
 }
