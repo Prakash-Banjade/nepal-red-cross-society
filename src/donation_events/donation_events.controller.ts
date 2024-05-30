@@ -18,8 +18,8 @@ import { FileSystemStoredFile, FormDataRequest } from 'nestjs-form-data';
 import { ChekcAbilities } from 'src/core/decorators/abilities.decorator';
 import { Action } from 'src/core/types/global.types';
 import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.decorator';
-import { QueryDto } from 'src/core/dto/queryDto';
 import { DonationEvent } from './entities/donation_event.entity';
+import { CaslAbilityFactory } from 'src/casl/casl-ability.factory/casl-ability.factory';
 import { EventQueryDto } from './dto/event-query.dto';
 import { Throttle } from '@nestjs/throttler';
 

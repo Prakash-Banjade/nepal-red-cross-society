@@ -6,9 +6,12 @@ import { ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { FileSystemStoredFile, FormDataRequest } from 'nestjs-form-data';
 import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.decorator';
 import { ChekcAbilities } from 'src/core/decorators/abilities.decorator';
-import { Action } from 'src/core/types/global.types';
+import { Action, RequestUser } from 'src/core/types/global.types';
 import { DonorQueryDto } from './dto/donor-query-dto';
 import { Throttle } from '@nestjs/throttler';
+import { CurrentUser } from 'src/core/decorators/user.decorator';
+import { DonationEvent } from 'src/donation_events/entities/donation_event.entity';
+import { Donor } from './entities/donor.entity';
 
 @ApiTags('Donors')
 @Controller('donors')
@@ -29,6 +32,12 @@ export class DonorsController {
   @ChekcAbilities({ action: Action.READ, subject: 'all' })
   findAll(@Query() queryDto: DonorQueryDto) {
     return this.donorsService.findAll(queryDto);
+  }
+
+  @Get('me')
+  @ChekcAbilities({ action: Action.READ, subject: 'me' })
+  getMyDetails(@CurrentUser() user: RequestUser) {
+    return this.donorsService.getMyDetails(user.email);
   }
 
   @Get(':id')

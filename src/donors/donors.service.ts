@@ -196,4 +196,15 @@ export class DonorsService {
     if (!donor) throw new BadRequestException('Donor not found');
     return donor;
   }
+
+  async getMyDetails(email: string) {
+    const donor = await this.donorRepo.findOne({
+      where: { email },
+      relations: {
+        donations: true,
+        address: true,
+      }
+    });
+    return donor;
+  }
 }
