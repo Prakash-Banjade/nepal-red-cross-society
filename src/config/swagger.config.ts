@@ -8,6 +8,7 @@ import { DonationEventsModule } from "src/donation_events/donation_events.module
 import { DonationsModule } from "src/donations/donations.module";
 import { DonorCardModule } from "src/donor_card/donor_card.module";
 import { DonorsModule } from "src/donors/donors.module";
+import { InventoryModule } from "src/inventory/inventory.module";
 import { LabReportsModule } from "src/lab_reports/lab_reports.module";
 import { OrganizationsModule } from "src/organizations/organizations.module";
 import { TestCasesModule } from "src/test_cases/test_cases.module";
@@ -49,6 +50,7 @@ export function setupSwagger(app: INestApplication): void {
             VolunteersModule,
             TestCasesModule,
             BloodRequestModule,
+            InventoryModule,
         ],
     });
     SwaggerModule.setup('api', app, document, {
