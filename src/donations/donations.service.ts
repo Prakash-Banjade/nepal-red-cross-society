@@ -135,6 +135,20 @@ export class DonationsService {
     })
   }
 
+  async verifyDonation(id: string, verifiedBy: string) {
+    const foundDonation = await this.findOne(id);
+
+    foundDonation.verifiedBy = verifiedBy;
+
+    return await this.donationRepo.save(foundDonation);
+  }
+
+  async rejectDonation(id: string, failedReason: string[]) {
+    const foundDonation = await this.findOne(id);
+    foundDonation.failedReason = failedReason;
+    return await this.donationRepo.save(foundDonation);
+  }
+
   private async retrieveDependencies(donationDto: CreateDonationDto | UpdateDonationDto) {
     const donor = await this.donorsService.findDonorWithDonations(donationDto.donor);
     const organization = await this.organizationsService.findOne(donationDto.organization);

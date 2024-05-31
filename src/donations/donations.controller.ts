@@ -10,6 +10,7 @@ import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.d
 import { QueryDto } from 'src/core/dto/queryDto';
 import { DonationQueryDto } from './dto/donation-query.dto';
 import { Throttle } from '@nestjs/throttler';
+import { DonationRejectDto, DonationVerifyDto } from './dto/donation-reject.dto';
 
 @ApiTags('Donations')
 @Controller('donations')
@@ -36,6 +37,18 @@ export class DonationsController {
   @Get(':id')
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.donationsService.findOne(id);
+  }
+
+  @Patch('verify')
+  @ChekcAbilities({ action: Action.UPDATE, subject: 'all' })
+  verifyDonation(@Body('id') id: string, @Body() doantionVerifyDto: DonationVerifyDto) {
+    return this.donationsService.verifyDonation(id, doantionVerifyDto.verifiedby);
+  }
+
+  @Patch(':id/reject')
+  @ChekcAbilities({ action: Action.UPDATE, subject: 'all' })
+  rejectDonation(@Param('id', ParseUUIDPipe) id: string, @Body() donationRejectDto: DonationRejectDto) {
+    return this.donationsService.rejectDonation(id, donationRejectDto.failedReasons);
   }
 
   @Patch(':id')
