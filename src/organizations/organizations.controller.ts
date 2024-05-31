@@ -40,7 +40,7 @@ export class OrganizationsController {
 
   @Patch(':id')
   @ApiConsumes('multipart/form-data')
-  @Throttle({ default: { limit: 3, ttl: 60000 } })
+  @Throttle({ default: { limit: 1, ttl: 2000 } })
   @FormDataRequest({ storage: FileSystemStoredFile })
   @ChekcAbilities({ action: Action.UPDATE, subject: 'all' })
   update(@Param('id', ParseUUIDPipe) id: string, @Body() updateOrganizationDto: UpdateOrganizationDto) {

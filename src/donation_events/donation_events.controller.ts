@@ -56,7 +56,7 @@ export class DonationEventsController {
 
   @Patch(':id')
   @FormDataRequest({ storage: FileSystemStoredFile })
-  @Throttle({ default: { limit: 3, ttl: 60000 } })
+  @Throttle({ default: { limit: 1, ttl: 2000 } })
   @ApiOperation({ description: "Update a donation event", summary: "Edit existing donation event" })
   @ApiConsumes('multipart/form-data')
   @ChekcAbilities({ action: Action.UPDATE, subject: 'all' })

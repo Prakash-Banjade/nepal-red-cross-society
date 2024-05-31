@@ -39,7 +39,7 @@ export class LabReportsController {
   
   @Patch(':id')
   @ApiConsumes('multipart/form-data')
-  @Throttle({ default: { limit: 3, ttl: 60000 } })
+  @Throttle({ default: { limit: 1, ttl: 2000 } })
   @ChekcAbilities({ action: Action.UPDATE, subject: 'all' })
   @FormDataRequest({ storage: FileSystemStoredFile })
   update(@Param('id', ParseUUIDPipe) id: string, @Body() updateLabReportDto: UpdateLabReportDto) {
