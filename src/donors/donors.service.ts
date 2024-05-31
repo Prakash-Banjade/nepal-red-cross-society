@@ -8,7 +8,7 @@ import { AddressService } from 'src/address/address.service';
 import getFileName from 'src/core/utils/getImageUrl';
 import paginatedData from 'src/core/utils/paginatedData';
 import { extractAddress } from 'src/core/utils/extractAddress';
-import { Deleted, QueryDto } from 'src/core/dto/queryDto';
+import { Deleted } from 'src/core/dto/queryDto';
 import { UsersService } from 'src/users/users.service';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import generator from 'generate-password-ts';
