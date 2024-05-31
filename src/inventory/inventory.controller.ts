@@ -2,12 +2,13 @@ import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
 import { InventoryService } from './inventory.service';
 import { CreateInventoryDto } from './dto/create-inventory.dto';
 // import { UpdateInventoryDto } from './dto/update-inventory.dto';
-import { ApiConsumes } from '@nestjs/swagger';
+import { ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { ChekcAbilities } from 'src/core/decorators/abilities.decorator';
 import { Action } from 'src/core/types/global.types';
 import { FileSystemStoredFile, FormDataRequest } from 'nestjs-form-data';
 
+@ApiTags('Inventory')
 @Controller('inventory')
 export class InventoryController {
   constructor(private readonly inventoryService: InventoryService) {}
