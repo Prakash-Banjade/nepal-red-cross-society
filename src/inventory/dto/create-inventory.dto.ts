@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEnum, IsInt } from "class-validator";
+import { Transform } from "class-transformer";
+import { IsDateString, IsEnum, IsInt, IsNotEmpty, IsString } from "class-validator";
 import { BloodItems, BloodType, RhFactor } from "src/core/types/global.types";
 
 export class CreateInventoryDto {
@@ -11,11 +12,20 @@ export class CreateInventoryDto {
     @IsEnum(RhFactor)
     rhFactor: RhFactor;
 
-    @ApiProperty({ type: 'int', default: 0 })
-    @IsInt()
-    quantity: number;
+    // @ApiProperty({ type: 'int', default: 0 })
+    // @Transform(({ value }) => parseInt(value))
+    // quantity: number;
 
     @ApiProperty({ type: 'enum', enum: BloodItems })
     @IsEnum(BloodItems)
     itemType: BloodItems;
+
+    @ApiProperty({ type: 'string', format: 'date-time' })
+    @IsDateString()
+    expiresAt: string;
+
+    @ApiProperty({ type: 'string' })
+    @IsString()
+    @IsNotEmpty()
+    itemId: string;
 }

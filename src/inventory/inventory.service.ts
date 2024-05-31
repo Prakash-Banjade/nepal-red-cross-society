@@ -17,29 +17,36 @@ export class InventoryService {
     // check if blood type exists in inventory
     const existingInventory = await this.inventoryRepo.findOne({ where: { bloodType: createInventoryDto.bloodType, rhFactor: createInventoryDto.rhFactor }, relations: { items: true } });
     if (existingInventory) {
-      // check if item exists in inventory
-      const existingItem = existingInventory.items.find(item => item.itemType === createInventoryDto.itemType);
-      if (!!existingItem) {
-        existingItem.quantity += createInventoryDto.quantity;
-        await this.inventoryItemRepo.save(existingItem);
-      } else {
-        const inventoryItem = this.inventoryItemRepo.create({ quantity: createInventoryDto.quantity, itemType: createInventoryDto.itemType, inventory: existingInventory });
-        await this.inventoryItemRepo.save(inventoryItem);
-      }
+      const inventoryItem = this.inventoryItemRepo.create({ itemType: createInventoryDto.itemType, itemId: createInventoryDto.itemId, expiresAt: createInventoryDto.expiresAt, inventory: existingInventory });
+      await this.inventoryItemRepo.save(inventoryItem);
     } else {
       const inventory = this.inventoryRepo.create({ bloodType: createInventoryDto.bloodType, rhFactor: createInventoryDto.rhFactor });
-      const inventoryItem = this.inventoryItemRepo.create({ quantity: createInventoryDto.quantity, itemType: createInventoryDto.itemType, inventory });
+      const inventoryItem = this.inventoryItemRepo.create({ itemType: createInventoryDto.itemType, inventory, itemId: createInventoryDto.itemId, expiresAt: createInventoryDto.expiresAt });
       await this.inventoryRepo.save(inventory);
       await this.inventoryItemRepo.save(inventoryItem);
+    }
+
+    return {
+      message: 'Inventory created successfully',
     }
   }
 
   async findAll() {
-    return await this.inventoryRepo.find({ relations: { items: true } });
+    const inventories = await this.inventoryRepo.find({ relations: { items: true } });
+
+    const inventoriesWithQuantities = inventories.map(inventory => {
+      return {
+        ...inventory,
+        quantities: inventory.quantity
+      };
+    });
+
+    return inventoriesWithQuantities;
   }
 
   async findOne(id: string) {
-    const existingInventory = await this.inventoryRepo.find({
+    const existingInventory = await this.inventoryRepo.findOne({
+      where: { id },
       relations: { items: true },
     })
     if (!existingInventory) throw new NotFoundException('Inventory not found');

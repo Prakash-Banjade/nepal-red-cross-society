@@ -5,12 +5,18 @@ import { BaseEntity } from "src/core/entities/base.entity";
 
 @Entity('inventory_items')
 export class InventoryItem extends BaseEntity {
-    @Column({ type: 'int', default: 0 })
-    quantity: number;
+    @Column({ type: 'varchar' })
+    itemId: string;
+
+    // @Column({ type: 'int', default: 0 })
+    // quantity: number;
 
     @Column({ type: 'enum', enum: BloodItems })
     itemType: BloodItems;
 
     @ManyToOne(() => Inventory, inventory => inventory.items)
     inventory: Inventory
+
+    @Column({ type: 'datetime' })
+    expiresAt: string;
 }
