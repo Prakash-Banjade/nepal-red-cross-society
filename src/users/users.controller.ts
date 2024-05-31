@@ -12,6 +12,7 @@ import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.d
 import { QueryDto } from 'src/core/dto/queryDto';
 import { CurrentUser } from 'src/core/decorators/user.decorator';
 import { Throttle } from '@nestjs/throttler';
+import { UserQueryDto } from './entities/user-query.dto';
 
 @ApiBearerAuth()
 @ApiTags('Users')
@@ -33,7 +34,7 @@ export class UsersController {
   @Get()
   @ApiPaginatedResponse(CreateOrganizationDto)
   @ChekcAbilities({ action: Action.READ, subject: 'all' })
-  public findAll(@Query() queryDto: QueryDto) {
+  findAll(@Query() queryDto: UserQueryDto) {
     return this.usersService.findAll(queryDto)
   }
 
@@ -45,17 +46,17 @@ export class UsersController {
 
   @Patch(':id')
   @FormDataRequest({ storage: MemoryStoredFile })
-  @Throttle({ default: { limit: 3, ttl: 60000 } })
+  @Throttle({ default: { limit: 1, ttl: 2000 } })
   @ApiConsumes('multipart/form-data')
   @ChekcAbilities({ action: Action.UPDATE, subject: 'all' })
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(id, updateUserDto);
   }
 
-  @Post('deleteMany')
-  @HttpCode(HttpStatus.OK)
-  @ChekcAbilities({ action: Action.DELETE, subject: 'all' })
-  remove(@Body('ids') ids: string, @CurrentUser() user: RequestUser) {
-    return this.usersService.remove(JSON.parse(ids), user);
-  }
+  // @Post('deleteMany')
+  // @HttpCode(HttpStatus.OK)
+  // @ChekcAbilities({ action: Action.DELETE, subject: 'all' })
+  // remove(@Body('ids') ids: string, @CurrentUser() user: RequestUser) {
+  //   return this.usersService.remove(JSON.parse(ids), user);
+  // }
 }
