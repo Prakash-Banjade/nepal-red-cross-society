@@ -26,6 +26,7 @@ import { join } from 'path';
 import { MailModule } from './mail/mail.module';
 import { ConfigModule } from '@nestjs/config';
 import { BloodRequestModule } from './blood_request/blood_request.module';
+import { InventoryModule } from './inventory/inventory.module';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { BloodRequestModule } from './blood_request/blood_request.module';
     AddressModule,
     MailModule,
     BloodRequestModule,
+    InventoryModule,
   ],
   controllers: [AppController],
   providers: [
