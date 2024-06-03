@@ -9,6 +9,7 @@ import { TestCase } from 'src/test_cases/entities/test_case.entity';
 import { TestResult } from 'src/test_cases/entities/test_result.entity';
 import { Deleted, QueryDto } from 'src/core/dto/queryDto';
 import paginatedData from 'src/core/utils/paginatedData';
+import { DonationStatus, TestCaseStatus } from 'src/core/types/global.types';
 
 @Injectable()
 export class LabReportsService {
@@ -30,7 +31,13 @@ export class LabReportsService {
 
     const savedLabReport = await this.labReportRepo.save(labReport);
 
-    await this.evaluateTestResults(createLabReportDto, savedLabReport);
+    const isSucceed = await this.evaluateTestResults(createLabReportDto, savedLabReport); // also save test results
+
+    donation.status = isSucceed ? DonationStatus.SUCCESS : DonationStatus.FAILED;
+
+    donation.verifiedBy = createLabReportDto.issuedBy
+
+    await this.donationRepo.save(donation);
 
     return {
       success: true,
@@ -76,7 +83,13 @@ export class LabReportsService {
 
     const savedLabReport = await this.labReportRepo.save(existingLabReport);
 
-    await this.evaluateTestResults_update(updateLabReportDto, savedLabReport.id);
+    const isSucceed = await this.evaluateTestResults_update(updateLabReportDto, savedLabReport.id);
+
+    existingDonation.status = isSucceed ? DonationStatus.SUCCESS : DonationStatus.FAILED;
+
+    existingDonation.verifiedBy = updateLabReportDto?.issuedBy || existingDonation.verifiedBy
+
+    await this.donationRepo.save(existingDonation);
 
     return {
       success: true,
@@ -109,31 +122,49 @@ export class LabReportsService {
     const testCaseIds = createLabReportDto?.testCases?.map(testCase => testCase.testCase)
     const testCases = await this.testCaseRepo.findBy({ id: In(testCaseIds) })
 
+    let statusArr: boolean[] = []
+
     for (const testCase of testCases) {
+      const obtainedResult = createLabReportDto.testCases.find(t => t.testCase === testCase.id).obtainedResult;
+      const status = createLabReportDto.testCases.find(t => t.testCase === testCase.id).status
+
       await this.testResultRepo.save({
         labReport,
         testCase,
-        obtainedResult: createLabReportDto.testCases.find(t => t.testCase === testCase.id).obtainedResult,
-        status: createLabReportDto.testCases.find(t => t.testCase === testCase.id).status
-
+        obtainedResult,
+        status,
       })
+
+      statusArr.push(status === TestCaseStatus.PASS);
     }
+
+    return statusArr.every(status => !!status);
+
   }
 
   async evaluateTestResults_update(updateLabReportDto: UpdateLabReportDto, labReportId: string) {
     const labReport = await this.findOne(labReportId)
     const testResults = labReport.testResults;
 
+    let statusArr: boolean[] = []
+
     for (const testResult of testResults) {
       const foundTestResult = await this.testResultRepo.findOne({
         where: { id: testResult.id },
         relations: { testCase: true }
       });
+      const obtainedResult = updateLabReportDto.testCases.find(t => t.testCase === foundTestResult?.testCase?.id)?.obtainedResult
+      const status = updateLabReportDto.testCases.find(t => t.testCase === foundTestResult?.testCase?.id)?.status
+
       Object.assign(foundTestResult, {
-        obtainedResult: updateLabReportDto.testCases.find(t => t.testCase === foundTestResult?.testCase?.id)?.obtainedResult,
-        status: updateLabReportDto.testCases.find(t => t.testCase === foundTestResult?.testCase?.id)?.status,
+        obtainedResult,
+        status,
       })
       await this.testResultRepo.save(foundTestResult);
+
+      statusArr.push(status === TestCaseStatus.PASS);
     }
+
+    return statusArr.every(status => !!status);
   }
 }

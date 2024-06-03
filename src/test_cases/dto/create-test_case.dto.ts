@@ -1,6 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEnum, IsNotEmpty, IsString } from "class-validator";
-import { TestCaseStatus } from "src/core/types/global.types";
+import { IsNotEmpty, IsString } from "class-validator";
 
 export class CreateTestCaseDto {
     @ApiProperty({ type: 'string', description: 'Test Case Name' })
@@ -12,9 +11,4 @@ export class CreateTestCaseDto {
     @IsString()
     @IsNotEmpty()
     desiredResult: string;
-
-    @ApiProperty({ type: 'enum', enum: TestCaseStatus, description: 'Test Case Status' })
-    @IsEnum(TestCaseStatus)
-    @IsNotEmpty()
-    status: TestCaseStatus;
 }
