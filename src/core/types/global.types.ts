@@ -106,3 +106,10 @@ export enum BloodItems {
     PLATELETS = 'platelets',
     WASHED_RED_CELLS = 'washed_red_cells',
 }
+
+export enum BloodInventoryStatus {
+    USABLE = 'usable',
+    WASTE = 'waste',
+    EXPIRED = 'expired',
+    UNVERIFIED = 'unverified',
+}
