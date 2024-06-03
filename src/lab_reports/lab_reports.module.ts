@@ -6,6 +6,7 @@ import { LabReport } from './entities/lab_report.entity';
 import { Donation } from 'src/donations/entities/donation.entity';
 import { TestCase } from 'src/test_cases/entities/test_case.entity';
 import { TestResult } from 'src/test_cases/entities/test_result.entity';
+import { InventoryItem } from 'src/inventory/entities/inventory-item.entity';
 
 @Module({
   imports: [
@@ -14,7 +15,8 @@ import { TestResult } from 'src/test_cases/entities/test_result.entity';
       Donation,
       TestCase,
       TestResult,
-    ])
+      InventoryItem,
+    ]),
   ],
   controllers: [LabReportsController],
   providers: [LabReportsService],

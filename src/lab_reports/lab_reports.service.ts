@@ -9,7 +9,8 @@ import { TestCase } from 'src/test_cases/entities/test_case.entity';
 import { TestResult } from 'src/test_cases/entities/test_result.entity';
 import { Deleted, QueryDto } from 'src/core/dto/queryDto';
 import paginatedData from 'src/core/utils/paginatedData';
-import { DonationStatus, TestCaseStatus } from 'src/core/types/global.types';
+import { BloodInventoryStatus, DonationStatus, TestCaseStatus } from 'src/core/types/global.types';
+import { InventoryItem } from 'src/inventory/entities/inventory-item.entity';
 
 @Injectable()
 export class LabReportsService {
@@ -18,6 +19,7 @@ export class LabReportsService {
     @InjectRepository(Donation) private donationRepo: Repository<Donation>,
     @InjectRepository(TestCase) private testCaseRepo: Repository<TestCase>,
     @InjectRepository(TestResult) private testResultRepo: Repository<TestResult>,
+    @InjectRepository(InventoryItem) private readonly inventoryItemRepo: Repository<InventoryItem>,
   ) { }
 
   async create(createLabReportDto: CreateLabReportDto) {
@@ -33,16 +35,29 @@ export class LabReportsService {
 
     const isSucceed = await this.evaluateTestResults(createLabReportDto, savedLabReport); // also save test results
 
+    // change donation status and verifiedBy
     donation.status = isSucceed ? DonationStatus.SUCCESS : DonationStatus.FAILED;
-
     donation.verifiedBy = createLabReportDto.issuedBy
 
     await this.donationRepo.save(donation);
+
+    // update blood inventory item with corresponding blood bag no
+    await this.updateBloodInventory(donation, isSucceed);
+
 
     return {
       success: true,
       message: 'Lab report created successfully',
     }
+  }
+
+  async updateBloodInventory(donation: Donation, isSucceed: boolean) {
+    const inventoryItem = await this.inventoryItemRepo.findOneBy({ bloodBagNo: donation.bloodBagNo });
+    if (!inventoryItem) return;
+
+    inventoryItem.status = isSucceed ? BloodInventoryStatus.USABLE : BloodInventoryStatus.WASTE;
+
+    await this.inventoryItemRepo.save(inventoryItem);
   }
 
   async findAll(queryDto: QueryDto) {
@@ -90,6 +105,9 @@ export class LabReportsService {
     existingDonation.verifiedBy = updateLabReportDto?.issuedBy || existingDonation.verifiedBy
 
     await this.donationRepo.save(existingDonation);
+
+    // update blood inventory item with corresponding blood bag no
+    await this.updateBloodInventory(existingDonation, isSucceed);
 
     return {
       success: true,
