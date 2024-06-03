@@ -10,6 +10,7 @@ import { OrganizationsModule } from 'src/organizations/organizations.module';
 import { DonationEventsModule } from 'src/donation_events/donation_events.module';
 import { LabReportsModule } from 'src/lab_reports/lab_reports.module';
 import { CertificateModule } from 'src/certificate/certificate.module';
+import { InventoryModule } from 'src/inventory/inventory.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { CertificateModule } from 'src/certificate/certificate.module';
     DonationEventsModule,
     LabReportsModule,
     CertificateModule,
+    InventoryModule,
   ],
   controllers: [DonationsController],
   providers: [DonationsService],

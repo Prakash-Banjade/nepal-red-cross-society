@@ -8,10 +8,9 @@ export class CreateDonationDto {
     @IsNotEmpty()
     donor: string;
 
-    @ApiProperty({ type: String, format: 'uuid', example: '123e4567-e89b-12d3-a456-426614174000' })
-    @IsUUID()
-    @IsNotEmpty()
-    donation_event: string;
+    @ApiPropertyOptional({ type: String, format: 'uuid', example: '123e4567-e89b-12d3-a456-426614174000' })
+    @IsOptional()
+    donation_event?: string;
 
     @ApiProperty({ type: 'enum', enum: DonationType })
     @IsEnum(DonationType, { message: 'Donation type must be one of these: ' + Object.values(DonationType) })

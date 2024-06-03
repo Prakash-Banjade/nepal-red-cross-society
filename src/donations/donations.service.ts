@@ -11,6 +11,9 @@ import { Deleted } from 'src/core/dto/queryDto';
 import paginatedData from 'src/core/utils/paginatedData';
 import { Donor } from 'src/donors/entities/donor.entity';
 import { DonationQueryDto } from './dto/donation-query.dto';
+import { BloodInventoryService } from 'src/inventory/blood-inventory.service';
+import { CreateBloodInventoryDto } from 'src/inventory/dto/create-blood_inventory.dto';
+import { BloodInventoryStatus, BloodItems } from 'src/core/types/global.types';
 
 @Injectable()
 export class DonationsService {
@@ -20,6 +23,7 @@ export class DonationsService {
     private readonly donationEventsService: DonationEventsService,
     private readonly donorsService: DonorsService,
     private readonly organizationsService: OrganizationsService,
+    private readonly bloodInventoryService: BloodInventoryService,
   ) { }
 
   async create(createDonationDto: CreateDonationDto) {
@@ -38,7 +42,27 @@ export class DonationsService {
       ...dependentColumns,
     })
 
-    return await this.donationRepo.save(donation);
+    const savedDonation = await this.donationRepo.save(donation);
+
+    // add blood to inventory
+    await this.addBloodToInventory(savedDonation.id);
+
+    return savedDonation;
+
+  }
+
+  async addBloodToInventory(donationId: string) {
+    const donation = await this.findOne(donationId);
+
+    await this.bloodInventoryService.create({
+      bloodType: donation.donor.bloodType,
+      bloodBagNo: donation.bloodBagNo,
+      itemId: donation.bloodBagNo,
+      expiresAt: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString(),
+      rhFactor: donation.donor.rhFactor,
+      itemType: BloodItems.WHOLE_BLOOD,
+      status: BloodInventoryStatus.UNVERIFIED,
+    } as CreateBloodInventoryDto);
   }
 
   async findAll(queryDto: DonationQueryDto) {
@@ -94,7 +118,7 @@ export class DonationsService {
     const foundDonation = await this.findOne(id);
 
     // retrieving dependent entities
-    const dependentColumns = await this.retrieveDependencies(updateDonationDto);
+    const dependentColumns = await this.retrieveDependencies(updateDonationDto, foundDonation);
 
     // update donation
     Object.assign(foundDonation, {
@@ -149,10 +173,10 @@ export class DonationsService {
     return await this.donationRepo.save(foundDonation);
   }
 
-  private async retrieveDependencies(donationDto: CreateDonationDto | UpdateDonationDto) {
-    const donor = await this.donorsService.findDonorWithDonations(donationDto.donor);
-    const organization = await this.organizationsService.findOne(donationDto.organization);
-    const donationEvent = await this.donationEventsService.findOne(donationDto.donation_event);
+  private async retrieveDependencies(donationDto: CreateDonationDto | UpdateDonationDto, donation?: Donation) {
+    const donor = donationDto.donor ? await this.donorsService.findDonorWithDonations(donationDto.donor) : donation?.donor ? donation.donor : null;
+    const organization = donationDto.organization ? await this.organizationsService.findOne(donationDto.organization) : donation?.organization ? donation.organization : null;
+    const donationEvent = donationDto.donation_event ? await this.donationEventsService.findOne(donationDto.donation_event) : donation?.donation_event ? donation.donation_event : null;
 
     return { donor, organization, donation_event: donationEvent };
   }
@@ -164,7 +188,7 @@ export class DonationsService {
       const lastDonationDate = new Date(lastDonation.createdAt);
       const diffInDays = Math.ceil(Math.abs(now.getTime() - lastDonationDate.getTime()) / (1000 * 60 * 60 * 24));
       if (diffInDays < 90) {
-        throw new BadRequestException('Donor must wait at least 90 days between donations');
+        throw new BadRequestException(`${90 - diffInDays} days until new donation allowed`);
       }
     }
   }

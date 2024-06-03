@@ -13,7 +13,7 @@ export class Donation extends BaseEntity {
     @ManyToOne(() => Donor, donor => donor.donations, { onDelete: 'RESTRICT' })
     donor: Donor
 
-    @ManyToOne(() => DonationEvent, donation_event => donation_event.donations)
+    @ManyToOne(() => DonationEvent, donation_event => donation_event.donations, { nullable: true })
     donation_event: DonationEvent;
 
     @OneToOne(() => Certificate, certificate => certificate.donation, { nullable: true })
@@ -45,8 +45,13 @@ export class Donation extends BaseEntity {
     @BeforeInsert()
     @BeforeUpdate()
     async validate() {
+        if (this.donation_event?.volunteers?.length === 0 && this.donationType === DonationType.ORGANIZATION) {
+            throw new BadRequestException("Donation event must have atleast one volunteer");
+        }
+
         if (this.donationType === DonationType.INDIVIDUAL) {
             this.organization = null;
+            this.donation_event = null;
         }
 
         if (this.status !== DonationStatus.FAILED) {
@@ -55,10 +60,6 @@ export class Donation extends BaseEntity {
 
         if (this.verifiedBy === null) {
             this.labReport = null;
-        }
-
-        if (this.donation_event.volunteers.length === 0) {
-            throw new BadRequestException("Donation event must have atleast one volunteer");
         }
     }
 }
