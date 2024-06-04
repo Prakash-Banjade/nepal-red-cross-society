@@ -1,11 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Brackets, ILike, Repository } from 'typeorm';
+import { Brackets, ILike, In, Repository } from 'typeorm';
 import { InventoryItem } from './entities/inventory-item.entity';
 import { BloodInventory } from './entities/blood_inventory.entity';
 import { CreateBloodInventoryDto } from './dto/create-blood_inventory.dto';
 import { BloodInventoryItemQueryDto } from './dto/blood-inventory-item-query.dto';
 import paginatedData from 'src/core/utils/paginatedData';
+import { BloodInventoryStatus, BloodItems, BloodType, RhFactor } from 'src/core/types/global.types';
 
 @Injectable()
 export class BloodInventoryService {
@@ -95,5 +96,34 @@ export class BloodInventoryService {
         if (!existingInventory) throw new NotFoundException('BloodInventory not found');
 
         await this.bloodInventoryRepo.remove(existingInventory);
+    }
+
+    async checkIfBloodAvailable(bloodType: BloodType, rhFactor: RhFactor, bloodItems: BloodItems[]) {
+        let bloodItemAvailable: boolean = true;
+
+        for (const bloodItem of bloodItems) {
+            const existingBloodItem = await this.inventoryItemRepo.findOne({
+                where: {
+                    inventory: { bloodType, rhFactor },
+                    itemType: bloodItem
+                }
+            })
+
+            if (!existingBloodItem) bloodItemAvailable = false;
+
+            if (existingBloodItem) return existingBloodItem;
+        }
+
+        if (!bloodItemAvailable) throw new BadRequestException('Requested blood is not available at the moment. Please try again later.');
+    }
+
+    async removeBloodItemFromInventory(inventoryItemId: string) {
+        const existingInventoryItem = await this.inventoryItemRepo.findOne({
+            where: { id: inventoryItemId },
+        })
+
+        if (!existingInventoryItem) throw new NotFoundException('Blood item not found');
+
+        await this.inventoryItemRepo.remove(existingInventoryItem);
     }
 }

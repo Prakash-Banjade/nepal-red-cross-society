@@ -7,6 +7,8 @@ import { Donation } from 'src/donations/entities/donation.entity';
 import { TestCase } from 'src/test_cases/entities/test_case.entity';
 import { TestResult } from 'src/test_cases/entities/test_result.entity';
 import { InventoryItem } from 'src/inventory/entities/inventory-item.entity';
+import { DonorsModule } from 'src/donors/donors.module';
+import { BloodInventory } from 'src/inventory/entities/blood_inventory.entity';
 
 @Module({
   imports: [
@@ -16,7 +18,9 @@ import { InventoryItem } from 'src/inventory/entities/inventory-item.entity';
       TestCase,
       TestResult,
       InventoryItem,
+      BloodInventory,
     ]),
+    DonorsModule,
   ],
   controllers: [LabReportsController],
   providers: [LabReportsService],

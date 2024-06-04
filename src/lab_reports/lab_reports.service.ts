@@ -11,6 +11,9 @@ import { Deleted, QueryDto } from 'src/core/dto/queryDto';
 import paginatedData from 'src/core/utils/paginatedData';
 import { BloodInventoryStatus, DonationStatus, TestCaseStatus } from 'src/core/types/global.types';
 import { InventoryItem } from 'src/inventory/entities/inventory-item.entity';
+import { DonorsService } from 'src/donors/donors.service';
+import { UpdateDonorDto } from 'src/donors/dto/update-donor.dto';
+import { BloodInventory } from 'src/inventory/entities/blood_inventory.entity';
 
 @Injectable()
 export class LabReportsService {
@@ -20,6 +23,8 @@ export class LabReportsService {
     @InjectRepository(TestCase) private testCaseRepo: Repository<TestCase>,
     @InjectRepository(TestResult) private testResultRepo: Repository<TestResult>,
     @InjectRepository(InventoryItem) private readonly inventoryItemRepo: Repository<InventoryItem>,
+    @InjectRepository(BloodInventory) private readonly bloodInventoryRepo: Repository<BloodInventory>,
+    private readonly donorService: DonorsService
   ) { }
 
   async create(createLabReportDto: CreateLabReportDto) {
@@ -42,8 +47,13 @@ export class LabReportsService {
     await this.donationRepo.save(donation);
 
     // update blood inventory item with corresponding blood bag no
-    await this.updateBloodInventory(donation, isSucceed);
+    await this.updateBloodInventory(donation, isSucceed, createLabReportDto);
 
+    // update blood type of donor which has been found after testing, the initial blood type while creating donor may be incorrect
+    await this.donorService.update(donation.donor.id, {
+      bloodType: createLabReportDto.bloodType,
+      rhFactor: createLabReportDto.rhFactor,
+    } as UpdateDonorDto)
 
     return {
       success: true,
@@ -51,13 +61,24 @@ export class LabReportsService {
     }
   }
 
-  async updateBloodInventory(donation: Donation, isSucceed: boolean) {
-    const inventoryItem = await this.inventoryItemRepo.findOneBy({ bloodBagNo: donation.bloodBagNo });
+  async updateBloodInventory(donation: Donation, isSucceed: boolean, labReportDto: CreateLabReportDto | UpdateLabReportDto) {
+    const inventoryItem = await this.inventoryItemRepo.findOne({
+      where: { bloodBagNo: donation.bloodBagNo },
+      relations: { inventory: true }
+    });
     if (!inventoryItem) return;
 
-    inventoryItem.status = isSucceed ? BloodInventoryStatus.USABLE : BloodInventoryStatus.WASTE;
-
+    inventoryItem.status = isSucceed ? BloodInventoryStatus.USABLE : BloodInventoryStatus.WASTE; // update inventory blood item status
     await this.inventoryItemRepo.save(inventoryItem);
+
+    if (labReportDto.bloodType && labReportDto.rhFactor) { // update blood inventory, inventory created at first donation can have incorrect blood type which may be fixed after lab report generation
+      const inventory = await this.bloodInventoryRepo.findOneBy({ id: inventoryItem.inventory.id });
+
+      inventory.bloodType = labReportDto.bloodType; // update inventory blood type
+      inventory.rhFactor = labReportDto.rhFactor; // update inventory rh factor
+      await this.bloodInventoryRepo.save(inventory);
+    }
+
   }
 
   async findAll(queryDto: QueryDto) {
@@ -88,7 +109,7 @@ export class LabReportsService {
   async update(id: string, updateLabReportDto: UpdateLabReportDto) {
     const existingLabReport = await this.findOne(id);
     // evaluating donation
-    const existingDonation = await this.donationRepo.findOneBy({ id: updateLabReportDto?.donation });
+    const existingDonation = await this.donation(updateLabReportDto.donation);
     if (!existingDonation) throw new BadRequestException('Donation not found');
 
     Object.assign(existingLabReport, {
@@ -107,7 +128,13 @@ export class LabReportsService {
     await this.donationRepo.save(existingDonation);
 
     // update blood inventory item with corresponding blood bag no
-    await this.updateBloodInventory(existingDonation, isSucceed);
+    await this.updateBloodInventory(existingDonation, isSucceed, updateLabReportDto);
+
+    // update blood type of donor which has been found after testing, the initial blood type while creating donor may be incorrect
+    await this.donorService.update(existingDonation.donor.id, {
+      bloodType: updateLabReportDto.bloodType,
+      rhFactor: updateLabReportDto.rhFactor,
+    } as UpdateDonorDto)
 
     return {
       success: true,
@@ -130,7 +157,10 @@ export class LabReportsService {
   }
 
   async donation(id: string) {
-    const existingDonation = await this.donationRepo.findOneBy({ id });
+    const existingDonation = await this.donationRepo.findOne({
+      where: { id },
+      relations: { donor: true }
+    });
     if (!existingDonation) throw new BadRequestException('Donation not found');
 
     return existingDonation

@@ -4,18 +4,25 @@ import { UpdateBloodRequestDto } from './dto/update-blood_request.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BloodRequest } from './entities/blood_request.entity';
 import { Brackets, ILike, In, IsNull, Not, Or, Repository } from 'typeorm';
-import { Deleted, QueryDto } from 'src/core/dto/queryDto';
+import { Deleted } from 'src/core/dto/queryDto';
 import paginatedData from 'src/core/utils/paginatedData';
 import { BloodRequestQueryDto } from './dto/blood-request-query.dto';
+import { BloodInventoryService } from 'src/inventory/blood-inventory.service';
 
 @Injectable()
 export class BloodRequestService {
   constructor(
     @InjectRepository(BloodRequest) private readonly bloodRequestRepo: Repository<BloodRequest>,
+    private readonly bloodInventoryService: BloodInventoryService
   ) { }
 
   async create(createBloodRequestDto: CreateBloodRequestDto) {
+    const { bloodType, rhFactor, bloodItems } = createBloodRequestDto;
+    const existingBloodItem = await this.bloodInventoryService.checkIfBloodAvailable(bloodType, rhFactor, bloodItems); // check if blood is available
+
     const createdRequest = this.bloodRequestRepo.create(createBloodRequestDto);
+
+    await this.bloodInventoryService.removeBloodItemFromInventory(existingBloodItem.id); // remove blood item from inventory after beign request
 
     return await this.bloodRequestRepo.save(createdRequest);
   }
@@ -32,7 +39,7 @@ export class BloodRequestService {
       .where({ deletedAt })
       .andWhere(new Brackets(qb => {
         qb.where([
-          // { firstName: ILike(`%${queryDto.search ?? ''}%`) },
+          { patientName: ILike(`%${queryDto.search ?? ''}%`) },
         ]);
         queryDto.bloodType && qb.andWhere({ bloodType: queryDto.bloodType });
         queryDto.rhFactor && qb.andWhere({ rhFactor: queryDto.rhFactor })
@@ -49,6 +56,9 @@ export class BloodRequestService {
   }
 
   async update(id: string, updateBloodRequestDto: UpdateBloodRequestDto) {
+    const { bloodType, rhFactor, bloodItems } = updateBloodRequestDto;
+    await this.bloodInventoryService.checkIfBloodAvailable(bloodType, rhFactor, bloodItems); // check if blood is available
+
     const existingRequest = await this.findOne(id);
     Object.assign(existingRequest, updateBloodRequestDto);
 

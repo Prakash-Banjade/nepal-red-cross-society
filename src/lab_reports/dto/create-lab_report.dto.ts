@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { IsDate, IsDefined, IsEnum, IsNotEmpty, IsNotEmptyObject, IsObject, IsString, IsUUID, ValidateNested } from "class-validator";
-import { TestCaseStatus } from "src/core/types/global.types";
+import { BloodType, RhFactor, TestCaseStatus } from "src/core/types/global.types";
 
 class TestCase {
     @ApiProperty({ format: 'uuidv4' })
@@ -29,6 +29,14 @@ export class CreateLabReportDto {
     @IsString()
     @IsNotEmpty()
     issuedBy: string;
+
+    @ApiProperty({ type: 'enum', enum: BloodType, description: 'Donor blood type' })
+    @IsEnum(BloodType, { message: 'Invalid blood type. Blood type must be either ' + Object.values(BloodType).join(', ') })
+    bloodType!: BloodType;
+
+    @ApiProperty({ type: 'enum', enum: RhFactor, description: 'Donor blood RH-factor' })
+    @IsEnum(RhFactor, { message: 'Invalid rh factor. Rh factor must be either ' + Object.values(RhFactor).join(', ') })
+    rhFactor!: RhFactor;
 
     @ApiProperty({ format: 'uuidv4' })
     @IsUUID()
