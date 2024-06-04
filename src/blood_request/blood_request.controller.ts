@@ -9,6 +9,7 @@ import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.d
 import { QueryDto } from 'src/core/dto/queryDto';
 import { FileSystemStoredFile, FormDataRequest } from 'nestjs-form-data';
 import { Throttle } from '@nestjs/throttler';
+import { BloodRequestQueryDto } from './dto/blood-request-query.dto';
 
 @Controller('blood-request')
 @ApiTags('Blood Request')
@@ -27,7 +28,7 @@ export class BloodRequestController {
   @Get()
   @ApiPaginatedResponse(CreateBloodRequestDto)
   @ChekcAbilities({ action: Action.READ, subject: 'all' })
-  findAll(@Query() queryDto: QueryDto) {
+  findAll(@Query() queryDto: BloodRequestQueryDto) {
     return this.bloodRequestService.findAll(queryDto);
   }
 
