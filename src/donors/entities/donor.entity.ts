@@ -9,6 +9,9 @@ import { BadRequestException } from "@nestjs/common";
 
 @Entity()
 export class Donor extends BaseEntity {
+    @Column({ type: 'int' })
+    donorId: number;
+
     @Column({ type: 'varchar', length: 30 })
     firstName: string;
 

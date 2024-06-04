@@ -43,6 +43,7 @@ export class DonorsService {
       ...createDonorDto,
       address,
       image,
+      donorId: await this.generateDonorId(),
       account: savedUser
     });
 
@@ -206,5 +207,10 @@ export class DonorsService {
       }
     });
     return donor;
+  }
+
+  async generateDonorId() {
+    const lastDonor = (await this.donorRepo.find()).at(-1);
+    return lastDonor ? lastDonor.donorId + 1 : 1
   }
 }
