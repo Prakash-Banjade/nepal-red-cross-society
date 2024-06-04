@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
 import { IsBoolean, IsEnum, IsInt, IsNotEmpty, IsString, Matches } from "class-validator";
-import { BloodItems, Gender } from "src/core/types/global.types";
+import { BloodItems, BloodType, Gender, RhFactor } from "src/core/types/global.types";
 
 export class CreateBloodRequestDto {
     @ApiProperty({ type: 'string' })
@@ -52,6 +52,14 @@ export class CreateBloodRequestDto {
     @ApiProperty({ type: 'enum', enum: BloodItems, isArray: true })
     @IsEnum(BloodItems, { each: true })
     bloodItems: BloodItems[]
+
+    @ApiProperty({ type: 'enum', enum: BloodType, description: 'Blood type' })
+    @IsEnum(BloodType, { message: 'Invalid blood type. Blood type must be either ' + Object.values(BloodType).join(', ') })
+    bloodType!: BloodType;
+
+    @ApiProperty({ type: 'enum', enum: RhFactor, description: 'Blood RH-factor' })
+    @IsEnum(RhFactor, { message: 'Invalid rh factor. Rh factor must be either ' + Object.values(RhFactor).join(', ') })
+    rhFactor!: RhFactor;
 
     @ApiProperty({ type: 'int' })
     @Transform(({ value }) => parseInt(value))
