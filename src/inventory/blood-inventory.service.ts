@@ -1,9 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Brackets, ILike, Repository } from 'typeorm';
 import { InventoryItem } from './entities/inventory-item.entity';
 import { BloodInventory } from './entities/blood_inventory.entity';
 import { CreateBloodInventoryDto } from './dto/create-blood_inventory.dto';
+import { BloodInventoryItemQueryDto } from './dto/blood-inventory-item-query.dto';
+import paginatedData from 'src/core/utils/paginatedData';
 
 @Injectable()
 export class BloodInventoryService {
@@ -49,14 +51,34 @@ export class BloodInventoryService {
         return inventoriesWithQuantities;
     }
 
-    async findOne(id: string) {
+    async findOne(id: string, queryDto: BloodInventoryItemQueryDto) {
         const existingInventory = await this.bloodInventoryRepo.findOne({
             where: { id },
             relations: { items: true },
         })
         if (!existingInventory) throw new NotFoundException('BloodInventory not found');
 
-        return existingInventory;
+        const queryBuilder = this.inventoryItemRepo.createQueryBuilder('bloodItem');
+
+        queryBuilder
+            .orderBy("bloodItem.createdAt", queryDto.order)
+            .skip(queryDto.search ? undefined : queryDto.skip)
+            .take(queryDto.search ? undefined : queryDto.take)
+            .andWhere(new Brackets(qb => {
+                qb.where([
+                    { bloodBagNo: ILike(`%${queryDto.search ?? ''}%`) },
+                ]);
+                queryDto.status && qb.andWhere({ status: queryDto.status });
+                queryDto.itemType && qb.andWhere({ itemType: queryDto.itemType });
+
+            }))
+            .leftJoinAndSelect('bloodItem.inventory', 'inventory')
+
+        return paginatedData(queryDto, queryBuilder, {
+            id: existingInventory.id,
+            bloodType: existingInventory.bloodType,
+            rhFactor: existingInventory.rhFactor,
+        });
     }
 
     // async update(id: string, updateInventoryDto: UpdateInventoryDto) {
@@ -65,7 +87,12 @@ export class BloodInventoryService {
     // }
 
     async remove(id: string) {
-        const existingInventory = await this.findOne(id);
+        // const existingInventory = await this.findOne(id);
+        const existingInventory = await this.bloodInventoryRepo.findOne({
+            where: { id },
+            relations: { items: true },
+        })
+        if (!existingInventory) throw new NotFoundException('BloodInventory not found');
 
         await this.bloodInventoryRepo.remove(existingInventory);
     }
