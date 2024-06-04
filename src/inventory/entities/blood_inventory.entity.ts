@@ -5,13 +5,13 @@ import { InventoryItem } from "./inventory-item.entity";
 
 @Entity()
 export class BloodInventory extends BaseEntity {
-@Column({ type: 'enum', enum: BloodType })
+    @Column({ type: 'enum', enum: BloodType })
     bloodType: BloodType
 
     @Column({ type: 'enum', enum: RhFactor })
     rhFactor: RhFactor;
 
-    @OneToMany(() => InventoryItem, (item) => item.inventory, { onDelete: "CASCADE" })
+    @OneToMany(() => InventoryItem, (item) => item.inventory, { onDelete: "CASCADE", nullable: true })
     items: InventoryItem[]
 
     get quantity() {

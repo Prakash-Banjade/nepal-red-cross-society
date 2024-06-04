@@ -20,8 +20,14 @@ export class BloodInventoryService {
             await this.inventoryItemRepo.save(inventoryItem);
         } else {
             const inventory = this.bloodInventoryRepo.create({ bloodType: createBloodInventoryDto.bloodType, rhFactor: createBloodInventoryDto.rhFactor });
-            const inventoryItem = this.inventoryItemRepo.create({ itemType: createBloodInventoryDto.itemType, inventory, itemId: createBloodInventoryDto.itemId, expiresAt: createBloodInventoryDto.expiresAt, bloodBagNo: createBloodInventoryDto.bloodBagNo });
-            await this.bloodInventoryRepo.save(inventory);
+            const savedInventory = await this.bloodInventoryRepo.save(inventory);
+            const inventoryItem = this.inventoryItemRepo.create({
+                itemType: createBloodInventoryDto.itemType,
+                inventory: savedInventory,
+                itemId: createBloodInventoryDto.itemId,
+                expiresAt: createBloodInventoryDto.expiresAt,
+                bloodBagNo: createBloodInventoryDto.bloodBagNo
+            });
             await this.inventoryItemRepo.save(inventoryItem);
         }
 
