@@ -5,12 +5,13 @@ import { SelectQueryBuilder } from "typeorm";
 
 export default async function paginatedData<T>(
     pageOptionsDto: PageOptionsDto,
-    queryBuilder: SelectQueryBuilder<T>
+    queryBuilder: SelectQueryBuilder<T>,
+    additionalData: any = {}
 ) {
     const itemCount = await queryBuilder.getCount();
     const { entities } = await queryBuilder.getRawAndEntities();
 
     const pageMetaDto = new PageMetaDto({ itemCount, pageOptionsDto });
 
-    return new PageDto(entities, pageMetaDto);
+    return new PageDto(entities, pageMetaDto, additionalData);
 }
