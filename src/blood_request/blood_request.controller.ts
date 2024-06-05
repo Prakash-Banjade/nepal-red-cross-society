@@ -38,14 +38,14 @@ export class BloodRequestController {
     return this.bloodRequestService.findOne(id);
   }
 
-  @Patch(':id')
-  @ApiConsumes('multipart/form-data')
-  @Throttle({ default: { limit: 1, ttl: 2000 } })
-  @ChekcAbilities({ action: Action.UPDATE, subject: 'all' })
-  @FormDataRequest({ storage: FileSystemStoredFile })
-  update(@Param('id') id: string, @Body() updateBloodRequestDto: UpdateBloodRequestDto) {
-    return this.bloodRequestService.update(id, updateBloodRequestDto);
-  }
+  // @Patch(':id')
+  // @ApiConsumes('multipart/form-data')
+  // @Throttle({ default: { limit: 1, ttl: 2000 } })
+  // @ChekcAbilities({ action: Action.UPDATE, subject: 'all' })
+  // @FormDataRequest({ storage: FileSystemStoredFile })
+  // update(@Param('id') id: string, @Body() updateBloodRequestDto: UpdateBloodRequestDto) {
+  //   return this.bloodRequestService.update(id, updateBloodRequestDto);
+  // }
 
   @Post('deleteMany')
   @HttpCode(HttpStatus.OK)
