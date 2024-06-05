@@ -27,7 +27,7 @@ export class CreateBloodInventoryDto {
     @ApiProperty({ type: 'string', format: 'date-time' })
     @IsDateString()
     @IsOptional()
-    expiresAt: string = 'Unverified';
+    expiresAt: string = new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString();
 
     @ApiProperty({ type: 'enum', enum: BloodInventoryStatus })
     @IsEnum(BloodInventoryStatus)
