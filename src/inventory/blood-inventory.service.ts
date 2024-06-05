@@ -79,6 +79,7 @@ export class BloodInventoryService {
             id: existingInventory.id,
             bloodType: existingInventory.bloodType,
             rhFactor: existingInventory.rhFactor,
+            ...existingInventory.quantityByItemStatus,
         });
     }
 

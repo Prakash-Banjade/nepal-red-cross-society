@@ -1,5 +1,5 @@
 import { BaseEntity } from "src/core/entities/base.entity";
-import { BloodItems, BloodType, RhFactor } from "src/core/types/global.types";
+import { BloodInventoryStatus, BloodItems, BloodType, RhFactor } from "src/core/types/global.types";
 import { Column, Entity, OneToMany } from "typeorm";
 import { InventoryItem } from "./inventory-item.entity";
 
@@ -18,6 +18,14 @@ export class BloodInventory extends BaseEntity {
         const quantities = {};
         Object.values(BloodItems).forEach((itemType) => {
             quantities[itemType] = this.items?.filter((item) => item.itemType === itemType)?.length || 0;
+        });
+        return quantities;
+    }
+
+    get quantityByItemStatus() {
+        const quantities = {};
+        Object.values(BloodInventoryStatus).forEach((status) => {
+            quantities[status] = this.items?.filter((item) => item.status === status)?.length || 0;
         });
         return quantities;
     }
