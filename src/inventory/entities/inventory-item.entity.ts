@@ -1,6 +1,5 @@
 import { BloodInventoryStatus, BloodItems } from "src/core/types/global.types";
 import { Column, Entity, ManyToOne } from "typeorm";
-import { Inventory } from "./inventory.entity";
 import { BaseEntity } from "src/core/entities/base.entity";
 import { BloodInventory } from "./blood_inventory.entity";
 
