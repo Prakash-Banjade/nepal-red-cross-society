@@ -71,9 +71,12 @@ export class BloodInventoryService {
                 ]);
                 queryDto.status && qb.andWhere({ status: queryDto.status });
                 queryDto.itemType && qb.andWhere({ itemType: queryDto.itemType });
-
             }))
             .leftJoinAndSelect('bloodItem.inventory', 'inventory')
+            .andWhere(new Brackets(qb => { // filter blood items based on current blood type and rhfactor
+                qb.andWhere("LOWER(inventory.bloodType) LIKE LOWER(:bloodType)", { bloodType: existingInventory.bloodType });
+                qb.andWhere("LOWER(inventory.rhFactor) LIKE LOWER(:rhFactor)", { rhFactor: existingInventory.rhFactor });
+            }))
 
         return paginatedData(queryDto, queryBuilder, {
             id: existingInventory.id,
@@ -106,7 +109,8 @@ export class BloodInventoryService {
             const existingBloodItem = await this.inventoryItemRepo.findOne({
                 where: {
                     inventory: { bloodType, rhFactor },
-                    itemType: bloodItem
+                    itemType: bloodItem,
+                    status: BloodInventoryStatus.USABLE,
                 }
             })
 
