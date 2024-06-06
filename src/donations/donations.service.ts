@@ -41,6 +41,7 @@ export class DonationsService {
     const donation = this.donationRepo.create({
       ...createDonationDto,
       ...dependentColumns,
+      donorAge: this.calculateDonorAge(new Date(dependentColumns.donor.dob)),
     })
 
     const savedDonation = await this.donationRepo.save(donation);
@@ -192,5 +193,10 @@ export class DonationsService {
         throw new BadRequestException(`${CONSTANTS.DONATION_INTERVAL - diffInDays} days until new donation allowed`);
       }
     }
+  }
+
+  calculateDonorAge(dob: Date) {
+    const floatingAge = (Date.now() - dob.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
+    return parseInt(floatingAge.toString())
   }
 }

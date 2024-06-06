@@ -13,6 +13,9 @@ export class Donation extends BaseEntity {
     @ManyToOne(() => Donor, donor => donor.donations, { onDelete: 'RESTRICT' })
     donor: Donor
 
+    @Column({ type: 'int' })
+    donorAge: number
+
     @ManyToOne(() => DonationEvent, donation_event => donation_event.donations, { nullable: true })
     donation_event: DonationEvent;
 

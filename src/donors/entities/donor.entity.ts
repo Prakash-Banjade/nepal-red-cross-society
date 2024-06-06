@@ -69,6 +69,11 @@ export class Donor extends BaseEntity {
     @OneToOne(() => DonorCard, (donorCard) => donorCard.donor, { nullable: true })
     donorCard: DonorCard
 
+    get age() {
+        const floatingAge = (Date.now() - new Date(this.dob).getTime()) / (1000 * 60 * 60 * 24 * 365.25);
+        return parseInt(floatingAge.toString())
+    }
+
     @BeforeInsert()
     @BeforeUpdate()
     checkIfEligibleForDonorCard() {
