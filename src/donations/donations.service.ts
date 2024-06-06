@@ -13,7 +13,7 @@ import { Donor } from 'src/donors/entities/donor.entity';
 import { DonationQueryDto } from './dto/donation-query.dto';
 import { BloodInventoryService } from 'src/inventory/blood-inventory.service';
 import { CreateBloodInventoryDto } from 'src/inventory/dto/create-blood_inventory.dto';
-import { BloodInventoryStatus, BloodItems } from 'src/core/types/global.types';
+import { BloodInventoryStatus, BloodItems } from 'src/core/types/fieldsEnum.types';
 import { CONSTANTS } from 'src/CONSTANTS';
 
 @Injectable()

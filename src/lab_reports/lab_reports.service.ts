@@ -9,7 +9,7 @@ import { TestCase } from 'src/test_cases/entities/test_case.entity';
 import { TestResult } from 'src/test_cases/entities/test_result.entity';
 import { Deleted, QueryDto } from 'src/core/dto/queryDto';
 import paginatedData from 'src/core/utils/paginatedData';
-import { BloodInventoryStatus, DonationStatus, TestCaseStatus } from 'src/core/types/global.types';
+import { BloodInventoryStatus, DonationStatus, TestCaseStatus } from 'src/core/types/fieldsEnum.types';
 import { InventoryItem } from 'src/inventory/entities/inventory-item.entity';
 import { DonorsService } from 'src/donors/donors.service';
 import { UpdateDonorDto } from 'src/donors/dto/update-donor.dto';

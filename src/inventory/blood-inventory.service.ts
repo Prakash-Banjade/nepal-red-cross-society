@@ -6,7 +6,7 @@ import { BloodInventory } from './entities/blood_inventory.entity';
 import { CreateBloodInventoryDto } from './dto/create-blood_inventory.dto';
 import { BloodInventoryItemQueryDto } from './dto/blood-inventory-item-query.dto';
 import paginatedData from 'src/core/utils/paginatedData';
-import { BloodInventoryStatus, BloodItems, BloodType, RhFactor } from 'src/core/types/global.types';
+import { BloodInventoryStatus, BloodItems, BloodType, RhFactor } from 'src/core/types/fieldsEnum.types';
 
 @Injectable()
 export class BloodInventoryService {

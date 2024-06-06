@@ -2,7 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, Length } from 'class-validator';
 import { FileSystemStoredFile, HasMimeType, IsFile } from 'nestjs-form-data';
 import { CreateAddressDto } from 'src/address/dto/create-address.dto';
-import { Education, Gender } from 'src/core/types/global.types';
+import { Education, Gender } from 'src/core/types/fieldsEnum.types';
 
 export class CreateVolunteerDto extends CreateAddressDto {
   @ApiProperty({ description: 'Volunteer first name' })

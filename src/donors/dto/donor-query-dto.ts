@@ -4,7 +4,7 @@ import { IsEnum, IsOptional, IsString, Min, ValidateIf } from "class-validator";
 import { QueryDto } from "src/core/dto/queryDto";
 import { Country } from "src/core/types/country.types";
 import { District } from "src/core/types/districts.types";
-import { BloodType, Caste, Gender, Race, Religion, RhFactor } from "src/core/types/global.types";
+import { BloodType, Caste, Gender, Race, Religion, RhFactor } from "src/core/types/fieldsEnum.types";
 import { Municipal } from "src/core/types/municipals.types";
 import { Province } from "src/core/types/provinces.types";
 

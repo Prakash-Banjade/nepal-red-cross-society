@@ -1,5 +1,5 @@
 import { BaseEntity } from "src/core/entities/base.entity";
-import { BloodItems, BloodType, Gender, RhFactor } from "src/core/types/global.types";
+import { BloodItems, BloodType, Gender, RhFactor } from "src/core/types/fieldsEnum.types";
 import { Column, Entity } from "typeorm";
 
 @Entity()

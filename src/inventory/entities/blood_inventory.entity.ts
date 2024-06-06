@@ -1,5 +1,5 @@
 import { BaseEntity } from "src/core/entities/base.entity";
-import { BloodInventoryStatus, BloodItems, BloodType, RhFactor } from "src/core/types/global.types";
+import { BloodInventoryStatus, BloodItems, BloodType, RhFactor } from "src/core/types/fieldsEnum.types";
 import { Column, Entity, OneToMany } from "typeorm";
 import { InventoryItem } from "./inventory-item.entity";
 

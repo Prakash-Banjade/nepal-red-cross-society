@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsDate, IsDefined, IsEnum, IsNotEmpty, IsNotEmptyObject, IsObject, IsString, IsUUID, ValidateNested } from "class-validator";
-import { BloodType, RhFactor, TestCaseStatus } from "src/core/types/global.types";
+import { IsDate, IsDefined, IsEnum, IsNotEmpty, IsNotEmptyObject, IsObject, IsString, IsUUID } from "class-validator";
+import { BloodType, RhFactor, TestCaseStatus } from "src/core/types/fieldsEnum.types";
 
 class TestCase {
     @ApiProperty({ format: 'uuidv4' })

@@ -2,7 +2,7 @@ import { Address } from "src/address/entities/address.entity";
 import { Donation } from "src/donations/entities/donation.entity";
 import { DonorCard } from "src/donor_card/entities/donor_card.entity";
 import { BaseEntity } from "src/core/entities/base.entity";
-import { BloodType, Caste, Gender, Race, Religion, RhFactor } from "src/core/types/global.types";
+import { BloodType, Caste, Gender, Race, Religion, RhFactor } from "src/core/types/fieldsEnum.types";
 import { BeforeInsert, BeforeSoftRemove, BeforeUpdate, Column, Entity, JoinColumn, OneToMany, OneToOne } from "typeorm";
 import { User } from "src/users/entities/user.entity";
 import { BadRequestException } from "@nestjs/common";

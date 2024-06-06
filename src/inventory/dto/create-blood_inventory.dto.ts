@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsDateString, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString } from "class-validator";
 import { CONSTANTS } from "src/CONSTANTS";
-import { BloodInventoryStatus, BloodItems, BloodType, RhFactor } from "src/core/types/global.types";
+import { BloodInventoryStatus, BloodItems, BloodType, RhFactor } from "src/core/types/fieldsEnum.types";
 
 export class CreateBloodInventoryDto {
     @ApiProperty({ type: 'enum', enum: BloodType })

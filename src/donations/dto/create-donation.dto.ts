@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from "class-validator";
-import { DonationStatus, DonationType } from "src/core/types/global.types";
+import { DonationStatus, DonationType } from "src/core/types/fieldsEnum.types";
 
 export class CreateDonationDto {
     @ApiProperty({ type: String, format: 'uuid', example: '123e4567-e89b-12d3-a456-426614174000' })

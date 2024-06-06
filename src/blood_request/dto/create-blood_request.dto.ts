@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
 import { IsBoolean, IsEnum, IsInt, IsNotEmpty, IsString, Matches } from "class-validator";
-import { BloodItems, BloodType, Gender, RhFactor } from "src/core/types/global.types";
+import { BloodItems, BloodType, Gender, RhFactor } from "src/core/types/fieldsEnum.types";
 
 export class CreateBloodRequestDto {
     @ApiProperty({ type: 'string' })

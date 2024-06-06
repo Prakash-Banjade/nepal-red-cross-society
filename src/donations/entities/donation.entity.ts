@@ -4,7 +4,7 @@ import { Donor } from "src/donors/entities/donor.entity";
 import { BaseEntity } from "src/core/entities/base.entity";
 import { LabReport } from "src/lab_reports/entities/lab_report.entity";
 import { Organization } from "src/organizations/entities/organization.entity";
-import { DonationStatus, DonationType } from "src/core/types/global.types";
+import { DonationStatus, DonationType } from "src/core/types/fieldsEnum.types";
 import { BeforeInsert, BeforeSoftRemove, BeforeUpdate, Column, Entity, ManyToOne, OneToOne } from "typeorm";
 import { BadRequestException } from "@nestjs/common";
 
