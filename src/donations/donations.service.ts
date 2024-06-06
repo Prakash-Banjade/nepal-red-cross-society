@@ -14,6 +14,7 @@ import { DonationQueryDto } from './dto/donation-query.dto';
 import { BloodInventoryService } from 'src/inventory/blood-inventory.service';
 import { CreateBloodInventoryDto } from 'src/inventory/dto/create-blood_inventory.dto';
 import { BloodInventoryStatus, BloodItems } from 'src/core/types/global.types';
+import { CONSTANTS } from 'src/CONSTANTS';
 
 @Injectable()
 export class DonationsService {
@@ -58,7 +59,7 @@ export class DonationsService {
       bloodType: donation.donor.bloodType,
       bloodBagNo: donation.bloodBagNo,
       itemId: donation.bloodBagNo,
-      expiresAt: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString(),
+      expiresAt: new Date(Date.now() + CONSTANTS.BLOOD_EXPIRY_INTERVAL).toISOString(),
       rhFactor: donation.donor.rhFactor,
       itemType: BloodItems.WHOLE_BLOOD,
       status: BloodInventoryStatus.UNVERIFIED,
@@ -187,8 +188,8 @@ export class DonationsService {
     if (lastDonation) {
       const lastDonationDate = new Date(lastDonation.createdAt);
       const diffInDays = Math.ceil(Math.abs(now.getTime() - lastDonationDate.getTime()) / (1000 * 60 * 60 * 24));
-      if (diffInDays < 90) {
-        throw new BadRequestException(`${90 - diffInDays} days until new donation allowed`);
+      if (diffInDays < CONSTANTS.DONATION_INTERVAL) {
+        throw new BadRequestException(`${CONSTANTS.DONATION_INTERVAL - diffInDays} days until new donation allowed`);
       }
     }
   }

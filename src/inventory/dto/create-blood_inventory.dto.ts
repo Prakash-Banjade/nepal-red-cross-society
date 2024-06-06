@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsDateString, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { CONSTANTS } from "src/CONSTANTS";
 import { BloodInventoryStatus, BloodItems, BloodType, RhFactor } from "src/core/types/global.types";
 
 export class CreateBloodInventoryDto {
@@ -27,7 +28,7 @@ export class CreateBloodInventoryDto {
     @ApiProperty({ type: 'string', format: 'date-time' })
     @IsDateString()
     @IsOptional()
-    expiresAt: string = new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString();
+    expiresAt: string = new Date(Date.now() + CONSTANTS.BLOOD_EXPIRY_INTERVAL).toISOString();
 
     @ApiProperty({ type: 'enum', enum: BloodInventoryStatus })
     @IsEnum(BloodInventoryStatus)
