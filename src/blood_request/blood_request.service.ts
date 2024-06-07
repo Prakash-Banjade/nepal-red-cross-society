@@ -8,6 +8,7 @@ import { Deleted } from 'src/core/dto/queryDto';
 import paginatedData from 'src/core/utils/paginatedData';
 import { BloodRequestQueryDto } from './dto/blood-request-query.dto';
 import { BloodInventoryService } from 'src/inventory/blood-inventory.service';
+import getFileName from 'src/core/utils/getImageUrl';
 
 @Injectable()
 export class BloodRequestService {
@@ -20,7 +21,14 @@ export class BloodRequestService {
     const { bloodType, rhFactor, bloodItems } = createBloodRequestDto;
     const existingBloodItem = await this.bloodInventoryService.checkIfBloodAvailable(bloodType, rhFactor, bloodItems); // check if blood is available
 
-    const createdRequest = this.bloodRequestRepo.create(createBloodRequestDto);
+    const documentFront = getFileName(createBloodRequestDto.documentFront);
+    const documentBack = getFileName(createBloodRequestDto.documentBack);
+
+    const createdRequest = this.bloodRequestRepo.create({
+      ...createBloodRequestDto,
+      documentFront,
+      documentBack,
+    });
 
     await this.bloodInventoryService.removeBloodItemFromInventory(existingBloodItem.id); // remove blood item from inventory after beign request
 

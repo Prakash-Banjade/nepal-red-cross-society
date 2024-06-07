@@ -28,8 +28,8 @@ export class BloodRequest extends BaseEntity {
     @Column({ type: 'int' })
     bedNo: number;
 
-    @Column({ type: 'varchar' })
-    attendingConsultant: string;
+    @Column({ type: 'varchar', nullable: true })
+    attendingConsultant?: string;
 
     @Column({ type: 'simple-array' })
     bloodItems: BloodItems[]
@@ -40,8 +40,8 @@ export class BloodRequest extends BaseEntity {
     @Column({ type: 'enum', enum: RhFactor })
     rhFactor: RhFactor;
 
-    @Column({ type: 'int' })
-    previouslyTransfused: number;
+    @Column({ type: 'int', nullable: true })
+    previouslyTransfused?: number;
 
     @Column({ type: 'boolean' })
     reactionToPreviousBlood: boolean
@@ -49,6 +49,12 @@ export class BloodRequest extends BaseEntity {
     @Column({ type: 'boolean' })
     reactionToPreviousPlasma: boolean
 
-    @Column({ type: 'varchar' })
-    doctor: string;
+    @Column({ type: 'varchar', nullable: true })
+    doctor?: string;
+
+    @Column({ type: 'text' })
+    documentFront: string;
+
+    @Column({ type: 'text' })
+    documentBack: string;
 }

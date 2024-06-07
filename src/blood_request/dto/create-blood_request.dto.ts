@@ -1,6 +1,7 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
-import { IsBoolean, IsEnum, IsInt, IsNotEmpty, IsString, Matches } from "class-validator";
+import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString, Matches } from "class-validator";
+import { FileSystemStoredFile, HasMimeType, IsFile } from "nestjs-form-data";
 import { BloodItems, BloodType, Gender, RhFactor } from "src/core/types/fieldsEnum.types";
 
 export class CreateBloodRequestDto {
@@ -47,7 +48,8 @@ export class CreateBloodRequestDto {
     @ApiProperty({ type: 'string' })
     @IsString()
     @IsNotEmpty()
-    attendingConsultant: string;
+    @IsOptional()
+    attendingConsultant?: string;
 
     @ApiProperty({ type: 'enum', enum: BloodItems, isArray: true })
     @IsEnum(BloodItems, { each: true })
@@ -61,11 +63,10 @@ export class CreateBloodRequestDto {
     @IsEnum(RhFactor, { message: 'Invalid rh factor. Rh factor must be either ' + Object.values(RhFactor).join(', ') })
     rhFactor!: RhFactor;
 
-    @ApiProperty({ type: 'int' })
+    @ApiPropertyOptional({ type: 'int' })
     @Transform(({ value }) => parseInt(value))
-    @IsNotEmpty()
-    previouslyTransfused: number;
-
+    @IsOptional()
+    previouslyTransfused?: number;
 
     @ApiProperty({ type: 'boolean', default: false })
     @IsBoolean()
@@ -80,5 +81,16 @@ export class CreateBloodRequestDto {
     @ApiProperty({ type: 'string' })
     @IsString()
     @IsNotEmpty()
-    doctor: string;
+    @IsOptional()
+    doctor?: string;
+
+    @ApiProperty({ type: 'string', format: 'binary' })
+    @IsFile()
+    @HasMimeType(['image/jpeg', 'image/png'])
+    documentFront: FileSystemStoredFile;
+
+    @ApiProperty({ type: 'string', format: 'binary' })
+    @IsFile()
+    @HasMimeType(['image/jpeg', 'image/png'])
+    documentBack: FileSystemStoredFile;
 }

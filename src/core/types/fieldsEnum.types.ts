@@ -57,6 +57,14 @@ export enum DonationStatus {
     FAILED = 'failed',
 }
 
+export enum EventStatus {
+    POSTPONED = 'postponed',
+    CANCELLED = 'cancelled',
+    COMPLETED = 'completed',
+    UPCOMING = 'upcoming',
+    ONGOING = 'ongoing',
+}
+
 export enum Education {
     NONE = 'none',
     PRIMARY = 'primary',

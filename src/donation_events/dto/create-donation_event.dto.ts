@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsArray, IsDateString, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
-import { FileSystemStoredFile, IsFile } from 'nestjs-form-data';
+import { IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
+import { FileSystemStoredFile, HasMimeType, IsFile } from 'nestjs-form-data';
 import { CreateAddressDto } from 'src/address/dto/create-address.dto';
 
 export class CreateDonationEventDto extends CreateAddressDto {
@@ -25,15 +25,30 @@ export class CreateDonationEventDto extends CreateAddressDto {
   @IsNotEmpty()
   mapLink: string;
 
-  @ApiProperty({ type: 'string', description: 'Event leader name' })
+  @ApiProperty({ type: 'string', description: 'Event contact person name' })
   @IsString()
   @IsNotEmpty()
-  leader: string;
+  contactPerson: string;
+
+  @ApiProperty({ type: 'string', description: 'Event primary contact number' })
+  @IsString()
+  @IsNotEmpty()
+  primaryContact: string;
+
+  @ApiProperty({ type: 'string', description: 'Event secondary contact number' })
+  @IsString()
+  @IsNotEmpty()
+  secondaryContact: string;
+
+  @ApiProperty({ type: 'number', description: 'Event expected donations' })
+  @IsNumber()
+  @IsNotEmpty()
+  expectedDonations: number;
 
   @ApiPropertyOptional({
     type: 'string',
     isArray: true,
-    description: 'Event volunteers',
+    description: 'Event technicians',
   })
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
@@ -44,7 +59,7 @@ export class CreateDonationEventDto extends CreateAddressDto {
       return [value]
     } else return value;
   })
-  volunteers?: string[];
+  technicians?: string[];
 
   @ApiPropertyOptional({ format: 'binary', type: 'string', description: 'Event cover image' })
   @IsOptional()
@@ -55,4 +70,9 @@ export class CreateDonationEventDto extends CreateAddressDto {
   @IsNotEmpty()
   @IsOptional()
   description?: string;
+
+  @ApiPropertyOptional({ format: 'binary', type: 'string', description: 'Event document' })
+  @IsFile()
+  @HasMimeType(['application/pdf', 'application/msword', 'image/*', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'])
+  document: FileSystemStoredFile;
 }
