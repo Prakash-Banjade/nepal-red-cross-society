@@ -4,12 +4,11 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { FormDataRequest, MemoryStoredFile } from 'nestjs-form-data';
 import { ChekcAbilities } from 'src/core/decorators/abilities.decorator';
-import { Action, RequestUser } from 'src/core/types/global.types';
+import { Action } from 'src/core/types/global.types';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
 import { CreateOrganizationDto } from 'src/organizations/dto/create-organization.dto';
 import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.decorator';
-import { CurrentUser } from 'src/core/decorators/user.decorator';
 import { Throttle } from '@nestjs/throttler';
 import { UserQueryDto } from './entities/user-query.dto';
 
