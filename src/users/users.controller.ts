@@ -1,4 +1,4 @@
-import { Controller, Get, Body, Patch, Param, Post, Query, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Body, Patch, Param, Post, Query, } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
@@ -9,7 +9,6 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
 import { CreateOrganizationDto } from 'src/organizations/dto/create-organization.dto';
 import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.decorator';
-import { QueryDto } from 'src/core/dto/queryDto';
 import { CurrentUser } from 'src/core/decorators/user.decorator';
 import { Throttle } from '@nestjs/throttler';
 import { UserQueryDto } from './entities/user-query.dto';
