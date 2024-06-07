@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
@@ -41,7 +42,11 @@ export class CreateDonationEventDto extends CreateAddressDto {
   secondaryContact: string;
 
   @ApiProperty({ type: 'number', description: 'Event expected donations' })
-  @IsNumber()
+  @Transform(({ value }) => {
+    const num = parseInt(value)
+    if (isNaN(num)) throw new BadRequestException('Invalid expected donations. Expected number')
+    return num
+  })
   @IsNotEmpty()
   expectedDonations: number;
 

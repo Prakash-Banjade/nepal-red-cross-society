@@ -3,6 +3,7 @@ import { IsOptional, IsString, ValidateIf } from "class-validator";
 import { QueryDto } from "src/core/dto/queryDto";
 import { Country } from "src/core/types/country.types";
 import { District } from "src/core/types/districts.types";
+import { EventStatus } from "src/core/types/fieldsEnum.types";
 import { Municipal } from "src/core/types/municipals.types";
 import { Province } from "src/core/types/provinces.types";
 
@@ -39,4 +40,8 @@ export class EventQueryDto extends QueryDto {
     @IsString()
     @IsOptional()
     street?: string;
+
+    @ApiPropertyOptional({ type: 'enum', enum: EventStatus })
+    @IsOptional()
+    status?: EventStatus;
 }

@@ -1,10 +1,11 @@
 import { Donation } from 'src/donations/entities/donation.entity';
 import { BaseEntity } from 'src/core/entities/base.entity';
 import { Technician } from 'src/technicians/entities/technician.entity';
-import { Column, Entity, ManyToOne, OneToMany, OneToOne } from 'typeorm';
+import { BeforeUpdate, Column, Entity, ManyToOne, OneToMany, OneToOne } from 'typeorm';
 import { Address } from 'src/address/entities/address.entity';
 import { Organization } from 'src/organizations/entities/organization.entity';
 import { EventStatus } from 'src/core/types/fieldsEnum.types';
+import { BadRequestException } from '@nestjs/common';
 
 @Entity()
 export class DonationEvent extends BaseEntity {
@@ -55,4 +56,14 @@ export class DonationEvent extends BaseEntity {
 
   @Column({ type: 'varchar' })
   document: string;
+
+  @BeforeUpdate()
+  checkIfDonationCompleted() {
+    if (this.status === EventStatus.COMPLETED) {
+      if (!this.donations?.length) throw new BadRequestException('Donation event must have atleast one donation');
+      if (new Date(this.date) > new Date()) throw new BadRequestException('There is still time to complete this donation event');
+    }
+
+    if (this.status === EventStatus.ONGOING && new Date(this.date).toLocaleDateString() !== new Date().toLocaleDateString()) throw new BadRequestException('Donation event must happen on the same day');
+  }
 }

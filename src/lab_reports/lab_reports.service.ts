@@ -47,7 +47,7 @@ export class LabReportsService {
     await this.donationRepo.save(donation);
 
     // update blood inventory item with corresponding blood bag no
-    await this.updateBloodInventory(donation, isSucceed, createLabReportDto);
+    // await this.updateBloodInventory(donation, isSucceed, createLabReportDto);
 
     // update blood type of donor which has been found after testing, the initial blood type while creating donor may be incorrect
     await this.donorService.update(donation.donor.id, {
@@ -61,25 +61,25 @@ export class LabReportsService {
     }
   }
 
-  async updateBloodInventory(donation: Donation, isSucceed: boolean, labReportDto: CreateLabReportDto | UpdateLabReportDto) {
-    const inventoryItem = await this.inventoryItemRepo.findOne({
-      where: { bloodBagNo: donation.bloodBagNo },
-      relations: { inventory: true }
-    });
-    if (!inventoryItem) return;
+  // async updateBloodInventory(donation: Donation, isSucceed: boolean, labReportDto: CreateLabReportDto | UpdateLabReportDto) {
+  //   const inventoryItem = await this.inventoryItemRepo.findOne({
+  //     where: { bloodBagNo: donation.bloodBagNo },
+  //     relations: { inventory: true }
+  //   });
+  //   if (!inventoryItem) return;
 
-    inventoryItem.status = isSucceed ? BloodInventoryStatus.USABLE : BloodInventoryStatus.WASTE; // update inventory blood item status
-    await this.inventoryItemRepo.save(inventoryItem);
+  //   inventoryItem.status = isSucceed ? BloodInventoryStatus.USABLE : BloodInventoryStatus.WASTE; // update inventory blood item status
+  //   await this.inventoryItemRepo.save(inventoryItem);
 
-    if (labReportDto.bloodType && labReportDto.rhFactor) { // update blood inventory, inventory created at first donation can have incorrect blood type which may be fixed after lab report generation
-      const inventory = await this.bloodInventoryRepo.findOneBy({ id: inventoryItem.inventory.id });
+  //   if (labReportDto.bloodType && labReportDto.rhFactor) { // update blood inventory, inventory created at first donation can have incorrect blood type which may be fixed after lab report generation
+  //     const inventory = await this.bloodInventoryRepo.findOneBy({ id: inventoryItem.inventory.id });
 
-      inventory.bloodType = labReportDto.bloodType; // update inventory blood type
-      inventory.rhFactor = labReportDto.rhFactor; // update inventory rh factor
-      await this.bloodInventoryRepo.save(inventory);
-    }
+  //     inventory.bloodType = labReportDto.bloodType; // update inventory blood type
+  //     inventory.rhFactor = labReportDto.rhFactor; // update inventory rh factor
+  //     await this.bloodInventoryRepo.save(inventory);
+  //   }
 
-  }
+  // }
 
   async findAll(queryDto: QueryDto) {
     const queryBuilder = this.labReportRepo.createQueryBuilder('labReport');
@@ -128,7 +128,7 @@ export class LabReportsService {
     await this.donationRepo.save(existingDonation);
 
     // update blood inventory item with corresponding blood bag no
-    await this.updateBloodInventory(existingDonation, isSucceed, updateLabReportDto);
+    // await this.updateBloodInventory(existingDonation, isSucceed, updateLabReportDto);
 
     // update blood type of donor which has been found after testing, the initial blood type while creating donor may be incorrect
     await this.donorService.update(existingDonation.donor.id, {

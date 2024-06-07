@@ -6,6 +6,7 @@ import { DonationEvent } from './entities/donation_event.entity';
 import { Technician } from 'src/technicians/entities/technician.entity';
 import { OrganizationsModule } from 'src/organizations/organizations.module';
 import { AddressModule } from 'src/address/address.module';
+import { BloodBagsModule } from 'src/blood-bags/blood-bags.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { AddressModule } from 'src/address/address.module';
     ]),
     OrganizationsModule,
     AddressModule,
+    BloodBagsModule
   ],
   controllers: [DonationEventsController],
   providers: [DonationEventsService],

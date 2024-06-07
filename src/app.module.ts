@@ -27,6 +27,8 @@ import { MailModule } from './mail/mail.module';
 import { ConfigModule } from '@nestjs/config';
 import { BloodRequestModule } from './blood_request/blood_request.module';
 import { InventoryModule } from './inventory/inventory.module';
+import { BranchModule } from './branch/branch.module';
+import { BloodBagsModule } from './blood-bags/blood-bags.module';
 
 @Module({
   imports: [
@@ -64,6 +66,8 @@ import { InventoryModule } from './inventory/inventory.module';
     MailModule,
     BloodRequestModule,
     InventoryModule,
+    BranchModule,
+    BloodBagsModule,
   ],
   controllers: [AppController],
   providers: [

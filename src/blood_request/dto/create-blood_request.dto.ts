@@ -40,10 +40,11 @@ export class CreateBloodRequestDto {
     @IsNotEmpty()
     ward: number;
 
-    @ApiProperty({ type: 'number' })
+    @ApiPropertyOptional({ type: 'number' })
     @Transform(({ value }) => parseInt(value))
     @IsNotEmpty()
-    bedNo: number;
+    @IsOptional()
+    bedNo?: number;
 
     @ApiProperty({ type: 'string' })
     @IsString()

@@ -7,6 +7,7 @@ import { Organization } from "src/organizations/entities/organization.entity";
 import { DonationStatus, DonationType } from "src/core/types/fieldsEnum.types";
 import { BeforeInsert, BeforeSoftRemove, BeforeUpdate, Column, Entity, ManyToOne, OneToOne } from "typeorm";
 import { BadRequestException } from "@nestjs/common";
+import { BloodBag } from "src/blood-bags/entities/blood-bag.entity";
 
 @Entity()
 export class Donation extends BaseEntity {
@@ -29,8 +30,8 @@ export class Donation extends BaseEntity {
     @ManyToOne(() => Organization, (organization) => organization.donations, { nullable: true })
     organization: Organization
 
-    @Column({ type: "varchar" })
-    bloodBagNo: string;
+    @OneToOne(() => BloodBag, blood_bag => blood_bag.donation, { nullable: true })
+    bloodBag: BloodBag;
 
     @Column({ type: "enum", enum: DonationStatus, default: DonationStatus.PENDING })
     status: DonationStatus

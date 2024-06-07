@@ -22,11 +22,6 @@ export class CreateDonationDto {
     @IsOptional()
     organization?: string;
 
-    @ApiProperty({ description: 'Blood bag number' })
-    @IsString()
-    @IsNotEmpty()
-    bloodBagNo: string;
-
     @ApiPropertyOptional({ enum: DonationStatus, default: DonationStatus.PENDING, description: 'Default status will be PENDING' })
     @IsEnum(DonationStatus, { message: 'Donation status must be one of these: ' + Object.values(DonationStatus) })
     @IsOptional()

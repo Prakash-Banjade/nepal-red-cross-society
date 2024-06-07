@@ -5,11 +5,8 @@ import { BloodInventory } from "./blood_inventory.entity";
 
 @Entity('inventory_items')
 export class InventoryItem extends BaseEntity {
-    @Column({ type: "varchar" })
-    bloodBagNo: string;
-    
-    @Column({ type: 'varchar' })
-    itemId: string;
+    @Column({ type: "int" })
+    bloodBagNo: number;
 
     @Column({ type: 'enum', enum: BloodItems })
     itemType: BloodItems;

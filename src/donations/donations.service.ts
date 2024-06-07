@@ -28,11 +28,8 @@ export class DonationsService {
   ) { }
 
   async create(createDonationDto: CreateDonationDto) {
-    const foundDonationWithSameBloodBagNo = await this.donationRepo.findOneBy({ bloodBagNo: createDonationDto.bloodBagNo });
-    if (foundDonationWithSameBloodBagNo) throw new BadRequestException('Donation with same blood bag number already exists');
-
     // finding dependent entities
-    const dependentColumns = await this.retrieveDependencies(createDonationDto);
+    const dependentColumns = await this.retrieveDependencies(createDonationDto); // donor, organization, donation_event
 
     // check if donor can donate (checking if last donation has crossed 3 months)
     this.checkIfEligibleDonor(dependentColumns.donor);
@@ -50,7 +47,6 @@ export class DonationsService {
     await this.addBloodToInventory(savedDonation.id);
 
     return savedDonation;
-
   }
 
   async addBloodToInventory(donationId: string) {
@@ -58,8 +54,7 @@ export class DonationsService {
 
     await this.bloodInventoryService.create({
       bloodType: donation.donor.bloodType,
-      bloodBagNo: donation.bloodBagNo,
-      itemId: donation.bloodBagNo,
+      bagNo: donation.bloodBag.bagNo,
       expiresAt: new Date(Date.now() + CONSTANTS.BLOOD_EXPIRY_INTERVAL).toISOString(),
       rhFactor: donation.donor.rhFactor,
       itemType: BloodItems.WHOLE_BLOOD,
@@ -102,6 +97,7 @@ export class DonationsService {
       where: { id },
       relations: {
         donation_event: true,
+        bloodBag: true,
         organization: true,
         donor: true,
         labReport: {

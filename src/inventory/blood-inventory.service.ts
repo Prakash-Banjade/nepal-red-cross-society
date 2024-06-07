@@ -19,7 +19,7 @@ export class BloodInventoryService {
         // check if blood type exists in inventory
         const existingInventory = await this.bloodInventoryRepo.findOne({ where: { bloodType: createBloodInventoryDto.bloodType, rhFactor: createBloodInventoryDto.rhFactor }, relations: { items: true } });
         if (existingInventory) {
-            const inventoryItem = this.inventoryItemRepo.create({ itemType: createBloodInventoryDto.itemType, itemId: createBloodInventoryDto.itemId, expiresAt: createBloodInventoryDto.expiresAt, inventory: existingInventory, bloodBagNo: createBloodInventoryDto.bloodBagNo });
+            const inventoryItem = this.inventoryItemRepo.create({ itemType: createBloodInventoryDto.itemType, expiresAt: createBloodInventoryDto.expiresAt, inventory: existingInventory, bloodBagNo: createBloodInventoryDto.bagNo });
             await this.inventoryItemRepo.save(inventoryItem);
         } else {
             const inventory = this.bloodInventoryRepo.create({ bloodType: createBloodInventoryDto.bloodType, rhFactor: createBloodInventoryDto.rhFactor });
@@ -27,9 +27,8 @@ export class BloodInventoryService {
             const inventoryItem = this.inventoryItemRepo.create({
                 itemType: createBloodInventoryDto.itemType,
                 inventory: savedInventory,
-                itemId: createBloodInventoryDto.itemId,
                 expiresAt: createBloodInventoryDto.expiresAt,
-                bloodBagNo: createBloodInventoryDto.bloodBagNo
+                bloodBagNo: createBloodInventoryDto.bagNo
             });
             await this.inventoryItemRepo.save(inventoryItem);
         }

@@ -8,11 +8,12 @@ import { Technician } from 'src/technicians/entities/technician.entity';
 import { OrganizationsService } from 'src/organizations/organizations.service';
 import { AddressService } from 'src/address/address.service';
 import { extractAddress } from 'src/core/utils/extractAddress';
-import { Deleted, QueryDto } from 'src/core/dto/queryDto';
+import { Deleted } from 'src/core/dto/queryDto';
 import paginatedData from 'src/core/utils/paginatedData';
 import getFileName from 'src/core/utils/getImageUrl';
 import { FileSystemStoredFile } from 'nestjs-form-data';
 import { EventQueryDto } from './dto/event-query.dto';
+import { BloodBagsService } from 'src/blood-bags/blood-bags.service';
 
 @Injectable()
 export class DonationEventsService {
@@ -22,6 +23,7 @@ export class DonationEventsService {
     @InjectRepository(Technician) private techniciansRepo: Repository<Technician>,
     private readonly organizationsService: OrganizationsService,
     private readonly addressService: AddressService,
+    private readonly bloodBagService: BloodBagsService,
   ) { }
 
   async create(createDonationEventDto: CreateDonationEventDto) {
@@ -39,8 +41,11 @@ export class DonationEventsService {
     const address = await this.addressService.create(extractAddress(createDonationEventDto));
 
     // retrieving images
-    const coverImage = createDonationEventDto.coverImage ? getFileName(createDonationEventDto.coverImage) : null;
-    const document = getFileName(createDonationEventDto.coverImage);
+    const coverImage = createDonationEventDto.document ? getFileName(createDonationEventDto.coverImage) : null;
+    const document = getFileName(createDonationEventDto.document);
+
+    // creating bloodBags
+    await this.bloodBagService.createBloodBagsInBulk(createDonationEventDto.expectedDonations);
 
     const donationEvent = this.donationEventsRepo.create({
       ...createDonationEventDto,
@@ -79,6 +84,9 @@ export class DonationEventsService {
         if (queryDto.municipality) qb.andWhere("LOWER(address.municipality) LIKE LOWER(:municipality)", { municipality: `%${queryDto.municipality ?? ''}%` });
         if (queryDto.ward) qb.andWhere("LOWER(address.ward) LIKE LOWER(:ward)", { ward: `%${queryDto.ward ?? ''}%` });
         if (queryDto.street) qb.andWhere("LOWER(address.street) LIKE LOWER(:street)", { street: `%${queryDto.street ?? ''}%` });
+      }))
+      .andWhere(new Brackets(qb => {
+        if (queryDto.status) qb.andWhere("LOWER(donationEvent.status) LIKE LOWER(:status)", { status: `%${queryDto.status ?? ''}%` });
       }))
 
     return paginatedData(queryDto, queryBuilder);

@@ -1,8 +1,9 @@
 import { BaseEntity } from "src/core/entities/base.entity";
-import { BeforeInsert, BeforeUpdate, Column, Entity, OneToOne } from "typeorm";
+import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne, OneToOne } from "typeorm";
 import * as bcrypt from 'bcrypt';
 import { Roles } from "src/core/types/global.types";
 import { Donor } from "src/donors/entities/donor.entity";
+import { Branch } from "src/branch/entities/branch.entity";
 
 @Entity()
 export class User extends BaseEntity {
@@ -20,6 +21,9 @@ export class User extends BaseEntity {
 
     @Column({ type: 'enum', enum: Roles, default: Roles.USER })
     role: Roles;
+
+    @ManyToOne(() => Branch, (branch) => branch.users, { nullable: true })
+    branch: Branch
 
     @Column({ type: 'varchar', nullable: true })
     image: string;

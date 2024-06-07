@@ -25,8 +25,8 @@ export class BloodRequest extends BaseEntity {
     @Column({ type: 'int' })
     ward: number;
 
-    @Column({ type: 'int' })
-    bedNo: number;
+    @Column({ type: 'int', nullable: true })
+    bedNo?: number;
 
     @Column({ type: 'varchar', nullable: true })
     attendingConsultant?: string;
