@@ -13,7 +13,7 @@ import { LabReportsModule } from "src/lab_reports/lab_reports.module";
 import { OrganizationsModule } from "src/organizations/organizations.module";
 import { TestCasesModule } from "src/test_cases/test_cases.module";
 import { UsersModule } from "src/users/users.module";
-import { VolunteersModule } from "src/volunteers/volunteers.module";
+import { TechniciansModule } from "src/technicians/technicians.module";
 
 export function setupSwagger(app: INestApplication): void {
     const config = new DocumentBuilder()
@@ -47,7 +47,7 @@ export function setupSwagger(app: INestApplication): void {
             DonorCardModule,
             LabReportsModule,
             TestCasesModule,
-            VolunteersModule,
+            TechniciansModule,
             TestCasesModule,
             BloodRequestModule,
             InventoryModule,

@@ -4,7 +4,7 @@ import { UpdateDonationEventDto } from './dto/update-donation_event.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DonationEvent } from './entities/donation_event.entity';
 import { Brackets, ILike, In, IsNull, Not, Or, Repository } from 'typeorm';
-import { Volunteer } from 'src/volunteers/entities/volunteer.entity';
+import { Technician } from 'src/technicians/entities/technician.entity';
 import { OrganizationsService } from 'src/organizations/organizations.service';
 import { AddressService } from 'src/address/address.service';
 import { extractAddress } from 'src/core/utils/extractAddress';
@@ -19,16 +19,16 @@ export class DonationEventsService {
   constructor(
     @InjectRepository(DonationEvent)
     private donationEventsRepo: Repository<DonationEvent>,
-    @InjectRepository(Volunteer) private volunteersRepo: Repository<Volunteer>,
+    @InjectRepository(Technician) private techniciansRepo: Repository<Technician>,
     private readonly organizationsService: OrganizationsService,
     private readonly addressService: AddressService,
   ) { }
 
   async create(createDonationEventDto: CreateDonationEventDto) {
-    // retrieving volunteers
-    const volunteers = createDonationEventDto.volunteers ? await this.volunteersRepo.find({
+    // retrieving technicians
+    const technicians = createDonationEventDto.technicians ? await this.techniciansRepo.find({
       where: {
-        id: In(createDonationEventDto.volunteers),
+        id: In(createDonationEventDto.technicians),
       },
     }) : null;
 
@@ -38,15 +38,17 @@ export class DonationEventsService {
     // retrieving address
     const address = await this.addressService.create(extractAddress(createDonationEventDto));
 
-    // retrieving cover image
+    // retrieving images
     const coverImage = createDonationEventDto.coverImage ? getFileName(createDonationEventDto.coverImage) : null;
+    const document = getFileName(createDonationEventDto.coverImage);
 
     const donationEvent = this.donationEventsRepo.create({
       ...createDonationEventDto,
       address,
       organization,
-      volunteers,
+      technicians,
       coverImage,
+      document,
     })
 
     return await this.donationEventsRepo.save(donationEvent);
@@ -87,7 +89,7 @@ export class DonationEventsService {
       where: { id },
       relations: {
         address: true,
-        volunteers: true,
+        technicians: true,
         donations: true,
         organization: true
       },
@@ -103,12 +105,12 @@ export class DonationEventsService {
     // setting if address is updated
     await this.addressService.update(existingEvent.address.id, extractAddress(updateDonationEventDto))
 
-    // retrieving volunteers
-    const volunteers = updateDonationEventDto.volunteers ? await this.volunteersRepo.find({
+    // retrieving technicians
+    const technicians = updateDonationEventDto.technicians ? await this.techniciansRepo.find({
       where: {
-        id: In(updateDonationEventDto.volunteers),
+        id: In(updateDonationEventDto.technicians),
       },
-    }) : existingEvent.volunteers
+    }) : existingEvent.technicians
 
     // retrieving organization
     const organization = updateDonationEventDto.organization ? await this.organizationsService.findOne(updateDonationEventDto.organization) : existingEvent.organization
@@ -116,15 +118,19 @@ export class DonationEventsService {
     // retrieving cover image
     const coverImage = updateDonationEventDto.coverImage ? getFileName(updateDonationEventDto.coverImage) : existingEvent.coverImage
 
+    // retrieving document
+    const document = updateDonationEventDto.document ? getFileName(updateDonationEventDto.document) : existingEvent.document
+
     // retrieving gallery
     const gallery = !!updateDonationEventDto?.gallery ? this.getGalleryUrls(updateDonationEventDto.gallery) : existingEvent.gallery
 
     Object.assign(existingEvent, {
       ...updateDonationEventDto,
-      volunteers: volunteers,
+      technicians: technicians,
       organization,
       coverImage,
       gallery,
+      document,
     });
 
     return await this.donationEventsRepo.save(existingEvent);

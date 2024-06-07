@@ -14,7 +14,7 @@ import { DonorsModule } from './donors/donors.module';
 import { DonationsModule } from './donations/donations.module';
 import { DonationEventsModule } from './donation_events/donation_events.module';
 import { CertificateModule } from './certificate/certificate.module';
-import { VolunteersModule } from './volunteers/volunteers.module';
+import { TechniciansModule } from './technicians/technicians.module';
 import { LabReportsModule } from './lab_reports/lab_reports.module';
 import { TestCasesModule } from './test_cases/test_cases.module';
 import { DonorCardModule } from './donor_card/donor_card.module';
@@ -55,7 +55,7 @@ import { InventoryModule } from './inventory/inventory.module';
     DonationsModule,
     DonationEventsModule,
     CertificateModule,
-    VolunteersModule,
+    TechniciansModule,
     LabReportsModule,
     TestCasesModule,
     DonorCardModule,

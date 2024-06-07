@@ -4,7 +4,7 @@ import { Organization } from "src/organizations/entities/organization.entity";
 import { addresses } from "src/core/types/address.types";
 import { Country } from "src/core/types/country.types";
 import { Municipal } from "src/core/types/municipals.types";
-import { Volunteer } from "src/volunteers/entities/volunteer.entity";
+import { Technician } from "src/technicians/entities/technician.entity";
 import { BeforeInsert, BeforeUpdate, Column, Entity, JoinColumn, OneToOne } from "typeorm";
 import { BadRequestException } from "@nestjs/common";
 import { DonationEvent } from "src/donation_events/entities/donation_event.entity";
@@ -35,9 +35,9 @@ export class Address extends BaseEntity {
     @JoinColumn()
     donor: Donor
 
-    @OneToOne(() => Volunteer, (volunteer) => volunteer.address, { nullable: true, onDelete: 'CASCADE' })
+    @OneToOne(() => Technician, (technician) => technician.address, { nullable: true, onDelete: 'CASCADE' })
     @JoinColumn()
-    volunteer: Volunteer
+    technician: Technician
 
     @OneToOne(() => Organization, (organization) => organization.address, { nullable: true, onDelete: 'CASCADE' })
     @JoinColumn()

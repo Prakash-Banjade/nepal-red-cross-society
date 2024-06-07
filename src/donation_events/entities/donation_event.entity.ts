@@ -1,15 +1,16 @@
 import { Donation } from 'src/donations/entities/donation.entity';
 import { BaseEntity } from 'src/core/entities/base.entity';
-import { Volunteer } from 'src/volunteers/entities/volunteer.entity';
+import { Technician } from 'src/technicians/entities/technician.entity';
 import { Column, Entity, ManyToOne, OneToMany, OneToOne } from 'typeorm';
 import { Address } from 'src/address/entities/address.entity';
 import { Organization } from 'src/organizations/entities/organization.entity';
+import { EventStatus } from 'src/core/types/fieldsEnum.types';
 
 @Entity()
 export class DonationEvent extends BaseEntity {
   @Column('varchar')
   name: string;
-  
+
   @OneToMany(() => Donation, (donation) => donation.donation_event, { nullable: true })
   donations: Donation[];
 
@@ -26,10 +27,22 @@ export class DonationEvent extends BaseEntity {
   mapLink: string;
 
   @Column()
-  leader: string;
+  contactPerson: string;
 
-  @OneToMany(() => Volunteer, (volunteer) => volunteer.donationEvent, { nullable: true })
-  volunteers: Volunteer[];
+  @Column({ type: 'varchar' })
+  primaryContact: string;
+
+  @Column({ type: 'varchar' })
+  secondaryContact: string;
+
+  @Column({ type: 'int' })
+  expectedDonations: number;
+
+  @Column({ type: 'enum', enum: EventStatus, default: EventStatus.UPCOMING })
+  status: EventStatus = EventStatus.UPCOMING;
+
+  @OneToMany(() => Technician, (technician) => technician.donationEvent, { nullable: true })
+  technicians: Technician[];
 
   @Column({ type: 'simple-array', nullable: true })
   gallery: string[]
@@ -39,4 +52,7 @@ export class DonationEvent extends BaseEntity {
 
   @Column({ type: 'text', nullable: true })
   description: string;
+
+  @Column({ type: 'varchar' })
+  document: string;
 }

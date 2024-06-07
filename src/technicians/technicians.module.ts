@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { VolunteersService } from './volunteers.service';
-import { VolunteersController } from './volunteers.controller';
+import { TechniciansService } from './technicians.service';
+import { TechniciansController } from './technicians.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Volunteer } from './entities/volunteer.entity';
+import { Technician } from './entities/technician.entity';
 import { DonationEvent } from 'src/donation_events/entities/donation_event.entity';
 import { Address } from 'src/address/entities/address.entity';
 import { AddressModule } from 'src/address/address.module';
@@ -10,12 +10,12 @@ import { AddressModule } from 'src/address/address.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([
-      Volunteer,
+      Technician,
       DonationEvent,
     ]),
     AddressModule,
   ],
-  controllers: [VolunteersController],
-  providers: [VolunteersService],
+  controllers: [TechniciansController],
+  providers: [TechniciansService],
 })
-export class VolunteersModule {}
+export class TechniciansModule {}

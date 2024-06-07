@@ -5,14 +5,14 @@ import { Column, Entity, ManyToOne, OneToOne } from 'typeorm';
 import { Education, Gender } from 'src/core/types/fieldsEnum.types';
 
 @Entity()
-export class Volunteer extends BaseEntity {
+export class Technician extends BaseEntity {
   @Column({ type: 'varchar', length: 30 })
   firstName: string;
 
   @Column({ type: 'varchar', length: 30 })
   lastName: string;
 
-  @OneToOne(() => Address, (address) => address.volunteer)
+  @OneToOne(() => Address, (address) => address.technician)
   address: Address
 
   @Column({ type: 'varchar' })
@@ -30,7 +30,7 @@ export class Volunteer extends BaseEntity {
   @Column({ type: 'enum', enum: Gender })
   gender: Gender;
 
-  @ManyToOne(() => DonationEvent, (donationEvent) => donationEvent.volunteers, {
+  @ManyToOne(() => DonationEvent, (donationEvent) => donationEvent.technicians, {
     nullable: true,
   })
   donationEvent: DonationEvent;

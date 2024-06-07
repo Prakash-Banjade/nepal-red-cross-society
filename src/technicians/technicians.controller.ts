@@ -10,44 +10,44 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { VolunteersService } from './volunteers.service';
-import { CreateVolunteerDto } from './dto/create-volunteer.dto';
-import { UpdateVolunteerDto } from './dto/update-volunteer.dto';
+import { TechniciansService } from './technicians.service';
+import { CreateTechnicianDto } from './dto/create-technician.dto';
+import { UpdateTechnicianDto } from './dto/update-technician.dto';
 import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.decorator';
 import { FileSystemStoredFile, FormDataRequest } from 'nestjs-form-data';
 import { QueryDto } from 'src/core/dto/queryDto';
 import { ChekcAbilities } from 'src/core/decorators/abilities.decorator';
 import { Action } from 'src/core/types/global.types';
-import { VolunteerQueryDto } from './dto/volunteer-query.dto';
+import { TechnicianQueryDto } from './dto/technician-query.dto';
 import { Throttle } from '@nestjs/throttler';
 
 @ApiBearerAuth()
-@ApiTags('Volunteers')
-@Controller('volunteers')
-export class VolunteersController {
-  constructor(private readonly volunteersService: VolunteersService) { }
+@ApiTags('Technicians')
+@Controller('technicians')
+export class TechniciansController {
+  constructor(private readonly techniciansService: TechniciansService) { }
 
   @Post()
   @ApiConsumes('multipart/form-data')
   @Throttle({ default: { limit: 5, ttl: 60000 } })
   @FormDataRequest({ storage: FileSystemStoredFile })
   @ChekcAbilities({ action: Action.CREATE, subject: 'all' })
-  create(@Body() createVolunteerDto: CreateVolunteerDto) {
-    return this.volunteersService.create(createVolunteerDto);
+  create(@Body() createTechnicianDto: CreateTechnicianDto) {
+    return this.techniciansService.create(createTechnicianDto);
   }
 
   @Get()
-  @ApiPaginatedResponse(CreateVolunteerDto)
+  @ApiPaginatedResponse(CreateTechnicianDto)
   @ChekcAbilities({ action: Action.READ, subject: 'all' })
-  findAll(@Query() queryDto: VolunteerQueryDto) {
-    return this.volunteersService.findAll(queryDto);
+  findAll(@Query() queryDto: TechnicianQueryDto) {
+    return this.techniciansService.findAll(queryDto);
   }
 
   @Get(':id')
   @ChekcAbilities({ action: Action.READ, subject: 'all' })
   findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.volunteersService.findOne(id);
+    return this.techniciansService.findOne(id);
   }
 
   @Patch(':id')
@@ -57,29 +57,29 @@ export class VolunteersController {
   @ChekcAbilities({ action: Action.UPDATE, subject: 'all' })
   update(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() updateVolunteerDto: UpdateVolunteerDto,
+    @Body() updateTechnicianDto: UpdateTechnicianDto,
   ) {
-    return this.volunteersService.update(id, updateVolunteerDto);
+    return this.techniciansService.update(id, updateTechnicianDto);
   }
 
   @Post('deleteMany')
   @HttpCode(HttpStatus.OK)
   @ChekcAbilities({ action: Action.DELETE, subject: 'all' })
   remove(@Body('ids') ids: string) {
-    return this.volunteersService.remove(JSON.parse(ids));
+    return this.techniciansService.remove(JSON.parse(ids));
   }
 
   @Post('restoreMany')
   @ChekcAbilities({ action: Action.RESTORE, subject: 'all' })
   @HttpCode(HttpStatus.OK)
   restore(@Body('ids') ids: string) {
-    return this.volunteersService.restore(JSON.parse(ids));
+    return this.techniciansService.restore(JSON.parse(ids));
   }
 
   @Post('emptyTrash')
   @HttpCode(HttpStatus.OK)
   @ChekcAbilities({ action: Action.DELETE, subject: 'all' })
   emptyTrash() {
-    return this.volunteersService.clearTrash();
+    return this.techniciansService.clearTrash();
   }
 }

@@ -4,7 +4,7 @@
 
 # Creating donation-event
 
-1. First we create `volunteer`, then while creating donation event, we provide the `id` of volunteer in `donation-events`.
+1. First we create `technician`, then while creating donation event, we provide the `id` of technician in `donation-events`.
 
 # Creating donation
 

@@ -48,8 +48,8 @@ export class Donation extends BaseEntity {
     @BeforeInsert()
     @BeforeUpdate()
     async validate() {
-        if (this.donation_event?.volunteers?.length === 0 && this.donationType === DonationType.ORGANIZATION) {
-            throw new BadRequestException("Donation event must have atleast one volunteer");
+        if (this.donation_event?.technicians?.length === 0 && this.donationType === DonationType.ORGANIZATION) {
+            throw new BadRequestException("Donation event must have atleast one technician");
         }
 
         if (this.donationType === DonationType.INDIVIDUAL) {

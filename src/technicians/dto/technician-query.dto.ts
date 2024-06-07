@@ -6,7 +6,7 @@ import { District } from "src/core/types/districts.types";
 import { Municipal } from "src/core/types/municipals.types";
 import { Province } from "src/core/types/provinces.types";
 
-export class VolunteerQueryDto extends QueryDto {
+export class TechnicianQueryDto extends QueryDto {
     @ApiPropertyOptional({ enum: Country })
     // @IsEnum(Country)
     @IsOptional()
