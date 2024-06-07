@@ -3,7 +3,7 @@ import { Donation } from "src/donations/entities/donation.entity";
 import { DonorCard } from "src/donor_card/entities/donor_card.entity";
 import { BaseEntity } from "src/core/entities/base.entity";
 import { BloodType, Caste, Gender, Race, Religion, RhFactor } from "src/core/types/fieldsEnum.types";
-import { BeforeInsert, BeforeSoftRemove, BeforeUpdate, Column, Entity, JoinColumn, OneToMany, OneToOne } from "typeorm";
+import { AfterLoad, BeforeInsert, BeforeSoftRemove, BeforeUpdate, Column, Entity, JoinColumn, OneToMany, OneToOne } from "typeorm";
 import { User } from "src/users/entities/user.entity";
 import { BadRequestException } from "@nestjs/common";
 
@@ -69,15 +69,29 @@ export class Donor extends BaseEntity {
     @OneToOne(() => DonorCard, (donorCard) => donorCard.donor, { nullable: true })
     donorCard: DonorCard
 
-    get age() {
+    get calculateAge() {
         const floatingAge = (Date.now() - new Date(this.dob).getTime()) / (1000 * 60 * 60 * 24 * 365.25);
         return parseInt(floatingAge.toString())
+    }
+
+    @Column({ type: 'int' })
+    age: number = this.calculateAge;
+
+    @AfterLoad()
+    setAge() {
+        this.age = this.calculateAge
     }
 
     @BeforeInsert()
     @BeforeUpdate()
     checkIfEligibleForDonorCard() {
         if (this.donations?.length < 3) this.donorCard = null
+    }
+
+    @BeforeInsert()
+    @BeforeUpdate()
+    checkIfValidAge() {
+        if (this.calculateAge < 18) throw new BadRequestException('Donor must be atleast 18 years old');
     }
 
     @BeforeInsert()
