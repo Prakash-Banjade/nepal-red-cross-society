@@ -64,8 +64,8 @@ export class CreateDonorDto extends CreateAddressDto {
 
     @ApiPropertyOptional({ type: 'file', format: 'binary', description: 'Donor image' })
     @IsOptional()
-    @IsFile({ message: 'Invalid image. Image must be either jpeg or png.' })
-    @HasMimeType(['image/jpeg', 'image/png'])
+    // @IsFile({ message: 'Invalid image. Image must be either jpeg or png.' })
+    // @HasMimeType(['image/jpeg', 'image/png'])
     // @ValidateIf(o => o.image)
-    image: FileSystemStoredFile;
+    image?: FileSystemStoredFile;
 }
