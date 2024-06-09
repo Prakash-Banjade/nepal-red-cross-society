@@ -210,7 +210,7 @@ export class DonorsService {
   }
 
   async generateDonorId() {
-    const lastDonor = (await this.donorRepo.find()).at(-1);
+    const lastDonor = await this.donorRepo.findOne({ order: { donorId: 'DESC' } });
     return lastDonor ? lastDonor.donorId + 1 : 1
   }
 }
