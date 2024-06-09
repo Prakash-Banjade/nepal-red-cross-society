@@ -11,10 +11,15 @@ export class CreateDonationEventDto extends CreateAddressDto {
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty({ type: 'string', description: 'Event date', example: '2024-05-09T07:12:13.012Z' })
+  @ApiProperty({ type: 'string', description: 'Event start date', example: '2024-05-09T07:12:13.012Z' })
   @IsString()
   @IsDateString()
-  date: string;
+  startDate: string;
+
+  @ApiProperty({ type: 'string', description: 'Event end date', example: '2024-05-09T07:12:13.012Z' })
+  @IsString()
+  @IsDateString()
+  endDate: string;
 
   @ApiPropertyOptional({ format: 'uuidv4', description: 'Organization id', example: '123e4567-e89b-12d3-a456-426614174000' })
   @IsOptional()

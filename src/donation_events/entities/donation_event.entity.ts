@@ -16,7 +16,10 @@ export class DonationEvent extends BaseEntity {
   donations: Donation[];
 
   @Column({ type: 'datetime', nullable: false })
-  date: string;
+  startDate: string;
+
+  @Column({ type: 'datetime' })
+  endDate: string;
 
   @ManyToOne(() => Organization, (organization) => organization.donationEvents, { nullable: true })
   organization: Organization;
@@ -61,9 +64,9 @@ export class DonationEvent extends BaseEntity {
   checkIfDonationCompleted() {
     if (this.status === EventStatus.COMPLETED) {
       if (!this.donations?.length) throw new BadRequestException('Donation event must have atleast one donation');
-      if (new Date(this.date) > new Date()) throw new BadRequestException('There is still time to complete this donation event');
+      if (new Date(this.startDate) > new Date()) throw new BadRequestException('There is still time to complete this donation event');
     }
 
-    if (this.status === EventStatus.ONGOING && new Date(this.date).toLocaleDateString() !== new Date().toLocaleDateString()) throw new BadRequestException('Donation event must happen on the same day');
+    if (this.status === EventStatus.ONGOING && new Date(this.startDate).toLocaleDateString() !== new Date().toLocaleDateString()) throw new BadRequestException('Donation event must happen on the same day');
   }
 }
