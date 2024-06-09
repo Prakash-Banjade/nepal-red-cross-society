@@ -74,8 +74,8 @@ export class Donor extends BaseEntity {
         return parseInt(floatingAge.toString())
     }
 
-    @Column({ type: 'int' })
-    age: number = this.calculateAge;
+    @Column({ type: 'int', default: 18 })
+    age: number;
 
     @AfterLoad()
     setAge() {
