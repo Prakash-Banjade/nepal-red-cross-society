@@ -30,7 +30,7 @@ export class Donation extends BaseEntity {
     @ManyToOne(() => Organization, (organization) => organization.donations, { nullable: true })
     organization: Organization
 
-    @OneToOne(() => BloodBag, blood_bag => blood_bag.donation, { nullable: true })
+    @OneToOne(() => BloodBag, blood_bag => blood_bag.donation)
     bloodBag: BloodBag;
 
     @Column({ type: "enum", enum: DonationStatus, default: DonationStatus.PENDING })
