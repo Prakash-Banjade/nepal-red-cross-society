@@ -30,20 +30,31 @@ export enum TestCaseStatus {
 }
 
 export enum Caste {
-    BRAHMIN = 'brahmin',
-    CHHETRI = 'chhetri',
-    MAGAR = 'magar',
-    NEWAR = 'newar',
-    RAI = 'rai',
-    LIMBU = 'limbu',
+    BRAHMIN = "brahmin",
+    CHHETRI = "chhetri",
+    THAKURI = "thakuri",
+    THARU = "tharu",
+    MAGAR = "magar",
+    GURUNG = "gurung",
+    TAMANG = "tamang",
+    KAMI = "kami",
+    MUSLIM = "muslim",
+    NEWAR = "newar",
+    YADAV = "yadav",
+    RAI = "rai",
+    DAMAI = "damai",
+    SARKI = "sarki",
+    LIMBU = "limbu",
+    OTHER = "Other",
 }
 
 export enum Religion {
-    HINDU = 'hindu',
-    CHRISTIAN = 'christian',
-    ISLAM = 'islam',
-    BUDDHIST = 'buddhist',
-    OTHER = 'other',
+    HINDU = "hindu",
+    CHRISTIAN = "christian",
+    ISLAM = "islam",
+    BUDDHIST = "buddhist",
+    KIRAT = "kirat",
+    OTHER = "other",
 }
 
 export enum DonationType {
