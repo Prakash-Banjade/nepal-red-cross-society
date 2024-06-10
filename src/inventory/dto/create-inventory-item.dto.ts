@@ -27,7 +27,7 @@ export class CreateInventoryItemDto {
     @ApiProperty({ type: 'string', description: 'Type of item', enum: InventoryTransaction })
     @IsNotEmpty()
     @IsEnum(InventoryTransaction)
-    itemType!: InventoryTransaction
+    transactionType!: InventoryTransaction
 
     @IsUUID()
     @IsNotEmpty()
