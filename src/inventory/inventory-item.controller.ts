@@ -38,29 +38,29 @@ export class InventoryItemController {
         return this.inventoryItemService.findOne(id, currentUser);
     }
 
-    @Patch(':id')
-    update(@Param('id') id: string, @Body() updateInventoryItemDto: Partial<CreateInventoryItemDto>, @CurrentUser() currentUser: RequestUser) {
-        return this.inventoryItemService.update(id, updateInventoryItemDto, currentUser);
-    }
+    // @Patch(':id')
+    // update(@Param('id') id: string, @Body() updateInventoryItemDto: Partial<CreateInventoryItemDto>, @CurrentUser() currentUser: RequestUser) {
+    //     return this.inventoryItemService.update(id, updateInventoryItemDto, currentUser);
+    // }
 
-    @Post('deleteMany')
-    @HttpCode(HttpStatus.OK)
-    @ChekcAbilities({ action: Action.DELETE, subject: 'all' })
-    remove(@Body('ids') ids: string, @CurrentUser() currentUser: RequestUser) {
-        return this.inventoryItemService.remove(JSON.parse(ids), currentUser);
-    }
+    // @Post('deleteMany')
+    // @HttpCode(HttpStatus.OK)
+    // @ChekcAbilities({ action: Action.DELETE, subject: 'all' })
+    // remove(@Body('ids') ids: string, @CurrentUser() currentUser: RequestUser) {
+    //     return this.inventoryItemService.remove(JSON.parse(ids), currentUser);
+    // }
 
-    @Post('restoreMany')
-    @ChekcAbilities({ action: Action.RESTORE, subject: 'all' })
-    @HttpCode(HttpStatus.OK)
-    restore(@Body('ids') ids: string, @CurrentUser() currentUser: RequestUser) {
-        return this.inventoryItemService.restore(JSON.parse(ids), currentUser);
-    }
+    // @Post('restoreMany')
+    // @ChekcAbilities({ action: Action.RESTORE, subject: 'all' })
+    // @HttpCode(HttpStatus.OK)
+    // restore(@Body('ids') ids: string, @CurrentUser() currentUser: RequestUser) {
+    //     return this.inventoryItemService.restore(JSON.parse(ids), currentUser);
+    // }
 
-    @Post('emptyTrash')
-    @HttpCode(HttpStatus.OK)
-    @ChekcAbilities({ action: Action.DELETE, subject: 'all' })
-    emptyTrash(@CurrentUser() currentUser: RequestUser) {
-        return this.inventoryItemService.clearTrash(currentUser);
-    }
+    // @Post('emptyTrash')
+    // @HttpCode(HttpStatus.OK)
+    // @ChekcAbilities({ action: Action.DELETE, subject: 'all' })
+    // emptyTrash(@CurrentUser() currentUser: RequestUser) {
+    //     return this.inventoryItemService.clearTrash(currentUser);
+    // }
 }

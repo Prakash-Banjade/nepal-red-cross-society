@@ -38,29 +38,29 @@ export class InventoryController {
     return this.inventoryService.findOne(id, currentUser);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateInventoryDto: UpdateInventoryDto, @CurrentUser() currentUser: RequestUser) {
-    return this.inventoryService.update(id, updateInventoryDto, currentUser);
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateInventoryDto: UpdateInventoryDto, @CurrentUser() currentUser: RequestUser) {
+  //   return this.inventoryService.update(id, updateInventoryDto, currentUser);
+  // }
 
-  @Post('deleteMany')
-  @HttpCode(HttpStatus.OK)
-  @ChekcAbilities({ action: Action.DELETE, subject: 'all' })
-  remove(@Body('ids') ids: string, @CurrentUser() currentUser: RequestUser) {
-    return this.inventoryService.remove(JSON.parse(ids), currentUser);
-  }
+  // @Post('deleteMany')
+  // @HttpCode(HttpStatus.OK)
+  // @ChekcAbilities({ action: Action.DELETE, subject: 'all' })
+  // remove(@Body('ids') ids: string, @CurrentUser() currentUser: RequestUser) {
+  //   return this.inventoryService.remove(JSON.parse(ids), currentUser);
+  // }
 
-  @Post('restoreMany')
-  @ChekcAbilities({ action: Action.RESTORE, subject: 'all' })
-  @HttpCode(HttpStatus.OK)
-  restore(@Body('ids') ids: string, @CurrentUser() currentUser: RequestUser) {
-    return this.inventoryService.restore(JSON.parse(ids), currentUser);
-  }
+  // @Post('restoreMany')
+  // @ChekcAbilities({ action: Action.RESTORE, subject: 'all' })
+  // @HttpCode(HttpStatus.OK)
+  // restore(@Body('ids') ids: string, @CurrentUser() currentUser: RequestUser) {
+  //   return this.inventoryService.restore(JSON.parse(ids), currentUser);
+  // }
 
-  @Post('emptyTrash')
-  @HttpCode(HttpStatus.OK)
-  @ChekcAbilities({ action: Action.DELETE, subject: 'all' })
-  emptyTrash(@CurrentUser() currentUser: RequestUser) {
-    return this.inventoryService.clearTrash(currentUser);
-  }
+  // @Post('emptyTrash')
+  // @HttpCode(HttpStatus.OK)
+  // @ChekcAbilities({ action: Action.DELETE, subject: 'all' })
+  // emptyTrash(@CurrentUser() currentUser: RequestUser) {
+  //   return this.inventoryService.clearTrash(currentUser);
+  // }
 }
