@@ -2,6 +2,7 @@ import { BaseEntity } from "src/core/entities/base.entity";
 import { Column, Entity, ManyToOne, OneToMany } from "typeorm";
 import { InventoryItem } from "./inventory-item.entity";
 import { Branch } from "src/branch/entities/branch.entity";
+import { InventoryTransaction } from "src/core/types/fieldsEnum.types";
 
 @Entity()
 export class Inventory extends BaseEntity {
@@ -18,6 +19,8 @@ export class Inventory extends BaseEntity {
     branch: Branch
 
     get quantity() {
-        return this.items.reduce((acc, item) => acc + item.quantity, 0)
+        return this.items.reduce((acc, item) => {
+            return item.transactionType === InventoryTransaction.ISSUED ? acc - item.quantity : acc + item.quantity
+        }, 0)
     }
 }
