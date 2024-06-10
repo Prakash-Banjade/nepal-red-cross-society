@@ -76,6 +76,17 @@ export enum EventStatus {
     ONGOING = 'ongoing',
 }
 
+export enum BloodBagStatus {
+    USED = 'used',
+    USABLE = 'usable',
+    WASTAGE = 'wastage',
+}
+
+export enum InventoryTransaction {
+    ISSUED = 'issued',
+    RECEIVED = 'received',
+}
+
 export enum Education {
     NONE = 'none',
     PRIMARY = 'primary',

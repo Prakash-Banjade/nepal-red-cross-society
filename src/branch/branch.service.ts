@@ -28,6 +28,8 @@ export class BranchService {
       where: { id },
     })
 
+    if (!existingBranch) throw new BadRequestException('Branch not found');
+
     return existingBranch;
   }
 

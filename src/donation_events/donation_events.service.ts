@@ -45,7 +45,7 @@ export class DonationEventsService {
     const document = getFileName(createDonationEventDto.document);
 
     // creating bloodBags
-    await this.bloodBagService.createBloodBagsInBulk(createDonationEventDto.expectedDonations);
+    // await this.bloodBagService.createBloodBagsInBulk(createDonationEventDto.expectedDonations);
 
     const donationEvent = this.donationEventsRepo.create({
       ...createDonationEventDto,
@@ -57,6 +57,11 @@ export class DonationEventsService {
     })
 
     return await this.donationEventsRepo.save(donationEvent);
+  }
+
+  async canHaveDonation(eventId: string) {
+    const event = await this.findOne(eventId);
+    if (event.donations.length >= event.expectedDonations) throw new BadRequestException('Donation event can not have more than expected donations');
   }
 
   async findAll(queryDto: EventQueryDto) {

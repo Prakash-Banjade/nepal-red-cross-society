@@ -18,6 +18,15 @@ export class BloodBagsService {
     return await this.bloodBagsRepository.save(createBloodBagDto);
   }
 
+  async createNewBloog(){
+    const lastBloodBag = await this.bloodBagsRepository.findOne({ order: { bagNo: 'DESC' } });
+
+    let lastBloodBagNo = lastBloodBag ? lastBloodBag.bagNo : 1;
+    const newBloodBag = this.bloodBagsRepository.create({ bagNo: lastBloodBagNo + 1 });
+
+    return await this.bloodBagsRepository.save(newBloodBag);
+  }
+
   async createBloodBagsInBulk(quantity: number) {
     const lastBloodBag = await this.bloodBagsRepository.findOne({ order: { bagNo: 'DESC' } });
 
@@ -29,6 +38,10 @@ export class BloodBagsService {
       await this.bloodBagsRepository.save(newBloodBag);
     }
 
+  }
+
+  async getLatestBloodBagOfTheEvent(eventId: string) {
+    
   }
 
   async findAll() {

@@ -11,6 +11,7 @@ import { DonationEventsModule } from 'src/donation_events/donation_events.module
 import { LabReportsModule } from 'src/lab_reports/lab_reports.module';
 import { CertificateModule } from 'src/certificate/certificate.module';
 import { InventoryModule } from 'src/inventory/inventory.module';
+import { BloodBagsModule } from 'src/blood-bags/blood-bags.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { InventoryModule } from 'src/inventory/inventory.module';
     LabReportsModule,
     CertificateModule,
     InventoryModule,
+    BloodBagsModule,
   ],
   controllers: [DonationsController],
   providers: [DonationsService],

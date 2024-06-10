@@ -1,7 +1,7 @@
 import { BaseEntity } from "src/core/entities/base.entity";
 import { BloodInventoryStatus, BloodItems, BloodType, RhFactor } from "src/core/types/fieldsEnum.types";
 import { Column, Entity, OneToMany } from "typeorm";
-import { InventoryItem } from "./inventory-item.entity";
+import { BloodInventoryItem } from "./blood_inventory-item.entity";
 
 @Entity()
 export class BloodInventory extends BaseEntity {
@@ -11,8 +11,8 @@ export class BloodInventory extends BaseEntity {
     @Column({ type: 'enum', enum: RhFactor })
     rhFactor: RhFactor;
 
-    @OneToMany(() => InventoryItem, (item) => item.inventory, { onDelete: "CASCADE", nullable: true })
-    items: InventoryItem[]
+    @OneToMany(() => BloodInventoryItem, (item) => item.inventory, { onDelete: "CASCADE", nullable: true })
+    items: BloodInventoryItem[]
 
     get quantity() {
         const quantities = {};

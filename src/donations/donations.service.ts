@@ -15,6 +15,7 @@ import { BloodInventoryService } from 'src/inventory/blood-inventory.service';
 import { CreateBloodInventoryDto } from 'src/inventory/dto/create-blood_inventory.dto';
 import { BloodInventoryStatus, BloodItems } from 'src/core/types/fieldsEnum.types';
 import { CONSTANTS } from 'src/CONSTANTS';
+import { BloodBagsService } from 'src/blood-bags/blood-bags.service';
 
 @Injectable()
 export class DonationsService {
@@ -25,6 +26,7 @@ export class DonationsService {
     private readonly donorsService: DonorsService,
     private readonly organizationsService: OrganizationsService,
     private readonly bloodInventoryService: BloodInventoryService,
+    private readonly bloodBagService: BloodBagsService,
   ) { }
 
   async create(createDonationDto: CreateDonationDto) {
@@ -34,17 +36,24 @@ export class DonationsService {
     // check if donor can donate (checking if last donation has crossed 3 months)
     this.checkIfEligibleDonor(dependentColumns.donor);
 
+    // check if donation is valid for the event because expected donation count may be reached
+    await this.donationEventsService.canHaveDonation(createDonationDto.donation_event);
+
+    // create blood bag
+    const bloodBag = await this.bloodBagService.createNewBloog()
+
     // create donation
     const donation = this.donationRepo.create({
       ...createDonationDto,
       ...dependentColumns,
+      bloodBag,
       donorAge: this.calculateDonorAge(new Date(dependentColumns.donor.dob)),
     })
 
     const savedDonation = await this.donationRepo.save(donation);
 
     // add blood to inventory
-    await this.addBloodToInventory(savedDonation.id);
+    // await this.addBloodToInventory(savedDonation.id);
 
     return savedDonation;
   }
@@ -74,11 +83,10 @@ export class DonationsService {
       .take(skipPagination ? undefined : queryDto.take)
       .leftJoinAndSelect('donation.donor', 'donor')
       .withDeleted()
+      .leftJoinAndSelect('donation.bloodBag', 'bloodBag')
       .where({ deletedAt })
       .andWhere(new Brackets(qb => {
-        qb.where([
-          { bloodBagNo: ILike(`%${queryDto.search ?? ''}%`) },
-        ]);
+        if (queryDto.search) qb.orWhere("LOWER(bloodBag.bagNo) LIKE LOWER(:bagNo)", { bagNo: `%${queryDto.search ?? ''}%` });
         if (queryDto.search) qb.orWhere("LOWER(donor.firstName) LIKE LOWER(:donorFirstName)", { donorFirstName: `%${queryDto.search ?? ''}%` });
         if (queryDto.search) qb.orWhere("LOWER(donor.lastName) LIKE LOWER(:donorLastName)", { donorLastName: `%${queryDto.search ?? ''}%` });
       }))

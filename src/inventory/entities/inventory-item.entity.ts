@@ -1,22 +1,37 @@
-import { BloodInventoryStatus, BloodItems } from "src/core/types/fieldsEnum.types";
-import { Column, Entity, ManyToOne } from "typeorm";
 import { BaseEntity } from "src/core/entities/base.entity";
-import { BloodInventory } from "./blood_inventory.entity";
+import { InventoryTransaction } from "src/core/types/fieldsEnum.types";
+import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne } from "typeorm";
+import { Inventory } from "./inventory.entity";
 
-@Entity('inventory_items')
+@Entity()
 export class InventoryItem extends BaseEntity {
-    @Column({ type: "int" })
-    bloodBagNo: number;
-
-    @Column({ type: 'enum', enum: BloodItems })
-    itemType: BloodItems;
-
-    @ManyToOne(() => BloodInventory, bloodInventory => bloodInventory.items)
-    inventory: BloodInventory
-
-    @Column({ type: 'enum', enum: BloodInventoryStatus, default: BloodInventoryStatus.UNVERIFIED })
-    status: BloodInventoryStatus;
+    @Column({ type: 'varchar' })
+    source: string;
 
     @Column({ type: 'varchar' })
-    expiresAt: string;
+    destination: string;
+
+    @Column({ type: 'datetime' })
+    date: string;
+
+    @Column({ type: 'real' })
+    quantity: number;
+
+    @Column({ type: 'enum', enum: InventoryTransaction })
+    transactionType: InventoryTransaction
+
+    @ManyToOne(() => Inventory, inventory => inventory.items)
+    inventory: Inventory
+
+    @BeforeInsert()
+    @BeforeUpdate()
+    validateTransaction() {
+        if (this.transactionType === InventoryTransaction.ISSUED) {
+            if (this.inventory.quantity < this.quantity) throw new Error('Insufficient quantity');
+            this.source = 'SELF';
+        }
+        if (this.transactionType === InventoryTransaction.RECEIVED) {
+            this.destination = 'SELF';
+        }
+    }
 }

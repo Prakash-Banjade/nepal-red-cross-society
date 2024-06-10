@@ -33,8 +33,9 @@ export class AuthService {
   ACCESS_TOKEN_EXPIRE = '1m';
 
   async signIn(signInDto: SignInDto) {
-    const foundUser = await this.usersRepository.findOneBy({
-      email: signInDto.email,
+    const foundUser = await this.usersRepository.findOne({
+      where: { email: signInDto.email },
+      relations: { branch: true }
     });
 
     if (!foundUser)
@@ -54,6 +55,7 @@ export class AuthService {
       userId: foundUser.id,
       name: foundUser.firstName + ' ' + foundUser.lastName,
       role: foundUser.role,
+      branchId: foundUser.branch.id
     };
 
     const access_token = await this.createAccessToken(payload);
@@ -91,9 +93,12 @@ export class AuthService {
     if (!decoded) throw new ForbiddenException('Invalid token');
 
     // Is refresh token in db?
-    const foundUser = await this.usersRepository.findOneBy({
-      refresh_token,
-      id: decoded.id,
+    const foundUser = await this.usersRepository.findOne({
+      where: {
+        refresh_token,
+        id: decoded.id,
+      },
+      relations: { branch: true },
     });
 
     if (!foundUser) throw new UnauthorizedException('Access Denied');
@@ -104,6 +109,7 @@ export class AuthService {
       userId: foundUser.id,
       name: foundUser.firstName + ' ' + foundUser.lastName,
       role: foundUser.role,
+      branchId: foundUser.branch.id
     };
 
     const new_access_token = await this.createAccessToken(payload);

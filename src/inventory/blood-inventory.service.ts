@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, ILike, In, Repository } from 'typeorm';
-import { InventoryItem } from './entities/inventory-item.entity';
+import { BloodInventoryItem } from './entities/blood_inventory-item.entity';
 import { BloodInventory } from './entities/blood_inventory.entity';
 import { CreateBloodInventoryDto } from './dto/create-blood_inventory.dto';
 import { BloodInventoryItemQueryDto } from './dto/blood-inventory-item-query.dto';
@@ -12,25 +12,25 @@ import { BloodInventoryStatus, BloodItems, BloodType, RhFactor } from 'src/core/
 export class BloodInventoryService {
     constructor(
         @InjectRepository(BloodInventory) private readonly bloodInventoryRepo: Repository<BloodInventory>,
-        @InjectRepository(InventoryItem) private readonly inventoryItemRepo: Repository<InventoryItem>,
+        @InjectRepository(BloodInventoryItem) private readonly bloodInventoryItemRepo: Repository<BloodInventoryItem>,
     ) { }
 
     async create(createBloodInventoryDto: CreateBloodInventoryDto) {
         // check if blood type exists in inventory
         const existingInventory = await this.bloodInventoryRepo.findOne({ where: { bloodType: createBloodInventoryDto.bloodType, rhFactor: createBloodInventoryDto.rhFactor }, relations: { items: true } });
         if (existingInventory) {
-            const inventoryItem = this.inventoryItemRepo.create({ itemType: createBloodInventoryDto.itemType, expiresAt: createBloodInventoryDto.expiresAt, inventory: existingInventory, bloodBagNo: createBloodInventoryDto.bagNo });
-            await this.inventoryItemRepo.save(inventoryItem);
+            const inventoryItem = this.bloodInventoryItemRepo.create({ itemType: createBloodInventoryDto.itemType, expiresAt: createBloodInventoryDto.expiresAt, inventory: existingInventory, bloodBagNo: createBloodInventoryDto.bagNo });
+            await this.bloodInventoryItemRepo.save(inventoryItem);
         } else {
             const inventory = this.bloodInventoryRepo.create({ bloodType: createBloodInventoryDto.bloodType, rhFactor: createBloodInventoryDto.rhFactor });
             const savedInventory = await this.bloodInventoryRepo.save(inventory);
-            const inventoryItem = this.inventoryItemRepo.create({
+            const inventoryItem = this.bloodInventoryItemRepo.create({
                 itemType: createBloodInventoryDto.itemType,
                 inventory: savedInventory,
                 expiresAt: createBloodInventoryDto.expiresAt,
                 bloodBagNo: createBloodInventoryDto.bagNo
             });
-            await this.inventoryItemRepo.save(inventoryItem);
+            await this.bloodInventoryItemRepo.save(inventoryItem);
         }
 
         return {
@@ -58,7 +58,7 @@ export class BloodInventoryService {
         })
         if (!existingInventory) throw new NotFoundException('BloodInventory not found');
 
-        const queryBuilder = this.inventoryItemRepo.createQueryBuilder('bloodItem');
+        const queryBuilder = this.bloodInventoryItemRepo.createQueryBuilder('bloodItem');
 
         queryBuilder
             .orderBy("bloodItem.createdAt", queryDto.order)
@@ -105,7 +105,7 @@ export class BloodInventoryService {
         let bloodItemAvailable: boolean = true;
 
         for (const bloodItem of bloodItems) {
-            const existingBloodItem = await this.inventoryItemRepo.findOne({
+            const existingBloodItem = await this.bloodInventoryItemRepo.findOne({
                 where: {
                     inventory: { bloodType, rhFactor },
                     itemType: bloodItem,
@@ -122,12 +122,12 @@ export class BloodInventoryService {
     }
 
     async removeBloodItemFromInventory(inventoryItemId: string) {
-        const existingInventoryItem = await this.inventoryItemRepo.findOne({
+        const existingInventoryItem = await this.bloodInventoryItemRepo.findOne({
             where: { id: inventoryItemId },
         })
 
         if (!existingInventoryItem) throw new NotFoundException('Blood item not found');
 
-        await this.inventoryItemRepo.remove(existingInventoryItem);
+        await this.bloodInventoryItemRepo.remove(existingInventoryItem);
     }
 }
