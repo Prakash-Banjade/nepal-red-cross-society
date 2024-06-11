@@ -6,10 +6,10 @@ import { ChekcAbilities } from 'src/core/decorators/abilities.decorator';
 import { Action, RequestUser } from 'src/core/types/global.types';
 import { FileSystemStoredFile, FormDataRequest } from 'nestjs-form-data';
 import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.decorator';
-import { QueryDto } from 'src/core/dto/queryDto';
 import { CurrentUser } from 'src/core/decorators/user.decorator';
 import { InventoryItemService } from './inventory-item.service';
 import { CreateInventoryItemDto } from './dto/create-inventory-item.dto';
+import { InventoryItemsQueryDto } from './dto/inventory-items-query.dto';
 
 @ApiTags('Inventory Item')
 @Controller('inventoryItem')
@@ -28,7 +28,7 @@ export class InventoryItemController {
     @Get()
     @ApiPaginatedResponse(CreateInventoryDto)
     @ChekcAbilities({ action: Action.READ, subject: 'all' })
-    findAll(@Query() queryDto: QueryDto, @CurrentUser() currentUser: RequestUser) {
+    findAll(@Query() queryDto: InventoryItemsQueryDto, @CurrentUser() currentUser: RequestUser) {
         return this.inventoryItemService.findAll(queryDto, currentUser);
     }
 

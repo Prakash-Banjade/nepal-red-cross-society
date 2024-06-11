@@ -1,13 +1,14 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, In, IsNull, Not, Or, Repository } from 'typeorm';
-import { Deleted, QueryDto } from 'src/core/dto/queryDto';
+import { Deleted } from 'src/core/dto/queryDto';
 import paginatedData from 'src/core/utils/paginatedData';
 import { InventoryItem } from './entities/inventory-item.entity';
 import { CreateInventoryItemDto } from './dto/create-inventory-item.dto';
 import { InventoryService } from './inventory.service';
 import { RequestUser } from 'src/core/types/global.types';
 import { BranchService } from 'src/branch/branch.service';
+import { InventoryItemsQueryDto } from './dto/inventory-items-query.dto';
 
 @Injectable()
 export class InventoryItemService {
@@ -28,7 +29,9 @@ export class InventoryItemService {
         return await this.inventoryItemRepo.save(inventoryItem);
     }
 
-    async findAll(queryDto: QueryDto, currentUser: RequestUser) {
+    async findAll(queryDto: InventoryItemsQueryDto, currentUser: RequestUser) {
+        const inventory = await this.inventoryService.findOne(queryDto.inventoryId, currentUser);
+
         const queryBuilder = this.inventoryItemRepo.createQueryBuilder('inventoryItem');
         const deletedAt = queryDto.deleted === Deleted.ONLY ? Not(IsNull()) : queryDto.deleted === Deleted.NONE ? IsNull() : Or(IsNull(), Not(IsNull()));
 
@@ -40,10 +43,22 @@ export class InventoryItemService {
             .where({ deletedAt })
             .leftJoinAndSelect('inventoryItem.inventory', 'inventory')
             .andWhere(new Brackets(qb => {
+                qb.where([
+                    // { firstName: ILike(`%${queryDto.search ?? ''}%`) },
+                ]);
+                // queryDto.gender && qb.andWhere({ gender: queryDto.gender });
+            }))
+            .andWhere(new Brackets(qb => {
+                qb.andWhere("LOWER(inventory.id) LIKE LOWER(:inventoryId)", { inventoryId: queryDto.inventoryId }); // filter according to inventory
                 qb.andWhere("LOWER(inventory.branchId) LIKE LOWER(:branchId)", { branchId: currentUser.branchId }); // filter by branch
             }))
 
-        return paginatedData(queryDto, queryBuilder);
+        return paginatedData(queryDto, queryBuilder, {
+            inventory: {
+                name: inventory.name,
+                availableUnits: inventory.quantity
+            }
+        });
     }
 
     async findOne(id: string, currentUser: RequestUser) {
