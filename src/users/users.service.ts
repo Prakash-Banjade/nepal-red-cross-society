@@ -9,11 +9,13 @@ import { Deleted, QueryDto } from 'src/core/dto/queryDto';
 import paginatedData from 'src/core/utils/paginatedData';
 import { RequestUser } from 'src/core/types/global.types';
 import { UserQueryDto } from './entities/user-query.dto';
+import { BranchService } from 'src/branch/branch.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private usersRepository: Repository<User>,
+    private readonly branchService: BranchService
   ) { }
 
   async create(createUserDto: CreateUserDto) {
@@ -27,9 +29,13 @@ export class UsersService {
     // evaluating image
     const image = createUserDto.image ? getFileName(createUserDto.image) : null;
 
+    // evaluate branch
+    const branch = await this.branchService.findOne(createUserDto.branch);
+
     const createdUser = this.usersRepository.create({
       ...createUserDto,
-      image
+      image,
+      branch
     });
 
     await this.usersRepository.save(createdUser);
@@ -89,13 +95,17 @@ export class UsersService {
     const existingUser = await this.findOne(id);
 
     // evaluate image
-    const image = getFileName(updateUserDto.image);
+    const image = updateUserDto.image ? getFileName(updateUserDto.image) : existingUser.image;
+
+    // evaluate branch
+    const branch = updateUserDto.branch ? await this.branchService.findOne(updateUserDto.branch) : existingUser.branch
 
     Object.assign(existingUser, {
       firstName: updateUserDto.firstName,
       lastName: updateUserDto.lastName,
       email: updateUserDto.email,
       image,
+      branch
     });
 
     return await this.usersRepository.save(existingUser);

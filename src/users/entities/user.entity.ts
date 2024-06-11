@@ -51,4 +51,10 @@ export class User extends BaseEntity {
         if (!emailRegex.test(this.email)) throw new Error('Invalid email');
     }
 
+    @BeforeInsert()
+    @BeforeUpdate()
+    setBranch() {
+        if (this.role === Roles.USER) this.branch = null
+    }
+
 }
