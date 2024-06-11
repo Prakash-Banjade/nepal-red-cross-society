@@ -52,6 +52,11 @@ export class InventoryService {
     const existingInventory = await this.inventoryRepo.findOne({
       where: { id, branch: { id: branch.id } },
       relations: { items: true },
+      order: {
+        items: {
+          createdAt: 'DESC'
+        }
+      }
     })
     if (!existingInventory) throw new NotFoundException('Inventory not found');
 
