@@ -26,11 +26,12 @@ export class CreateUserDto {
     @Length(8)
     password: string;
 
-    @ApiProperty({ type: 'string', enum: Roles })
+    @ApiPropertyOptional({ type: 'string', enum: Roles, description: 'User role', default: Roles.USER })
     @IsEnum(Roles, { message: 'Invalid role' })
-    role: Roles;
+    @IsOptional()
+    role?: Roles = Roles.USER;
 
     @ApiPropertyOptional({ type: 'string', format: 'binary', description: 'Profile Image' })
     @IsOptional()
-    image?: string | FileSystemStoredFile
+    image?: FileSystemStoredFile
 }
