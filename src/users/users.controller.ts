@@ -2,7 +2,7 @@ import { Controller, Get, Body, Patch, Param, Post, Query, } from '@nestjs/commo
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
-import { FormDataRequest, MemoryStoredFile } from 'nestjs-form-data';
+import { FormDataRequest, FileSystemStoredFile } from 'nestjs-form-data';
 import { ChekcAbilities } from 'src/core/decorators/abilities.decorator';
 import { Action } from 'src/core/types/global.types';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -24,7 +24,7 @@ export class UsersController {
   @Post()
   @Throttle({ default: { limit: 5, ttl: 60000 } })
   @ChekcAbilities({ action: Action.CREATE, subject: User })
-  @FormDataRequest({ storage: MemoryStoredFile })
+  @FormDataRequest({ storage: FileSystemStoredFile })
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto)
   }
@@ -43,7 +43,7 @@ export class UsersController {
   }
 
   @Patch(':id')
-  @FormDataRequest({ storage: MemoryStoredFile })
+  @FormDataRequest({ storage: FileSystemStoredFile })
   @Throttle({ default: { limit: 1, ttl: 2000 } })
   @ApiConsumes('multipart/form-data')
   @ChekcAbilities({ action: Action.UPDATE, subject: 'all' })
