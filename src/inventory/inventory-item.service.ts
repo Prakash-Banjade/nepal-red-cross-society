@@ -46,7 +46,7 @@ export class InventoryItemService {
                 qb.where([
                     // { firstName: ILike(`%${queryDto.search ?? ''}%`) },
                 ]);
-                // queryDto.gender && qb.andWhere({ gender: queryDto.gender });
+                queryDto.transactionType && qb.andWhere({ transactionType: queryDto.transactionType });
             }))
             .andWhere(new Brackets(qb => {
                 qb.andWhere("LOWER(inventory.id) LIKE LOWER(:inventoryId)", { inventoryId: queryDto.inventoryId }); // filter according to inventory
@@ -56,7 +56,8 @@ export class InventoryItemService {
         return paginatedData(queryDto, queryBuilder, {
             inventory: {
                 name: inventory.name,
-                availableUnits: inventory.quantity
+                availableUnits: inventory.quantity,
+                unit: inventory.unit
             }
         });
     }
