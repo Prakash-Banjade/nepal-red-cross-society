@@ -1,3 +1,4 @@
+import { BadRequestException } from "@nestjs/common";
 import { ApiProperty } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
 import { IsDateString, IsEnum, IsNotEmpty, IsString, IsUUID } from "class-validator";
@@ -13,6 +14,14 @@ export class CreateInventoryItemDto {
     @IsString()
     @IsNotEmpty()
     destination!: string;
+
+    @ApiProperty({ type: 'int', default: 0 })
+    @Transform(({ value }) => {
+        if (isNaN(parseInt(value))) throw new BadRequestException('Price must be a number');
+        return parseInt(value);
+    })
+    @IsNotEmpty()
+    price!: number
 
     @ApiProperty({ type: 'int', default: 0 })
     @Transform(({ value }) => parseInt(value))

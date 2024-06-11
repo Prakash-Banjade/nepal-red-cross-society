@@ -11,6 +11,9 @@ export class InventoryItem extends BaseEntity {
     @Column({ type: 'varchar' })
     destination: string;
 
+    @Column({ type: 'int' })
+    price: number
+
     @Column({ type: 'datetime' })
     date: string;
 
