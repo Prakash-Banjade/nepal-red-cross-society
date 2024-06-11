@@ -55,7 +55,8 @@ export class AuthService {
       userId: foundUser.id,
       name: foundUser.firstName + ' ' + foundUser.lastName,
       role: foundUser.role,
-      branchId: foundUser.branch.id
+      branchId: foundUser.branch.id,
+      branchName: foundUser.branch.name
     };
 
     const access_token = await this.createAccessToken(payload);
@@ -109,7 +110,8 @@ export class AuthService {
       userId: foundUser.id,
       name: foundUser.firstName + ' ' + foundUser.lastName,
       role: foundUser.role,
-      branchId: foundUser.branch.id
+      branchId: foundUser.branch.id,
+      branchName: foundUser.branch.name
     };
 
     const new_access_token = await this.createAccessToken(payload);

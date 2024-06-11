@@ -10,6 +10,7 @@ export interface RequestUser {
     email: string;
     role: Roles;
     branchId: string;
+    branchName: string;
 }
 
 export interface AuthUser {
