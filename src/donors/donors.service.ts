@@ -62,15 +62,13 @@ export class DonorsService {
   }
 
   async createUserAccount(createDonorDto: CreateDonorDto, password: string) {
-    const image = createDonorDto.image ? getFileName(createDonorDto.image) : null;
-
     const user = await this.userService.create({
       firstName: createDonorDto.firstName,
       lastName: createDonorDto.lastName,
       email: createDonorDto.email,
-      image,
+      image: createDonorDto.image,
       password,
-    } as CreateUserDto);
+    });
 
     const savedUser = await this.userService.findOne(user.user.id); // this approach can be improved as we can directly send the created user after creating
 
