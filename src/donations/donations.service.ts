@@ -12,10 +12,10 @@ import paginatedData from 'src/core/utils/paginatedData';
 import { Donor } from 'src/donors/entities/donor.entity';
 import { DonationQueryDto } from './dto/donation-query.dto';
 import { BloodInventoryService } from 'src/inventory/blood-inventory.service';
-import { CreateBloodInventoryDto } from 'src/inventory/dto/create-blood_inventory.dto';
-import { BloodInventoryStatus, BloodItems } from 'src/core/types/fieldsEnum.types';
+import { BloodInventoryStatus, BloodItems, InventoryTransaction } from 'src/core/types/fieldsEnum.types';
 import { CONSTANTS } from 'src/CONSTANTS';
 import { BloodBagsService } from 'src/blood-bags/blood-bags.service';
+import { RequestUser } from 'src/core/types/global.types';
 
 @Injectable()
 export class DonationsService {
@@ -29,18 +29,18 @@ export class DonationsService {
     private readonly bloodBagService: BloodBagsService,
   ) { }
 
-  async create(createDonationDto: CreateDonationDto) {
+  async create(createDonationDto: CreateDonationDto, currentUser: RequestUser) {
     // finding dependent entities
     const dependentColumns = await this.retrieveDependencies(createDonationDto); // donor, organization, donation_event
 
     // check if donor can donate (checking if last donation has crossed 3 months)
-    this.checkIfEligibleDonor(dependentColumns.donor);
+    const message = this.checkIfEligibleDonor(dependentColumns.donor); // if yes, warning message, not error, donation will be accepted
 
     // check if donation is valid for the event because expected donation count may be reached
     await this.donationEventsService.canHaveDonation(createDonationDto.donation_event);
 
-    // create blood bag
-    const bloodBag = await this.bloodBagService.getLastBloodBagOfEvent(dependentColumns.donation_event)
+    // evaluate blood bag
+    const bloodBag = await this.bloodBagService.getBloodBagByBagNo(createDonationDto.bloodBagNo);
 
     // create donation
     const donation = this.donationRepo.create({
@@ -52,7 +52,24 @@ export class DonationsService {
 
     const savedDonation = await this.donationRepo.save(donation);
 
-    return savedDonation;
+    // create blood inventory
+    await this.bloodInventoryService.create({
+      bloodBag: bloodBag.id,
+      component: BloodItems.FRESH_BLOOD,
+      bloodType: dependentColumns.donor?.bloodType,
+      rhFactor: dependentColumns.donor?.rhFactor,
+      price: 0,
+      status: BloodInventoryStatus.UNVERIFIED,
+      source: 'Event',
+      transactionType: InventoryTransaction.RECEIVED,
+      destination: 'SELF',
+      date: dependentColumns.donation_event?.startDate,
+    }, currentUser)
+
+    return {
+      ...savedDonation,
+      message,
+    };
   }
 
   async findAll(queryDto: DonationQueryDto) {
@@ -178,7 +195,7 @@ export class DonationsService {
       const lastDonationDate = new Date(lastDonation.createdAt);
       const diffInDays = Math.ceil(Math.abs(now.getTime() - lastDonationDate.getTime()) / (1000 * 60 * 60 * 24));
       if (diffInDays < CONSTANTS.DONATION_INTERVAL) {
-        throw new BadRequestException(`${CONSTANTS.DONATION_INTERVAL - diffInDays} days until new donation allowed`);
+        return (`${CONSTANTS.DONATION_INTERVAL - diffInDays} days until new donation allowed`);
       }
     }
   }

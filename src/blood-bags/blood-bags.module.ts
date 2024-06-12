@@ -4,6 +4,7 @@ import { BloodBagsController } from './blood-bags.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BloodBag } from './entities/blood-bag.entity';
 import { InventoryModule } from 'src/inventory/inventory.module';
+import { BagTypesModule } from 'src/bag-types/bag-types.module';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { InventoryModule } from 'src/inventory/inventory.module';
       BloodBag,
     ]),
     forwardRef(() => InventoryModule),
+    BagTypesModule,
   ],
   controllers: [BloodBagsController],
   providers: [BloodBagsService],

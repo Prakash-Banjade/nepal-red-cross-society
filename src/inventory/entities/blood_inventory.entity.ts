@@ -27,8 +27,8 @@ export class BloodInventory extends BaseEntity {
     @Column({ type: 'enum', enum: InventoryTransaction })
     transactionType: InventoryTransaction
 
-    @Column({ type: 'enum', enum: BloodItems })
-    itemType: BloodItems
+    @Column({ type: 'varchar' })
+    component: string;
 
     @Column({ type: 'datetime' })
     expiry: string;

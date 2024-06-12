@@ -1,4 +1,6 @@
+import { BadRequestException } from "@nestjs/common";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { Transform } from "class-transformer";
 import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from "class-validator";
 import { DonationStatus, DonationType } from "src/core/types/fieldsEnum.types";
 
@@ -7,6 +9,14 @@ export class CreateDonationDto {
     @IsUUID()
     @IsNotEmpty()
     donor: string;
+
+    @ApiProperty({ type: 'number' })
+    @IsNotEmpty()
+    @Transform(({ value }) => {
+        if (isNaN(parseInt(value))) throw new BadRequestException('Blood bag no. must be number');
+        return parseInt(value);
+    })
+    bloodBagNo: number;
 
     @ApiPropertyOptional({ type: String, format: 'uuid', example: '123e4567-e89b-12d3-a456-426614174000' })
     @IsOptional()

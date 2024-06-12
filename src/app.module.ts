@@ -29,6 +29,7 @@ import { BloodRequestModule } from './blood_request/blood_request.module';
 import { InventoryModule } from './inventory/inventory.module';
 import { BranchModule } from './branch/branch.module';
 import { BloodBagsModule } from './blood-bags/blood-bags.module';
+import { BagTypesModule } from './bag-types/bag-types.module';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { BloodBagsModule } from './blood-bags/blood-bags.module';
     InventoryModule,
     BranchModule,
     BloodBagsModule,
+    BagTypesModule,
   ],
   controllers: [AppController],
   providers: [

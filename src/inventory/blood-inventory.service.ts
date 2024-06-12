@@ -72,17 +72,6 @@ export class BloodInventoryService {
         return existingInventory
     }
 
-    // async update(id: string, updateInventoryDto: UpdateInventoryDto) {
-    //   const existingInventory = await this.findOne(id);
-
-    // }
-
-    async transformBlood(inventoryId: string, bloodItems: BloodItems[], currentUser: RequestUser) {
-        const existingInventory = await this.findOne(inventoryId, currentUser);
-        
-
-    }
-
     async remove(id: string, currentUser: RequestUser) {
         // const existingInventory = await this.findOne(id);
         const existingInventory = await this.bloodInventoryRepo.findOne({
@@ -102,7 +91,7 @@ export class BloodInventoryService {
                 relations: { branch: true },
                 where: {
                     branch: { id: currentUser.branchId },
-                    itemType: bloodItem,
+                    component: bloodItem,
                     status: BloodInventoryStatus.USABLE,
                     bloodType,
                     rhFactor,
@@ -145,7 +134,7 @@ export class BloodInventoryService {
                 status: BloodInventoryStatus.USABLE,
                 expiry: new Date(Date.now() + CONSTANTS.BLOOD_EXPIRY_INTERVAL).toISOString(),
                 transactionType: InventoryTransaction.ISSUED,
-                itemType: bloodItem,
+                component: bloodItem,
             })
 
             await this.bloodInventoryRepo.save(createdBloodInventoryItem)

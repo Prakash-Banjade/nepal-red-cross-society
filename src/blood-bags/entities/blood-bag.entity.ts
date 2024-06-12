@@ -1,3 +1,4 @@
+import { BagType } from "src/bag-types/entities/bag-type.entity";
 import { BaseEntity } from "src/core/entities/base.entity";
 import { BloodBagStatus } from "src/core/types/fieldsEnum.types";
 import { DonationEvent } from "src/donation_events/entities/donation_event.entity";
@@ -23,4 +24,7 @@ export class BloodBag extends BaseEntity {
     @OneToOne(() => BloodInventory, bloodInventory => bloodInventory.bloodBag, { nullable: true })
     @JoinColumn()
     bloodInventory: BloodInventory
+
+    @ManyToOne(() => BagType, bagType => bagType.bloodBags)
+    bagType: BagType
 }

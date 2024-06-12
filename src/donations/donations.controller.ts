@@ -5,12 +5,13 @@ import { UpdateDonationDto } from './dto/update-donation.dto';
 import { ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { FileSystemStoredFile, FormDataRequest } from 'nestjs-form-data';
 import { ChekcAbilities } from 'src/core/decorators/abilities.decorator';
-import { Action } from 'src/core/types/global.types';
+import { Action, RequestUser } from 'src/core/types/global.types';
 import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.decorator';
 import { QueryDto } from 'src/core/dto/queryDto';
 import { DonationQueryDto } from './dto/donation-query.dto';
 import { Throttle } from '@nestjs/throttler';
 import { DonationRejectDto, DonationVerifyDto } from './dto/donation-reject.dto';
+import { CurrentUser } from 'src/core/decorators/user.decorator';
 
 @ApiTags('Donations')
 @Controller('donations')
@@ -22,8 +23,8 @@ export class DonationsController {
   @Throttle({ default: { limit: 5, ttl: 60000 } })
   @FormDataRequest({ storage: FileSystemStoredFile })
   @ChekcAbilities({ action: Action.CREATE, subject: 'all' })
-  create(@Body() createDonationDto: CreateDonationDto) {
-    return this.donationsService.create(createDonationDto);
+  create(@Body() createDonationDto: CreateDonationDto, @CurrentUser() currentUser: RequestUser) {
+    return this.donationsService.create(createDonationDto, currentUser);
   }
 
   @Get()

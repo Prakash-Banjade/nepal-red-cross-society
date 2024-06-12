@@ -4,9 +4,9 @@ import { Transform } from "class-transformer";
 import { IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from "class-validator";
 import { CreateBloodBagDto } from "src/blood-bags/dto/create-blood-bag.dto";
 import { CONSTANTS } from "src/CONSTANTS";
-import { BloodInventoryStatus, BloodItems, BloodType, InventoryTransaction, RhFactor } from "src/core/types/fieldsEnum.types";
+import { BloodComponent, BloodInventoryStatus, BloodItems, BloodType, InventoryTransaction, RhFactor } from "src/core/types/fieldsEnum.types";
 
-export class CreateBloodInventoryDto extends CreateBloodBagDto {
+export class CreateBloodInventoryDto {
     @ApiProperty({ type: 'enum', enum: BloodType })
     @IsEnum(BloodType)
     bloodType: BloodType
@@ -43,21 +43,22 @@ export class CreateBloodInventoryDto extends CreateBloodBagDto {
     @IsEnum(InventoryTransaction)
     transactionType!: InventoryTransaction
 
-    @ApiProperty({ type: 'enum', enum: BloodItems, isArray: true })
-    @IsEnum(BloodItems, { each: true })
-    itemTypes: BloodItems[];
+    @ApiProperty({ type: 'string'})
+    @IsString()
+    @IsNotEmpty()
+    component!: string;
 
     @ApiProperty({ type: 'string', format: 'date-time' })
     @IsDateString()
     @IsOptional()
-    expiry: string = new Date(Date.now() + CONSTANTS.BLOOD_EXPIRY_INTERVAL).toISOString();
+    expiry?: string = '';
 
     @ApiProperty({ type: 'enum', enum: BloodInventoryStatus })
     @IsEnum(BloodInventoryStatus)
     @IsOptional()
     status: BloodInventoryStatus;
 
-    @ApiProperty({ type: 'strign', format: 'uuid' })
+    @ApiProperty({ type: 'string', format: 'uuid' })
     @IsUUID()
     bloodBag!: string
 }

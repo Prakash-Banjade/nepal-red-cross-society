@@ -10,6 +10,7 @@ import { CONSTANTS } from 'src/CONSTANTS';
 import { RequestUser } from 'src/core/types/global.types';
 import { InventoryItemService } from 'src/inventory/inventory-item.service';
 import { BloodBagStatus, InventoryTransaction } from 'src/core/types/fieldsEnum.types';
+import { BagTypesService } from 'src/bag-types/bag-types.service';
 
 @Injectable()
 export class BloodBagsService {
@@ -18,12 +19,20 @@ export class BloodBagsService {
     @InjectRepository(BloodBag) private bloodBagsRepository: Repository<BloodBag>,
     @Inject(forwardRef(() => InventoryService)) private readonly inventoryService: InventoryService,
     private readonly inventoryItemService: InventoryItemService,
+    private readonly bagTypeService: BagTypesService,
+
   ) { }
   async create(createBloodBagDto: CreateBloodBagDto) {
     const existignBloodBagWithSameNo = await this.bloodBagsRepository.findOneBy({ bagNo: createBloodBagDto.bagNo });
     if (existignBloodBagWithSameNo) throw new BadRequestException('Blood bag with same number already exists');
 
-    return await this.bloodBagsRepository.save(createBloodBagDto);
+    // bagtype
+    const bagType = await this.bagTypeService.findOne(createBloodBagDto.bagType);
+
+    return await this.bloodBagsRepository.save(({
+      ...createBloodBagDto,
+      bagType: bagType,
+    }));
   }
 
   // async createNewBloog() {
@@ -70,25 +79,31 @@ export class BloodBagsService {
     return inventory.id
   }
 
-  async getLastBloodBagOfEvent(event: DonationEvent) {
-    const bloodBag = await this.bloodBagsRepository.findOne({
-      where: {
-        donationEvent: {
-          id: event.id
-        }
-      },
-      relations: {
-        donationEvent: true
-      },
-      order: {
-        bagNo: 'ASC'
-      }
-    })
-    if (!bloodBag) throw new InternalServerErrorException('No blood bag found')
-
-    bloodBag.status = BloodBagStatus.USED
-    return await this.bloodBagsRepository.save(bloodBag)
+  async getBloodBagByBagNo(bagNo: number) {
+    const bloodBag = await this.bloodBagsRepository.findOneBy({ bagNo });
+    if (!bloodBag) throw new BadRequestException('No blood bag found');
+    return bloodBag
   }
+
+  // async getLastBloodBagOfEvent(event: DonationEvent) {
+  //   const bloodBag = await this.bloodBagsRepository.findOne({
+  //     where: {
+  //       donationEvent: {
+  //         id: event.id
+  //       }
+  //     },
+  //     relations: {
+  //       donationEvent: true
+  //     },
+  //     order: {
+  //       bagNo: 'ASC'
+  //     }
+  //   })
+  //   if (!bloodBag) throw new InternalServerErrorException('No blood bag found')
+
+  //   bloodBag.status = BloodBagStatus.USED
+  //   return await this.bloodBagsRepository.save(bloodBag)
+  // }
 
   async findAll() {
     return await this.bloodBagsRepository.find();

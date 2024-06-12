@@ -41,11 +41,7 @@ export class LabReportsService {
 
     const savedLabReport = await this.labReportRepo.save(labReport);
 
-    console.log(savedLabReport)
-
     const isSucceed = await this.evaluateTestResults(createLabReportDto, savedLabReport); // also save test results
-
-    console.log(isSucceed)
 
     // change donation status and verifiedBy
     donation.status = isSucceed ? DonationStatus.SUCCESS : DonationStatus.FAILED;
@@ -83,7 +79,7 @@ export class LabReportsService {
       status: isSucceed ? BloodInventoryStatus.USABLE : BloodInventoryStatus.WASTE,
       expiry: new Date(Date.now() + CONSTANTS.BLOOD_EXPIRY_INTERVAL).toISOString(),
       transactionType: InventoryTransaction.RECEIVED,
-      itemType: BloodItems.FRESH_BLOOD,
+      component: BloodItems.FRESH_BLOOD,
     })
     console.log(createdBloodInventoryItem)
 

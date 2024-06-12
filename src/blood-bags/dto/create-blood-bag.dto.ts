@@ -1,7 +1,7 @@
 import { BadRequestException } from "@nestjs/common";
 import { ApiProperty } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
-import { IsNotEmpty, IsString } from "class-validator";
+import { IsNotEmpty, IsString, IsUUID } from "class-validator";
 
 export class CreateBloodBagDto {
     @ApiProperty({ type: Number })
@@ -11,4 +11,8 @@ export class CreateBloodBagDto {
         return parseInt(value);
     })
     bagNo: number;
+
+    @ApiProperty({ type: String, format: 'uuid' })
+    @IsUUID()
+    bagType: string;
 }

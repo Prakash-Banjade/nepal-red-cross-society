@@ -17,6 +17,9 @@ export class InventoryItem extends BaseEntity {
     @Column({ type: 'datetime' })
     date: string;
 
+    @Column({ type: 'varchar', nullable: true })
+    type: string
+
     @Column({ type: 'real' })
     quantity: number;
 
