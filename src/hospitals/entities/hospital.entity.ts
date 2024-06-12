@@ -1,8 +1,9 @@
 import { Address } from "src/address/entities/address.entity";
 import { BloodRequest } from "src/blood_request/entities/blood_request.entity";
 import { BaseEntity } from "src/core/entities/base.entity";
-import { Column, OneToMany, OneToOne } from "typeorm";
+import { Column, Entity, OneToMany, OneToOne } from "typeorm";
 
+@Entity()
 export class Hospital extends BaseEntity {
     @Column({ type: 'text' })
     name!: string;
