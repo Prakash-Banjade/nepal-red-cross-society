@@ -14,6 +14,7 @@ import getFileName from 'src/core/utils/getImageUrl';
 import { FileSystemStoredFile } from 'nestjs-form-data';
 import { EventQueryDto } from './dto/event-query.dto';
 import { BloodBagsService } from 'src/blood-bags/blood-bags.service';
+import { RequestUser } from 'src/core/types/global.types';
 
 @Injectable()
 export class DonationEventsService {
@@ -26,7 +27,7 @@ export class DonationEventsService {
     private readonly bloodBagService: BloodBagsService,
   ) { }
 
-  async create(createDonationEventDto: CreateDonationEventDto) {
+  async create(createDonationEventDto: CreateDonationEventDto, currentUser: RequestUser) {
     // retrieving technicians
     const technicians = createDonationEventDto.technicians ? await this.techniciansRepo.find({
       where: {
@@ -44,9 +45,6 @@ export class DonationEventsService {
     const coverImage = createDonationEventDto.document ? getFileName(createDonationEventDto.coverImage) : null;
     const document = getFileName(createDonationEventDto.document);
 
-    // creating bloodBags
-    // await this.bloodBagService.createBloodBagsInBulk(createDonationEventDto.expectedDonations);
-
     const donationEvent = this.donationEventsRepo.create({
       ...createDonationEventDto,
       address,
@@ -56,7 +54,10 @@ export class DonationEventsService {
       document,
     })
 
-    return await this.donationEventsRepo.save(donationEvent);
+    const savedEvent = await this.donationEventsRepo.save(donationEvent);
+
+    // creating bloodBags
+    await this.bloodBagService.createBloodBagsInBulk(createDonationEventDto.expectedDonations, savedEvent, currentUser);
   }
 
   async canHaveDonation(eventId: string) {
@@ -82,6 +83,7 @@ export class DonationEventsService {
         if (queryDto.search) qb.orWhere("LOWER(organization.name) LIKE LOWER(:organizationName)", { organizationName: `%${queryDto.search ?? ''}%` });
       }))
       .leftJoinAndSelect('donationEvent.address', 'address')
+      .leftJoinAndSelect('donationEvent.bloodBag', 'bloodBag')
       .andWhere(new Brackets(qb => {
         if (queryDto.country) qb.andWhere("LOWER(address.country) LIKE LOWER(:country)", { country: `%${queryDto.country ?? ''}%` });
         if (queryDto.province) qb.andWhere("LOWER(address.province) LIKE LOWER(:province)", { province: `%${queryDto.province ?? ''}%` });

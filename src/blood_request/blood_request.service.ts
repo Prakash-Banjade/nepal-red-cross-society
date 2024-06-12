@@ -9,17 +9,22 @@ import paginatedData from 'src/core/utils/paginatedData';
 import { BloodRequestQueryDto } from './dto/blood-request-query.dto';
 import { BloodInventoryService } from 'src/inventory/blood-inventory.service';
 import getFileName from 'src/core/utils/getImageUrl';
+import { RequestUser } from 'src/core/types/global.types';
+import { BranchService } from 'src/branch/branch.service';
 
 @Injectable()
 export class BloodRequestService {
   constructor(
     @InjectRepository(BloodRequest) private readonly bloodRequestRepo: Repository<BloodRequest>,
-    private readonly bloodInventoryService: BloodInventoryService
+    private readonly bloodInventoryService: BloodInventoryService,
+    private readonly branchService: BranchService,
   ) { }
 
-  async create(createBloodRequestDto: CreateBloodRequestDto) {
+  async create(createBloodRequestDto: CreateBloodRequestDto, currentUser: RequestUser) {
+    const branch = await this.branchService.findOne(currentUser.branchId);
+
     const { bloodType, rhFactor, bloodItems } = createBloodRequestDto;
-    const existingBloodItem = await this.bloodInventoryService.checkIfBloodAvailable(bloodType, rhFactor, bloodItems); // check if blood is available
+    const existingBloodItem = await this.bloodInventoryService.checkIfBloodAvailable(bloodType, rhFactor, bloodItems, currentUser); // check if blood is available
 
     const documentFront = getFileName(createBloodRequestDto.documentFront);
     const documentBack = getFileName(createBloodRequestDto.documentBack);
@@ -30,7 +35,7 @@ export class BloodRequestService {
       documentBack,
     });
 
-    await this.bloodInventoryService.removeBloodItemFromInventory(existingBloodItem.id); // remove blood item from inventory after beign request
+    await this.bloodInventoryService.removeBloodItemFromInventory(existingBloodItem.id, branch, createdRequest); // remove blood item from inventory after beign request
 
     return await this.bloodRequestRepo.save(createdRequest);
   }
@@ -65,7 +70,7 @@ export class BloodRequestService {
 
   async update(id: string, updateBloodRequestDto: UpdateBloodRequestDto) {
     const { bloodType, rhFactor, bloodItems } = updateBloodRequestDto;
-    await this.bloodInventoryService.checkIfBloodAvailable(bloodType, rhFactor, bloodItems); // check if blood is available
+    // await this.bloodInventoryService.checkIfBloodAvailable(bloodType, rhFactor, bloodItems); // check if blood is available
 
     const existingRequest = await this.findOne(id);
     Object.assign(existingRequest, updateBloodRequestDto);

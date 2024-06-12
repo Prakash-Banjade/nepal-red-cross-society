@@ -57,4 +57,7 @@ export class BloodRequest extends BaseEntity {
 
     @Column({ type: 'text' })
     documentBack: string;
+
+    @Column({ type: 'real' })
+    price: number
 }

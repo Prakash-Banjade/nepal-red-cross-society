@@ -6,6 +6,7 @@ import { Address } from 'src/address/entities/address.entity';
 import { Organization } from 'src/organizations/entities/organization.entity';
 import { EventStatus } from 'src/core/types/fieldsEnum.types';
 import { BadRequestException } from '@nestjs/common';
+import { BloodBag } from 'src/blood-bags/entities/blood-bag.entity';
 
 @Entity()
 export class DonationEvent extends BaseEntity {
@@ -41,6 +42,9 @@ export class DonationEvent extends BaseEntity {
 
   @Column({ type: 'int' })
   expectedDonations: number;
+
+  @OneToMany(() => BloodBag, (bloodBag) => bloodBag.donationEvent, { nullable: true })
+  bloodBags: BloodBag[];
 
   @Column({ type: 'enum', enum: EventStatus, default: EventStatus.UPCOMING })
   status: EventStatus = EventStatus.UPCOMING;

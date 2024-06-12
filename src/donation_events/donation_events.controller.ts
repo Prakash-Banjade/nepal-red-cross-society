@@ -16,12 +16,13 @@ import { UpdateDonationEventDto } from './dto/update-donation_event.dto';
 import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { FileSystemStoredFile, FormDataRequest } from 'nestjs-form-data';
 import { ChekcAbilities } from 'src/core/decorators/abilities.decorator';
-import { Action } from 'src/core/types/global.types';
+import { Action, RequestUser } from 'src/core/types/global.types';
 import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.decorator';
 import { DonationEvent } from './entities/donation_event.entity';
 import { CaslAbilityFactory } from 'src/casl/casl-ability.factory/casl-ability.factory';
 import { EventQueryDto } from './dto/event-query.dto';
 import { Throttle } from '@nestjs/throttler';
+import { CurrentUser } from 'src/core/decorators/user.decorator';
 
 @ApiTags('Donation Event')
 @ApiBearerAuth()
@@ -35,8 +36,8 @@ export class DonationEventsController {
   @FormDataRequest({ storage: FileSystemStoredFile })
   @ApiOperation({ description: "Add a new donation event", summary: "Create new donation event" })
   @ChekcAbilities({ action: Action.CREATE, subject: 'all' })
-  create(@Body() createDonationEventDto: CreateDonationEventDto) {
-    return this.donationEventsService.create(createDonationEventDto);
+  create(@Body() createDonationEventDto: CreateDonationEventDto, @CurrentUser() currentUser: RequestUser) {
+    return this.donationEventsService.create(createDonationEventDto, currentUser);
   }
 
   @Get()

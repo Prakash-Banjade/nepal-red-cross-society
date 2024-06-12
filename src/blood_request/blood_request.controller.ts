@@ -4,12 +4,13 @@ import { CreateBloodRequestDto } from './dto/create-blood_request.dto';
 import { UpdateBloodRequestDto } from './dto/update-blood_request.dto';
 import { ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { ChekcAbilities } from 'src/core/decorators/abilities.decorator';
-import { Action } from 'src/core/types/global.types';
+import { Action, RequestUser } from 'src/core/types/global.types';
 import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.decorator';
 import { QueryDto } from 'src/core/dto/queryDto';
 import { FileSystemStoredFile, FormDataRequest } from 'nestjs-form-data';
 import { Throttle } from '@nestjs/throttler';
 import { BloodRequestQueryDto } from './dto/blood-request-query.dto';
+import { CurrentUser } from 'src/core/decorators/user.decorator';
 
 @Controller('blood-request')
 @ApiTags('Blood Request')
@@ -21,8 +22,8 @@ export class BloodRequestController {
   @Throttle({ default: { limit: 5, ttl: 60000 } })
   @FormDataRequest({ storage: FileSystemStoredFile })
   @ChekcAbilities({ action: Action.CREATE, subject: 'all' })
-  create(@Body() createBloodRequestDto: CreateBloodRequestDto) {
-    return this.bloodRequestService.create(createBloodRequestDto);
+  create(@Body() createBloodRequestDto: CreateBloodRequestDto, @CurrentUser() currentUser: RequestUser) {
+    return this.bloodRequestService.create(createBloodRequestDto, currentUser);
   }
 
   @Get()

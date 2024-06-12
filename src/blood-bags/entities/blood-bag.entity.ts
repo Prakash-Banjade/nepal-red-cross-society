@@ -1,17 +1,26 @@
 import { BaseEntity } from "src/core/entities/base.entity";
 import { BloodBagStatus } from "src/core/types/fieldsEnum.types";
+import { DonationEvent } from "src/donation_events/entities/donation_event.entity";
 import { Donation } from "src/donations/entities/donation.entity";
-import { Column, Entity, JoinColumn, OneToOne } from "typeorm";
+import { BloodInventory } from "src/inventory/entities/blood_inventory.entity";
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from "typeorm";
 
 @Entity('blood_bags')
 export class BloodBag extends BaseEntity {
     @Column({ type: 'int' })
     bagNo: number
 
-    @OneToOne(() => Donation, donation => donation.bloodBag)
+    @OneToOne(() => Donation, donation => donation.bloodBag, { nullable: true })
     @JoinColumn()
     donation: Donation;
 
-    @Column({type: 'enum', enum: BloodBagStatus})
-    bloodType: BloodBagStatus
+    @Column({ type: 'enum', enum: BloodBagStatus, default: BloodBagStatus.USABLE })
+    status: BloodBagStatus
+
+    @ManyToOne(() => DonationEvent, donationEvent => donationEvent.bloodBags)
+    donationEvent: DonationEvent
+
+    @OneToOne(() => BloodInventory, bloodInventory => bloodInventory.bloodBag, { nullable: true })
+    @JoinColumn()
+    bloodInventory: BloodInventory
 }

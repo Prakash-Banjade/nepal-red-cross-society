@@ -66,6 +66,17 @@ export class InventoryService {
     };
   }
 
+  async getInventoryByName(name: string, currentUser: RequestUser): Promise<Inventory> {
+    const branch = await this.branchService.findOne(currentUser.branchId);
+    const inventory = await this.inventoryRepo.findOne({
+      where: { name, branch: { id: branch.id } },
+      relations: { items: true },
+    })
+
+    if (!inventory) throw new NotFoundException('Inventory not found');
+    return inventory
+  }
+
   async update(id: string, updateInventoryDto: UpdateInventoryDto, currentUser: RequestUser) {
     const existingInventory = await this.findOne(id, currentUser);
 

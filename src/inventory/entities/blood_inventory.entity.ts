@@ -1,7 +1,8 @@
 import { BaseEntity } from "src/core/entities/base.entity";
-import { BloodInventoryStatus, BloodItems, BloodType, RhFactor } from "src/core/types/fieldsEnum.types";
-import { Column, Entity, OneToMany } from "typeorm";
-import { BloodInventoryItem } from "./blood_inventory-item.entity";
+import { BloodInventoryStatus, BloodItems, BloodType, InventoryTransaction, RhFactor } from "src/core/types/fieldsEnum.types";
+import { Column, Entity, ManyToOne, OneToOne } from "typeorm";
+import { BloodBag } from "src/blood-bags/entities/blood-bag.entity";
+import { Branch } from "src/branch/entities/branch.entity";
 
 @Entity()
 export class BloodInventory extends BaseEntity {
@@ -11,22 +12,33 @@ export class BloodInventory extends BaseEntity {
     @Column({ type: 'enum', enum: RhFactor })
     rhFactor: RhFactor;
 
-    @OneToMany(() => BloodInventoryItem, (item) => item.inventory, { onDelete: "CASCADE", nullable: true })
-    items: BloodInventoryItem[]
+    @Column({ type: 'varchar' })
+    source: string;
 
-    get quantity() {
-        const quantities = {};
-        Object.values(BloodItems).forEach((itemType) => {
-            quantities[itemType] = this.items?.filter((item) => item.itemType === itemType)?.length || 0;
-        });
-        return quantities;
-    }
+    @Column({ type: 'varchar' })
+    destination: string;
 
-    get quantityByItemStatus() {
-        const quantities = {};
-        Object.values(BloodInventoryStatus).forEach((status) => {
-            quantities[status] = this.items?.filter((item) => item.status === status)?.length || 0;
-        });
-        return quantities;
-    }
+    @Column({ type: 'int' })
+    price: number
+
+    @Column({ type: 'datetime' })
+    date: string;
+
+    @Column({ type: 'enum', enum: InventoryTransaction })
+    transactionType: InventoryTransaction
+
+    @Column({ type: 'enum', enum: BloodItems })
+    itemType: BloodItems
+
+    @Column({ type: 'datetime' })
+    expiry: string;
+
+    @OneToOne(() => BloodBag, (bloodBag) => bloodBag.bloodInventory)
+    bloodBag: BloodBag;
+
+    @Column({ type: 'enum', enum: BloodInventoryStatus, default: BloodInventoryStatus.USABLE })
+    status: BloodInventoryStatus
+
+    @ManyToOne(() => Branch, (branch) => branch.bloodInventory)
+    branch: Branch
 }

@@ -1,88 +1,75 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Brackets, ILike, In, Repository } from 'typeorm';
-import { BloodInventoryItem } from './entities/blood_inventory-item.entity';
+import { Brackets, In, IsNull, Not, Or, Repository } from 'typeorm';
 import { BloodInventory } from './entities/blood_inventory.entity';
 import { CreateBloodInventoryDto } from './dto/create-blood_inventory.dto';
-import { BloodInventoryItemQueryDto } from './dto/blood-inventory-item-query.dto';
 import paginatedData from 'src/core/utils/paginatedData';
-import { BloodInventoryStatus, BloodItems, BloodType, RhFactor } from 'src/core/types/fieldsEnum.types';
+import { BloodBagsService } from 'src/blood-bags/blood-bags.service';
+import { Deleted, QueryDto } from 'src/core/dto/queryDto';
+import { RequestUser } from 'src/core/types/global.types';
+import { BranchService } from 'src/branch/branch.service';
+import { BloodInventoryQueryDto } from './dto/blood-inventory-query.dto';
+import { BloodInventoryStatus, BloodItems, BloodType, InventoryTransaction, RhFactor } from 'src/core/types/fieldsEnum.types';
+import { Branch } from 'src/branch/entities/branch.entity';
+import { BloodRequest } from 'src/blood_request/entities/blood_request.entity';
+import { CONSTANTS } from 'src/CONSTANTS';
 
 @Injectable()
 export class BloodInventoryService {
     constructor(
         @InjectRepository(BloodInventory) private readonly bloodInventoryRepo: Repository<BloodInventory>,
-        @InjectRepository(BloodInventoryItem) private readonly bloodInventoryItemRepo: Repository<BloodInventoryItem>,
+        @Inject(forwardRef(() => BloodBagsService)) private readonly bloodBagService: BloodBagsService,
+        private readonly branchService: BranchService,
     ) { }
 
-    async create(createBloodInventoryDto: CreateBloodInventoryDto) {
-        // check if blood type exists in inventory
-        const existingInventory = await this.bloodInventoryRepo.findOne({ where: { bloodType: createBloodInventoryDto.bloodType, rhFactor: createBloodInventoryDto.rhFactor }, relations: { items: true } });
-        if (existingInventory) {
-            const inventoryItem = this.bloodInventoryItemRepo.create({ itemType: createBloodInventoryDto.itemType, expiresAt: createBloodInventoryDto.expiresAt, inventory: existingInventory, bloodBagNo: createBloodInventoryDto.bagNo });
-            await this.bloodInventoryItemRepo.save(inventoryItem);
-        } else {
-            const inventory = this.bloodInventoryRepo.create({ bloodType: createBloodInventoryDto.bloodType, rhFactor: createBloodInventoryDto.rhFactor });
-            const savedInventory = await this.bloodInventoryRepo.save(inventory);
-            const inventoryItem = this.bloodInventoryItemRepo.create({
-                itemType: createBloodInventoryDto.itemType,
-                inventory: savedInventory,
-                expiresAt: createBloodInventoryDto.expiresAt,
-                bloodBagNo: createBloodInventoryDto.bagNo
-            });
-            await this.bloodInventoryItemRepo.save(inventoryItem);
-        }
+    async create(createBloodInventoryDto: CreateBloodInventoryDto, currentUser: RequestUser) {
+        const bloodBag = await this.bloodBagService.findOne(createBloodInventoryDto.bloodBag);
+        const branch = await this.branchService.findOne(currentUser.branchId);
 
-        return {
-            message: 'BloodInventory created successfully',
-        }
-    }
-
-    async findAll() {
-        const inventories = await this.bloodInventoryRepo.find({ relations: { items: true } });
-
-        const inventoriesWithQuantities = inventories.map(inventory => {
-            return {
-                ...inventory,
-                quantities: inventory.quantity
-            };
+        const bloodInventoryItem = this.bloodInventoryRepo.create({
+            ...createBloodInventoryDto,
+            bloodBag,
+            branch,
         });
 
-        return inventoriesWithQuantities;
+        return this.bloodInventoryRepo.save(bloodInventoryItem);
     }
 
-    async findOne(id: string, queryDto: BloodInventoryItemQueryDto) {
+    async findAll(queryDto: BloodInventoryQueryDto, currentUser: RequestUser) {
+        const queryBuilder = this.bloodInventoryRepo.createQueryBuilder('bloodInventory');
+        const deletedAt = queryDto.deleted === Deleted.ONLY ? Not(IsNull()) : queryDto.deleted === Deleted.NONE ? IsNull() : Or(IsNull(), Not(IsNull()));
+
+        queryBuilder
+            .orderBy("bloodInventory.createdAt", queryDto.order)
+            .skip(queryDto.search ? undefined : queryDto.skip)
+            .take(queryDto.search ? undefined : queryDto.take)
+            .withDeleted()
+            .where({ deletedAt })
+            // .leftJoinAndSelect('bloodInventory.branch', 'branch')
+            .andWhere(new Brackets(qb => {
+                qb.where([
+                    // { firstName: ILike(`%${queryDto.search ?? ''}%`) },
+                ]);
+                qb.andWhere({ branch: { id: currentUser.branchId } })
+                queryDto.itemType && qb.andWhere({ itemType: queryDto.itemType });
+                queryDto.status && qb.andWhere({ status: queryDto.status });
+                queryDto.transactionType && qb.andWhere({ transactionType: queryDto.transactionType });
+                queryDto.rhFactor && qb.andWhere({ rhFactor: queryDto.rhFactor });
+                queryDto.bloodType && qb.andWhere({ bloodType: queryDto.bloodType });
+            }))
+            .andWhere(new Brackets(qb => { }))
+
+        return paginatedData(queryDto, queryBuilder);
+    }
+
+    async findOne(id: string, currentUser: RequestUser) {
         const existingInventory = await this.bloodInventoryRepo.findOne({
-            where: { id },
-            relations: { items: true },
+            relations: { branch: true },
+            where: { id, branch: { id: currentUser.branchId } },
         })
         if (!existingInventory) throw new NotFoundException('BloodInventory not found');
 
-        const queryBuilder = this.bloodInventoryItemRepo.createQueryBuilder('bloodItem');
-
-        queryBuilder
-            .orderBy("bloodItem.createdAt", queryDto.order)
-            .skip(queryDto.search ? undefined : queryDto.skip)
-            .take(queryDto.search ? undefined : queryDto.take)
-            .andWhere(new Brackets(qb => {
-                qb.where([
-                    { bloodBagNo: ILike(`%${queryDto.search ?? ''}%`) },
-                ]);
-                queryDto.status && qb.andWhere({ status: queryDto.status });
-                queryDto.itemType && qb.andWhere({ itemType: queryDto.itemType });
-            }))
-            .leftJoinAndSelect('bloodItem.inventory', 'inventory')
-            .andWhere(new Brackets(qb => { // filter blood items based on current blood type and rhfactor
-                qb.andWhere("LOWER(inventory.bloodType) LIKE LOWER(:bloodType)", { bloodType: existingInventory.bloodType });
-                qb.andWhere("LOWER(inventory.rhFactor) LIKE LOWER(:rhFactor)", { rhFactor: existingInventory.rhFactor });
-            }))
-
-        return paginatedData(queryDto, queryBuilder, {
-            id: existingInventory.id,
-            bloodType: existingInventory.bloodType,
-            rhFactor: existingInventory.rhFactor,
-            ...existingInventory.quantityByItemStatus,
-        });
+        return existingInventory
     }
 
     // async update(id: string, updateInventoryDto: UpdateInventoryDto) {
@@ -90,26 +77,35 @@ export class BloodInventoryService {
 
     // }
 
-    async remove(id: string) {
+    async transformBlood(inventoryId: string, bloodItems: BloodItems[], currentUser: RequestUser) {
+        const existingInventory = await this.findOne(inventoryId, currentUser);
+        
+
+    }
+
+    async remove(id: string, currentUser: RequestUser) {
         // const existingInventory = await this.findOne(id);
         const existingInventory = await this.bloodInventoryRepo.findOne({
-            where: { id },
-            relations: { items: true },
+            relations: { branch: true },
+            where: { id, branch: { id: currentUser.branchId } },
         })
         if (!existingInventory) throw new NotFoundException('BloodInventory not found');
 
         await this.bloodInventoryRepo.remove(existingInventory);
     }
 
-    async checkIfBloodAvailable(bloodType: BloodType, rhFactor: RhFactor, bloodItems: BloodItems[]) {
+    async checkIfBloodAvailable(bloodType: BloodType, rhFactor: RhFactor, bloodItems: BloodItems[], currentUser: RequestUser) {
         let bloodItemAvailable: boolean = true;
 
         for (const bloodItem of bloodItems) {
-            const existingBloodItem = await this.bloodInventoryItemRepo.findOne({
+            const existingBloodItem = await this.bloodInventoryRepo.findOne({
+                relations: { branch: true },
                 where: {
-                    inventory: { bloodType, rhFactor },
+                    branch: { id: currentUser.branchId },
                     itemType: bloodItem,
                     status: BloodInventoryStatus.USABLE,
+                    bloodType,
+                    rhFactor,
                 }
             })
 
@@ -121,13 +117,39 @@ export class BloodInventoryService {
         if (!bloodItemAvailable) throw new BadRequestException('Requested blood is not available at the moment. Please try again later.');
     }
 
-    async removeBloodItemFromInventory(inventoryItemId: string) {
-        const existingInventoryItem = await this.bloodInventoryItemRepo.findOne({
+    async removeBloodItemFromInventory(inventoryItemId: string, branch: Branch, bloodrequest: BloodRequest) {
+        const existingInventoryItem = await this.bloodInventoryRepo.findOne({
             where: { id: inventoryItemId },
+            relations: {
+                bloodBag: {
+                    donation: true,
+                    donationEvent: true
+                }
+            }
         })
 
         if (!existingInventoryItem) throw new NotFoundException('Blood item not found');
 
-        await this.bloodInventoryItemRepo.remove(existingInventoryItem);
+        const { donation, donationEvent } = existingInventoryItem.bloodBag;
+
+        for (const bloodItem of bloodrequest.bloodItems) {
+            const createdBloodInventoryItem = this.bloodInventoryRepo.create({
+                bloodBag: donation.bloodBag,
+                bloodType: bloodrequest.bloodType,
+                branch,
+                date: new Date().toISOString(),
+                rhFactor: bloodrequest.rhFactor,
+                source: donationEvent?.name,
+                destination: bloodrequest.hospitalName,
+                price: 0,
+                status: BloodInventoryStatus.USABLE,
+                expiry: new Date(Date.now() + CONSTANTS.BLOOD_EXPIRY_INTERVAL).toISOString(),
+                transactionType: InventoryTransaction.ISSUED,
+                itemType: bloodItem,
+            })
+
+            await this.bloodInventoryRepo.save(createdBloodInventoryItem)
+        }
+
     }
 }

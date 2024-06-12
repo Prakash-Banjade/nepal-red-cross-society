@@ -1,3 +1,4 @@
+import { BadRequestException } from "@nestjs/common";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
 import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString, Matches } from "class-validator";
@@ -63,6 +64,13 @@ export class CreateBloodRequestDto {
     @ApiProperty({ type: 'enum', enum: RhFactor, description: 'Blood RH-factor' })
     @IsEnum(RhFactor, { message: 'Invalid rh factor. Rh factor must be either ' + Object.values(RhFactor).join(', ') })
     rhFactor!: RhFactor;
+
+    @ApiProperty({ type: 'number' })
+    @Transform(({ value }) => {
+        if (isNaN(parseInt(value))) throw new BadRequestException('Price must be a number')
+        return parseInt(value)
+    })
+    price!: number
 
     @ApiPropertyOptional({ type: 'int' })
     @Transform(({ value }) => parseInt(value))

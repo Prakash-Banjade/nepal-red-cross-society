@@ -9,11 +9,14 @@ import { TestCase } from 'src/test_cases/entities/test_case.entity';
 import { TestResult } from 'src/test_cases/entities/test_result.entity';
 import { Deleted, QueryDto } from 'src/core/dto/queryDto';
 import paginatedData from 'src/core/utils/paginatedData';
-import { DonationStatus, TestCaseStatus } from 'src/core/types/fieldsEnum.types';
+import { BloodInventoryStatus, BloodItems, DonationStatus, InventoryTransaction, TestCaseStatus } from 'src/core/types/fieldsEnum.types';
 import { InventoryItem } from 'src/inventory/entities/inventory-item.entity';
 import { DonorsService } from 'src/donors/donors.service';
 import { UpdateDonorDto } from 'src/donors/dto/update-donor.dto';
 import { BloodInventory } from 'src/inventory/entities/blood_inventory.entity';
+import { RequestUser } from 'src/core/types/global.types';
+import { BranchService } from 'src/branch/branch.service';
+import { CONSTANTS } from 'src/CONSTANTS';
 
 @Injectable()
 export class LabReportsService {
@@ -22,12 +25,12 @@ export class LabReportsService {
     @InjectRepository(Donation) private donationRepo: Repository<Donation>,
     @InjectRepository(TestCase) private testCaseRepo: Repository<TestCase>,
     @InjectRepository(TestResult) private testResultRepo: Repository<TestResult>,
-    @InjectRepository(InventoryItem) private readonly inventoryItemRepo: Repository<InventoryItem>,
     @InjectRepository(BloodInventory) private readonly bloodInventoryRepo: Repository<BloodInventory>,
-    private readonly donorService: DonorsService
+    private readonly donorService: DonorsService,
+    private readonly branchService: BranchService
   ) { }
 
-  async create(createLabReportDto: CreateLabReportDto) {
+  async create(createLabReportDto: CreateLabReportDto, currentUser: RequestUser) {
     const donation = await this.donation(createLabReportDto.donation)
 
     const labReport = this.labReportRepo.create({
@@ -38,7 +41,11 @@ export class LabReportsService {
 
     const savedLabReport = await this.labReportRepo.save(labReport);
 
+    console.log(savedLabReport)
+
     const isSucceed = await this.evaluateTestResults(createLabReportDto, savedLabReport); // also save test results
+
+    console.log(isSucceed)
 
     // change donation status and verifiedBy
     donation.status = isSucceed ? DonationStatus.SUCCESS : DonationStatus.FAILED;
@@ -47,7 +54,7 @@ export class LabReportsService {
     await this.donationRepo.save(donation);
 
     // update blood inventory item with corresponding blood bag no
-    // await this.updateBloodInventory(donation, isSucceed, createLabReportDto);
+    await this.updateBloodInventory(donation, isSucceed, createLabReportDto, currentUser);
 
     // update blood type of donor which has been found after testing, the initial blood type while creating donor may be incorrect
     await this.donorService.update(donation.donor.id, {
@@ -61,25 +68,27 @@ export class LabReportsService {
     }
   }
 
-  // async updateBloodInventory(donation: Donation, isSucceed: boolean, labReportDto: CreateLabReportDto | UpdateLabReportDto) {
-  //   const inventoryItem = await this.inventoryItemRepo.findOne({
-  //     where: { bloodBagNo: donation.bloodBagNo },
-  //     relations: { inventory: true }
-  //   });
-  //   if (!inventoryItem) return;
+  async updateBloodInventory(donation: Donation, isSucceed: boolean, labReportDto: CreateLabReportDto | UpdateLabReportDto, currentUser: RequestUser) {
+    const branch = await this.branchService.findOne(currentUser.branchId)
 
-  //   inventoryItem.status = isSucceed ? BloodInventoryStatus.USABLE : BloodInventoryStatus.WASTE; // update inventory blood item status
-  //   await this.inventoryItemRepo.save(inventoryItem);
+    const createdBloodInventoryItem = this.bloodInventoryRepo.create({
+      bloodBag: donation.bloodBag,
+      bloodType: labReportDto.bloodType,
+      branch,
+      date: labReportDto.date,
+      rhFactor: labReportDto.rhFactor,
+      source: donation.donation_event?.name,
+      destination: CONSTANTS.SELF,
+      price: 0,
+      status: isSucceed ? BloodInventoryStatus.USABLE : BloodInventoryStatus.WASTE,
+      expiry: new Date(Date.now() + CONSTANTS.BLOOD_EXPIRY_INTERVAL).toISOString(),
+      transactionType: InventoryTransaction.RECEIVED,
+      itemType: BloodItems.FRESH_BLOOD,
+    })
+    console.log(createdBloodInventoryItem)
 
-  //   if (labReportDto.bloodType && labReportDto.rhFactor) { // update blood inventory, inventory created at first donation can have incorrect blood type which may be fixed after lab report generation
-  //     const inventory = await this.bloodInventoryRepo.findOneBy({ id: inventoryItem.inventory.id });
-
-  //     inventory.bloodType = labReportDto.bloodType; // update inventory blood type
-  //     inventory.rhFactor = labReportDto.rhFactor; // update inventory rh factor
-  //     await this.bloodInventoryRepo.save(inventory);
-  //   }
-
-  // }
+    await this.bloodInventoryRepo.save(createdBloodInventoryItem)
+  }
 
   async findAll(queryDto: QueryDto) {
     const queryBuilder = this.labReportRepo.createQueryBuilder('labReport');
@@ -159,7 +168,7 @@ export class LabReportsService {
   async donation(id: string) {
     const existingDonation = await this.donationRepo.findOne({
       where: { id },
-      relations: { donor: true }
+      relations: { donor: true, bloodBag: true, donation_event: true }
     });
     if (!existingDonation) throw new BadRequestException('Donation not found');
 

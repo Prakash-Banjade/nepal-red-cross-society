@@ -40,7 +40,7 @@ export class DonationsService {
     await this.donationEventsService.canHaveDonation(createDonationDto.donation_event);
 
     // create blood bag
-    const bloodBag = await this.bloodBagService.createNewBloog()
+    const bloodBag = await this.bloodBagService.getLastBloodBagOfEvent(dependentColumns.donation_event)
 
     // create donation
     const donation = this.donationRepo.create({
@@ -52,23 +52,7 @@ export class DonationsService {
 
     const savedDonation = await this.donationRepo.save(donation);
 
-    // add blood to inventory
-    // await this.addBloodToInventory(savedDonation.id);
-
     return savedDonation;
-  }
-
-  async addBloodToInventory(donationId: string) {
-    const donation = await this.findOne(donationId);
-
-    await this.bloodInventoryService.create({
-      bloodType: donation.donor.bloodType,
-      bagNo: donation.bloodBag.bagNo,
-      expiresAt: new Date(Date.now() + CONSTANTS.BLOOD_EXPIRY_INTERVAL).toISOString(),
-      rhFactor: donation.donor.rhFactor,
-      itemType: BloodItems.WHOLE_BLOOD,
-      status: BloodInventoryStatus.UNVERIFIED,
-    } as CreateBloodInventoryDto);
   }
 
   async findAll(queryDto: DonationQueryDto) {

@@ -85,6 +85,7 @@ export enum BloodBagStatus {
 export enum InventoryTransaction {
     ISSUED = 'issued',
     RECEIVED = 'received',
+    TRANSFORMED = 'transformed',
 }
 
 export enum Education {
@@ -99,7 +100,7 @@ export enum Education {
 }
 
 export enum BloodItems {
-    WHOLE_BLOOD = 'whole_blood',
+    FRESH_BLOOD = 'fresh_blood',
     PACKED_BLOOD = 'packed_blood',
     PRP = 'prp',
     CRAYO = 'crayo',
