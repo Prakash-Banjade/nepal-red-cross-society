@@ -1,21 +1,30 @@
 import { BadRequestException } from "@nestjs/common";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { Transform } from "class-transformer";
-import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString, Matches } from "class-validator";
+import { Transform, Type } from "class-transformer";
+import { IsBoolean, IsDefined, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, Matches } from "class-validator";
 import { FileSystemStoredFile, HasMimeType, IsFile } from "nestjs-form-data";
 import { BloodItems, BloodType, Gender, RhFactor } from "src/core/types/fieldsEnum.types";
 
-export class CreateBloodRequestDto {
-    @ApiProperty({ type: 'string' })
-    @IsString()
+class Charge {
+    @ApiProperty({ type: Number })
     @IsNotEmpty()
-    @Matches(/^[A-Za-z\s]+$/, { message: 'Name can only contain alphabets' })
-    hospitalName: string;
+    @Transform(({ value }) => {
+        if (isNaN(parseInt(value))) throw new BadRequestException('Quantity must be a number');
+        return parseInt(value);
+    })
+    quantity!: number
 
-    @ApiProperty({ type: 'string' })
-    @IsString()
+    @ApiProperty({ type: 'string', format: 'uuid' })
+    @IsUUID()
     @IsNotEmpty()
-    hospitalAddress: string;
+    serviceCharge!: string
+}
+
+export class CreateBloodRequestDto {
+    @ApiProperty({ type: 'string', format: 'uuid' })
+    @IsUUID()
+    @IsNotEmpty()
+    hospitalId: string;
 
     @ApiProperty({ type: 'string' })
     @IsString()
@@ -56,6 +65,11 @@ export class CreateBloodRequestDto {
     @ApiProperty({ type: 'enum', enum: BloodItems, isArray: true })
     @IsEnum(BloodItems, { each: true })
     bloodItems: BloodItems[]
+
+    @ApiProperty({ isArray: true, description: 'Array of service charges' })
+    @IsDefined()
+    @Type(() => Charge)
+    charges: Charge[]
 
     @ApiProperty({ type: 'enum', enum: BloodType, description: 'Blood type' })
     @IsEnum(BloodType, { message: 'Invalid blood type. Blood type must be either ' + Object.values(BloodType).join(', ') })

@@ -1,14 +1,13 @@
 import { BaseEntity } from "src/core/entities/base.entity";
 import { BloodItems, BloodType, Gender, RhFactor } from "src/core/types/fieldsEnum.types";
-import { Column, Entity } from "typeorm";
+import { Hospital } from "src/hospitals/entities/hospital.entity";
+import { Column, Entity, ManyToOne, OneToMany } from "typeorm";
+import { BloodRequestCharge } from "./blood-request-charge.entity";
 
 @Entity()
 export class BloodRequest extends BaseEntity {
-    @Column({ type: 'varchar' })
-    hospitalName: string;
-
-    @Column({ type: 'varchar' })
-    hospitalAddress: string;
+    @ManyToOne(() => Hospital, (hospital) => hospital.bloodRequests)
+    hospital: Hospital
 
     @Column({ type: 'varchar' })
     patientName: string;
@@ -30,6 +29,9 @@ export class BloodRequest extends BaseEntity {
 
     @Column({ type: 'varchar', nullable: true })
     attendingConsultant?: string;
+
+    @OneToMany(() => BloodRequestCharge, (bloodRequestCharge) => bloodRequestCharge.bloodRequest)
+    bloodRequestCharges: BloodRequestCharge[]
 
     @Column({ type: 'simple-array' })
     bloodItems: BloodItems[]
@@ -57,7 +59,4 @@ export class BloodRequest extends BaseEntity {
 
     @Column({ type: 'text' })
     documentBack: string;
-
-    @Column({ type: 'real' })
-    price: number
 }

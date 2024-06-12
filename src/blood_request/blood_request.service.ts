@@ -11,13 +11,17 @@ import { BloodInventoryService } from 'src/inventory/blood-inventory.service';
 import getFileName from 'src/core/utils/getImageUrl';
 import { RequestUser } from 'src/core/types/global.types';
 import { BranchService } from 'src/branch/branch.service';
+import { ServiceChargeService } from 'src/service-charge/service-charge.service';
+import { BloodRequestCharge } from './entities/blood-request-charge.entity';
 
 @Injectable()
 export class BloodRequestService {
   constructor(
     @InjectRepository(BloodRequest) private readonly bloodRequestRepo: Repository<BloodRequest>,
+    @InjectRepository(BloodRequestCharge) private readonly bloodRequestChargeRepo: Repository<BloodRequestCharge>,
     private readonly bloodInventoryService: BloodInventoryService,
     private readonly branchService: BranchService,
+    private readonly serviceChargeService: ServiceChargeService
   ) { }
 
   async create(createBloodRequestDto: CreateBloodRequestDto, currentUser: RequestUser) {
@@ -35,9 +39,27 @@ export class BloodRequestService {
       documentBack,
     });
 
-    await this.bloodInventoryService.removeBloodItemFromInventory(existingBloodItem.id, branch, createdRequest); // remove blood item from inventory after beign request
+    const savedRequest = await this.bloodRequestRepo.save(createdRequest); // save blood request
 
-    return await this.bloodRequestRepo.save(createdRequest);
+    // create blood request charges
+    await this.createBloodRequestCharge(savedRequest, createBloodRequestDto);
+
+    // TODO: remove blood item from inventory after beign request
+    // await this.bloodInventoryService.removeBloodItemFromInventory(existingBloodItem.id, branch, createdRequest); // remove blood item from inventory after beign request
+
+  }
+
+  async createBloodRequestCharge(bloodRequest: BloodRequest, bloodRequestDto: CreateBloodRequestDto) {
+    for (const charge of bloodRequestDto.charges) {
+      const serviceCharge = await this.serviceChargeService.findOne(charge.serviceCharge);
+      const bloodRequestCharge = this.bloodRequestChargeRepo.create({
+        quantity: charge.quantity,
+        serviceCharge,
+        bloodRequest
+      })
+
+      await this.bloodRequestChargeRepo.save(bloodRequestCharge);
+    }
   }
 
   async findAll(queryDto: BloodRequestQueryDto) {

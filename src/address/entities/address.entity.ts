@@ -10,6 +10,7 @@ import { BadRequestException } from "@nestjs/common";
 import { DonationEvent } from "src/donation_events/entities/donation_event.entity";
 import { Province } from "src/core/types/provinces.types";
 import { District } from "src/core/types/districts.types";
+import { Hospital } from "src/hospitals/entities/hospital.entity";
 
 @Entity()
 export class Address extends BaseEntity {
@@ -46,6 +47,10 @@ export class Address extends BaseEntity {
     @OneToOne(() => DonationEvent, (donationEvent) => donationEvent.address, { nullable: true, onDelete: 'CASCADE' })
     @JoinColumn()
     donationEvent: DonationEvent
+
+    @OneToOne(() => Hospital, (hospital) => hospital.address, { nullable: true, onDelete: 'CASCADE' })
+    @JoinColumn()
+    hospital: Hospital
 
     @BeforeInsert()
     @BeforeUpdate()

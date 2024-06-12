@@ -30,6 +30,8 @@ import { InventoryModule } from './inventory/inventory.module';
 import { BranchModule } from './branch/branch.module';
 import { BloodBagsModule } from './blood-bags/blood-bags.module';
 import { BagTypesModule } from './bag-types/bag-types.module';
+import { ServiceChargeModule } from './service-charge/service-charge.module';
+import { HospitalsModule } from './hospitals/hospitals.module';
 
 @Module({
   imports: [
@@ -70,6 +72,8 @@ import { BagTypesModule } from './bag-types/bag-types.module';
     BranchModule,
     BloodBagsModule,
     BagTypesModule,
+    ServiceChargeModule,
+    HospitalsModule,
   ],
   controllers: [AppController],
   providers: [

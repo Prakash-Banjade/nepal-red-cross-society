@@ -106,39 +106,39 @@ export class BloodInventoryService {
         if (!bloodItemAvailable) throw new BadRequestException('Requested blood is not available at the moment. Please try again later.');
     }
 
-    async removeBloodItemFromInventory(inventoryItemId: string, branch: Branch, bloodrequest: BloodRequest) {
-        const existingInventoryItem = await this.bloodInventoryRepo.findOne({
-            where: { id: inventoryItemId },
-            relations: {
-                bloodBag: {
-                    donation: true,
-                    donationEvent: true
-                }
-            }
-        })
+    // async removeBloodItemFromInventory(inventoryItemId: string, branch: Branch, bloodrequest: BloodRequest) {
+    //     const existingInventoryItem = await this.bloodInventoryRepo.findOne({
+    //         where: { id: inventoryItemId },
+    //         relations: {
+    //             bloodBag: {
+    //                 donation: true,
+    //                 donationEvent: true
+    //             }
+    //         }
+    //     })
 
-        if (!existingInventoryItem) throw new NotFoundException('Blood item not found');
+    //     if (!existingInventoryItem) throw new NotFoundException('Blood item not found');
 
-        const { donation, donationEvent } = existingInventoryItem.bloodBag;
+    //     const { donation, donationEvent } = existingInventoryItem.bloodBag;
 
-        for (const bloodItem of bloodrequest.bloodItems) {
-            const createdBloodInventoryItem = this.bloodInventoryRepo.create({
-                bloodBag: donation.bloodBag,
-                bloodType: bloodrequest.bloodType,
-                branch,
-                date: new Date().toISOString(),
-                rhFactor: bloodrequest.rhFactor,
-                source: donationEvent?.name,
-                destination: bloodrequest.hospitalName,
-                price: 0,
-                status: BloodInventoryStatus.USABLE,
-                expiry: new Date(Date.now() + CONSTANTS.BLOOD_EXPIRY_INTERVAL).toISOString(),
-                transactionType: InventoryTransaction.ISSUED,
-                component: bloodItem,
-            })
+    //     for (const bloodItem of bloodrequest.bloodItems) {
+    //         const createdBloodInventoryItem = this.bloodInventoryRepo.create({
+    //             bloodBag: donation.bloodBag,
+    //             bloodType: bloodrequest.bloodType,
+    //             branch,
+    //             date: new Date().toISOString(),
+    //             rhFactor: bloodrequest.rhFactor,
+    //             source: donationEvent?.name,
+    //             destination: bloodrequest.hospitalName,
+    //             price: 0,
+    //             status: BloodInventoryStatus.USABLE,
+    //             expiry: new Date(Date.now() + CONSTANTS.BLOOD_EXPIRY_INTERVAL).toISOString(),
+    //             transactionType: InventoryTransaction.ISSUED,
+    //             component: bloodItem,
+    //         })
 
-            await this.bloodInventoryRepo.save(createdBloodInventoryItem)
-        }
+    //         await this.bloodInventoryRepo.save(createdBloodInventoryItem)
+    //     }
 
-    }
+    // }
 }
