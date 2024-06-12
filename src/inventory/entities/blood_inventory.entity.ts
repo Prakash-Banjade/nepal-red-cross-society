@@ -33,7 +33,7 @@ export class BloodInventory extends BaseEntity {
     @Column({ type: 'datetime' })
     expiry: string;
 
-    @OneToOne(() => BloodBag, (bloodBag) => bloodBag.bloodInventory)
+    @ManyToOne(() => BloodBag, (bloodBag) => bloodBag.bloodInventory)
     bloodBag: BloodBag;
 
     @Column({ type: 'enum', enum: BloodInventoryStatus, default: BloodInventoryStatus.USABLE })

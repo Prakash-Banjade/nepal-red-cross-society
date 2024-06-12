@@ -67,23 +67,26 @@ export class LabReportsService {
   async updateBloodInventory(donation: Donation, isSucceed: boolean, labReportDto: CreateLabReportDto | UpdateLabReportDto, currentUser: RequestUser) {
     const branch = await this.branchService.findOne(currentUser.branchId)
 
-    const createdBloodInventoryItem = this.bloodInventoryRepo.create({
-      bloodBag: donation.bloodBag,
-      bloodType: labReportDto.bloodType,
-      branch,
-      date: labReportDto.date,
-      rhFactor: labReportDto.rhFactor,
-      source: donation.donation_event?.name,
-      destination: CONSTANTS.SELF,
-      price: 0,
-      status: isSucceed ? BloodInventoryStatus.USABLE : BloodInventoryStatus.WASTE,
-      expiry: new Date(Date.now() + CONSTANTS.BLOOD_EXPIRY_INTERVAL).toISOString(),
-      transactionType: InventoryTransaction.RECEIVED,
-      component: BloodItems.FRESH_BLOOD,
-    })
-    console.log(createdBloodInventoryItem)
+    // creating blood inventory based on the components the blood is break down into
+    for (const component of labReportDto.components) {
+      const createdBloodInventoryItem = this.bloodInventoryRepo.create({
+        bloodBag: donation.bloodBag,
+        bloodType: labReportDto.bloodType,
+        rhFactor: labReportDto.rhFactor,
+        branch,
+        date: labReportDto.date,
+        source: donation.donation_event?.name,
+        destination: CONSTANTS.SELF,
+        price: 0,
+        status: isSucceed ? BloodInventoryStatus.USABLE : BloodInventoryStatus.WASTE,
+        expiry: new Date(Date.now() + component.expiryInDays).toISOString(),
+        transactionType: InventoryTransaction.RECEIVED,
+        component: component.name,
+      })
 
-    await this.bloodInventoryRepo.save(createdBloodInventoryItem)
+      await this.bloodInventoryRepo.save(createdBloodInventoryItem)
+    }
+
   }
 
   async findAll(queryDto: QueryDto) {

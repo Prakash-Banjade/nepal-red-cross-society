@@ -1,5 +1,6 @@
+import { BadRequestException } from "@nestjs/common";
 import { ApiProperty } from "@nestjs/swagger";
-import { Type } from "class-transformer";
+import { Transform, Type } from "class-transformer";
 import { IsDate, IsDefined, IsEnum, IsNotEmpty, IsNotEmptyObject, IsObject, IsString, IsUUID } from "class-validator";
 import { BloodType, RhFactor, TestCaseStatus } from "src/core/types/fieldsEnum.types";
 
@@ -18,6 +19,21 @@ class TestCase {
     @IsEnum(TestCaseStatus)
     @IsNotEmpty()
     status: TestCaseStatus;
+}
+
+class Component {
+    @ApiProperty({ type: 'string' })
+    @IsString()
+    @IsNotEmpty()
+    name: string;
+
+    @ApiProperty({ type: Number })
+    @IsNotEmpty()
+    @Transform(({ value }) => {
+        if (isNaN(parseInt(value))) throw new BadRequestException('Expiry in days must be a number');
+        return parseInt(value);
+    })
+    expiryInDays: number;
 }
 
 export class CreateLabReportDto {
@@ -47,4 +63,9 @@ export class CreateLabReportDto {
     @IsDefined()
     @Type(() => TestCase)
     testCases: TestCase[];
+
+    @ApiProperty({ isArray: true, description: 'Array of components' })
+    @IsDefined()
+    @Type(() => Component)
+    components: Component[];
 }
