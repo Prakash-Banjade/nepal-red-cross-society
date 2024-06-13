@@ -25,6 +25,12 @@ export class BagTypesController {
     return this.bagTypesService.findAll();
   }
 
+  @Get('blood-components')
+  @ChekcAbilities({ action: Action.READ, subject: 'all' })
+  getBloodComponents() {
+    return this.bagTypesService.getBloodComponents();
+  }
+
   @Get(':id')
   @ChekcAbilities({ action: Action.READ, subject: 'all' })
   findOne(@Param('id') id: string) {

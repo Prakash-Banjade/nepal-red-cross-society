@@ -9,6 +9,8 @@ import { InventoryService } from './inventory.service';
 import { RequestUser } from 'src/core/types/global.types';
 import { BranchService } from 'src/branch/branch.service';
 import { InventoryItemsQueryDto } from './dto/inventory-items-query.dto';
+import { CONSTANTS } from 'src/CONSTANTS';
+import { BagTypesService } from 'src/bag-types/bag-types.service';
 
 @Injectable()
 export class InventoryItemService {
@@ -17,16 +19,33 @@ export class InventoryItemService {
         @InjectRepository(InventoryItem) private readonly inventoryItemRepo: Repository<InventoryItem>,
         private readonly inventoryService: InventoryService,
         private readonly branchService: BranchService,
+        private readonly bagTypeService: BagTypesService,
     ) { }
 
     async create(createInventoryItemDto: CreateInventoryItemDto, currentUser: RequestUser) {
         const inventory = await this.inventoryService.findOne(createInventoryItemDto.inventoryId, currentUser);
 
-        const inventoryItem = this.inventoryItemRepo.create({
-            ...createInventoryItemDto,
-            inventory,
-        });
-        return await this.inventoryItemRepo.save(inventoryItem);
+        // checking if inventory is Blood Bag, if yes bag type is required
+        if (inventory.name === CONSTANTS.BLOOD_BAG && !createInventoryItemDto.bagType) throw new BadRequestException('Bag type name is required');
+
+        if (createInventoryItemDto.bagType) {
+            // checking if bag type with same name exists
+            const bagType = await this.bagTypeService.findBagTypeByName(createInventoryItemDto.bagType);
+            const inventoryItem = this.inventoryItemRepo.create({
+                ...createInventoryItemDto,
+                bagType: bagType.name,
+                inventory,
+            });
+            return await this.inventoryItemRepo.save(inventoryItem);
+
+        } else {
+            const inventoryItem = this.inventoryItemRepo.create({
+                ...createInventoryItemDto,
+                bagType: null,
+                inventory,
+            });
+            return await this.inventoryItemRepo.save(inventoryItem);
+        }
     }
 
     async findAll(queryDto: InventoryItemsQueryDto, currentUser: RequestUser) {

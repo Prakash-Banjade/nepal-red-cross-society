@@ -17,6 +17,7 @@ import { BloodInventory } from 'src/inventory/entities/blood_inventory.entity';
 import { RequestUser } from 'src/core/types/global.types';
 import { BranchService } from 'src/branch/branch.service';
 import { CONSTANTS } from 'src/CONSTANTS';
+import { BloodComponent } from 'src/bag-types/entities/blood-component.entity';
 
 @Injectable()
 export class LabReportsService {
@@ -26,6 +27,7 @@ export class LabReportsService {
     @InjectRepository(TestCase) private testCaseRepo: Repository<TestCase>,
     @InjectRepository(TestResult) private testResultRepo: Repository<TestResult>,
     @InjectRepository(BloodInventory) private readonly bloodInventoryRepo: Repository<BloodInventory>,
+    @InjectRepository(BloodComponent) private readonly bloodComponentRepo: Repository<BloodComponent>,
     private readonly donorService: DonorsService,
     private readonly branchService: BranchService
   ) { }
@@ -67,8 +69,14 @@ export class LabReportsService {
   async updateBloodInventory(donation: Donation, isSucceed: boolean, labReportDto: CreateLabReportDto | UpdateLabReportDto, currentUser: RequestUser) {
     const branch = await this.branchService.findOne(currentUser.branchId)
 
+    // remove blood inventory items with same blood bag no that were created after donation
+    const oldInventory = await this.bloodInventoryRepo.find({ where: { bloodBag: { id: donation.bloodBag.id } } })
+    if (oldInventory) await this.bloodInventoryRepo.remove(oldInventory)
+
     // creating blood inventory based on the components the blood is break down into
-    for (const component of labReportDto.components) {
+    for (const componentId of labReportDto.componentIds) {
+      const component = await this.bloodComponentRepo.findOne({ where: { id: componentId } })
+
       const createdBloodInventoryItem = this.bloodInventoryRepo.create({
         bloodBag: donation.bloodBag,
         bloodType: labReportDto.bloodType,
@@ -81,7 +89,7 @@ export class LabReportsService {
         status: isSucceed ? BloodInventoryStatus.USABLE : BloodInventoryStatus.WASTE,
         expiry: new Date(Date.now() + component.expiryInDays).toISOString(),
         transactionType: InventoryTransaction.RECEIVED,
-        component: component.name,
+        component: component.componentName,
       })
 
       await this.bloodInventoryRepo.save(createdBloodInventoryItem)
@@ -114,7 +122,7 @@ export class LabReportsService {
     return existingLabReport;
   }
 
-  async update(id: string, updateLabReportDto: UpdateLabReportDto) {
+  async update(id: string, updateLabReportDto: UpdateLabReportDto, currentUser: RequestUser) {
     const existingLabReport = await this.findOne(id);
     // evaluating donation
     const existingDonation = await this.donation(updateLabReportDto.donation);
@@ -136,7 +144,7 @@ export class LabReportsService {
     await this.donationRepo.save(existingDonation);
 
     // update blood inventory item with corresponding blood bag no
-    // await this.updateBloodInventory(existingDonation, isSucceed, updateLabReportDto);
+    await this.updateBloodInventory(existingDonation, isSucceed, updateLabReportDto, currentUser);
 
     // update blood type of donor which has been found after testing, the initial blood type while creating donor may be incorrect
     await this.donorService.update(existingDonation.donor.id, {

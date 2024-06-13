@@ -28,6 +28,8 @@ export class DonationEventsService {
   ) { }
 
   async create(createDonationEventDto: CreateDonationEventDto, currentUser: RequestUser) {
+    const expectedDonation = this.extractJSONArray(createDonationEventDto.expectedDonations);
+
     // retrieving technicians
     const technicians = createDonationEventDto.technicians ? await this.techniciansRepo.find({
       where: {
@@ -57,13 +59,21 @@ export class DonationEventsService {
     const savedEvent = await this.donationEventsRepo.save(donationEvent);
 
     // creating bloodBags
-    await this.bloodBagService.createBloodBagsInBulk(createDonationEventDto.expectedDonations, savedEvent, currentUser);
+    await this.bloodBagService.createBloodBagsInBulk(expectedDonation, savedEvent, currentUser);
   }
 
-  async canHaveDonation(eventId: string) {
-    const event = await this.findOne(eventId);
-    if (event.donations.length >= event.expectedDonations) throw new BadRequestException('Donation event can not have more than expected donations');
+  extractJSONArray(expectedDonations: string): Record<string, number>[] {
+    try {
+      return JSON.parse(expectedDonations);
+    } catch (e) {
+      throw new BadRequestException('Expected Donations must be an array');
+    }
   }
+
+  // async canHaveDonation(eventId: string) {
+  //   const event = await this.findOne(eventId);
+  //   if (event.donations.length >= event.expectedDonations) throw new BadRequestException('Donation event can not have more than expected donations');
+  // }
 
   async findAll(queryDto: EventQueryDto) {
     const queryBuilder = this.donationEventsRepo.createQueryBuilder('donationEvent');

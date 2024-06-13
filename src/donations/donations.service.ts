@@ -36,8 +36,8 @@ export class DonationsService {
     // check if donor can donate (checking if last donation has crossed 3 months)
     const message = this.checkIfEligibleDonor(dependentColumns.donor); // if yes, warning message, not error, donation will be accepted
 
-    // check if donation is valid for the event because expected donation count may be reached
-    await this.donationEventsService.canHaveDonation(createDonationDto.donation_event);
+    // TODO: check if donation is valid for the event because expected donation count may be reached
+    // await this.donationEventsService.canHaveDonation(createDonationDto.donation_event);
 
     // evaluate blood bag
     const bloodBag = await this.bloodBagService.getBloodBagByBagNo(createDonationDto.bloodBagNo);
@@ -106,7 +106,11 @@ export class DonationsService {
       where: { id },
       relations: {
         donation_event: true,
-        bloodBag: true,
+        bloodBag: {
+          bagType: {
+            bloodComponents: true
+          }
+        },
         organization: true,
         donor: true,
         labReport: {

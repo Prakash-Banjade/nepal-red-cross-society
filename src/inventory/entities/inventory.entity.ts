@@ -23,4 +23,19 @@ export class Inventory extends BaseEntity {
             return item.transactionType === InventoryTransaction.ISSUED ? acc - item.quantity : acc + item.quantity
         }, 0)
     }
+
+    get bloodBagCount() {
+        const bags = {}
+
+        this.items.forEach(item => {
+            if (item.bagType in bags) {
+                if (item.transactionType === InventoryTransaction.ISSUED) bags[item.bagType] -= item.quantity
+                if (item.transactionType === InventoryTransaction.RECEIVED) bags[item.bagType] += item.quantity
+            } else {
+                bags[item.bagType] = item.transactionType === InventoryTransaction.ISSUED ? -item.quantity : item.quantity
+            }
+        })
+
+        return bags
+    }
 }

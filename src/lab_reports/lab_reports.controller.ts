@@ -43,8 +43,8 @@ export class LabReportsController {
   @Throttle({ default: { limit: 1, ttl: 2000 } })
   @ChekcAbilities({ action: Action.UPDATE, subject: 'all' })
   @FormDataRequest({ storage: FileSystemStoredFile })
-  update(@Param('id', ParseUUIDPipe) id: string, @Body() updateLabReportDto: UpdateLabReportDto) {
-    return this.labReportsService.update(id, updateLabReportDto);
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() updateLabReportDto: UpdateLabReportDto, currentUser: RequestUser) {
+    return this.labReportsService.update(id, updateLabReportDto, currentUser);
   }
 
   @Post('deleteMany')

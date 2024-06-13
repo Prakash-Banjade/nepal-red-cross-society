@@ -1,7 +1,7 @@
 import { BadRequestException } from "@nestjs/common";
 import { ApiProperty } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
-import { IsDateString, IsEnum, IsNotEmpty, IsString, IsUUID } from "class-validator";
+import { IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateIf } from "class-validator";
 import { InventoryTransaction } from "src/core/types/fieldsEnum.types";
 
 export class CreateInventoryItemDto {
@@ -23,6 +23,11 @@ export class CreateInventoryItemDto {
     @IsNotEmpty()
     price!: number
 
+    @ApiProperty({ type: 'string', description: 'Bag Type name', format: 'uuid' })
+    @IsUUID()
+    @IsOptional()
+    bagType?: string
+
     @ApiProperty({ type: 'int', default: 0 })
     @Transform(({ value }) => parseInt(value))
     @IsNotEmpty()
@@ -33,7 +38,7 @@ export class CreateInventoryItemDto {
     @IsNotEmpty()
     date!: string;
 
-    @ApiProperty({ type: 'string', description: 'Type of item', enum: InventoryTransaction })
+    @ApiProperty({ type: 'string', description: 'Transaction type', enum: InventoryTransaction })
     @IsNotEmpty()
     @IsEnum(InventoryTransaction)
     transactionType!: InventoryTransaction

@@ -18,7 +18,7 @@ export class InventoryItem extends BaseEntity {
     date: string;
 
     @Column({ type: 'varchar', nullable: true })
-    type: string
+    bagType: string // only for blood bag inventory
 
     @Column({ type: 'real' })
     quantity: number;

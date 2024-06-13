@@ -44,37 +44,45 @@ export class BloodBagsService {
   //   return await this.bloodBagsRepository.save(newBloodBag);
   // }
 
-  async createBloodBagsInBulk(quantity: number, donationEvent: DonationEvent, currentUser: RequestUser) {
-    if (quantity <= 0) throw new BadRequestException('Quantity must be greater than 0');
+  async createBloodBagsInBulk(expectedDonations: Record<string, number>[], donationEvent: DonationEvent, currentUser: RequestUser) {
+    if (expectedDonations.length <= 0) throw new BadRequestException('Quantity must be greater than 0');
 
-    const inventoryId = await this.checkSufficientBloodBags(quantity, currentUser); // check if there is enough blood bags
+    const inventoryId = await this.checkSufficientBloodBags(expectedDonations, currentUser); // check if there is enough blood bags
 
     const lastBloodBag = await this.bloodBagsRepository.findOne({ where: { bagNo: Not(IsNull()) }, order: { bagNo: 'DESC' } });
 
+    const totalBloodBagsNeeded = expectedDonations.reduce((acc, curr) => acc + curr[1], 0); // adding the quantity of each blood bag, second value
+
     let lastBloodBagNo = lastBloodBag ? lastBloodBag.bagNo : 1;
-    for (let i = 0; i < quantity; i++) {
+    for (let i = 0; i < totalBloodBagsNeeded; i++) {
       const bagNo = lastBloodBagNo + i;
 
-      const newBloodBag = this.bloodBagsRepository.create({ bagNo, donationEvent });
+      const newBloodBag = this.bloodBagsRepository.create({ bagNo, donationEvent }); // creating blood bags with no type assigned now, bagType will be assigned on donation
       await this.bloodBagsRepository.save(newBloodBag);
     }
 
+    // TODO: remove blood bags from inventory instantly or after donation added?
+
     // create blood bags issue statement in inventory
-    await this.inventoryItemService.create({
-      date: new Date().toISOString(),
-      transactionType: InventoryTransaction.ISSUED,
-      destination: donationEvent.name,
-      quantity: quantity,
-      price: 0,
-      source: CONSTANTS.SELF,
-      inventoryId,
-    }, currentUser)
+    // await this.inventoryItemService.create({
+    //   date: new Date().toISOString(),
+    //   transactionType: InventoryTransaction.ISSUED,
+    //   destination: donationEvent.name,
+    //   quantity: quantity,
+    //   price: 0,
+    //   source: CONSTANTS.SELF,
+    //   inventoryId,
+    // }, currentUser)
   }
 
-  async checkSufficientBloodBags(expectedDonations: number, currentUser: RequestUser) {
+  async checkSufficientBloodBags(expectedDonations: Record<string, number>[], currentUser: RequestUser) {
     const inventory = await this.inventoryService.getInventoryByName(CONSTANTS.BLOOD_BAG, currentUser)
 
-    if (inventory.quantity < expectedDonations) throw new BadRequestException('Not enough blood bags');
+    const bloodBagCount = inventory.bloodBagCount;
+
+    for (const [key, value] of Object.entries(expectedDonations)) {
+      if (bloodBagCount[key] < value) throw new BadRequestException('Not enough blood bags of type ' + key);
+    }
 
     return inventory.id
   }

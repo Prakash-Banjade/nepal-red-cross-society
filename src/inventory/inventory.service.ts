@@ -62,7 +62,8 @@ export class InventoryService {
 
     return {
       ...existingInventory,
-      quantity: existingInventory.quantity
+      quantity: existingInventory.quantity,
+      bloodBagCount: existingInventory.bloodBagCount
     };
   }
 

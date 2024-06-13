@@ -40,8 +40,8 @@ export class DonationEvent extends BaseEntity {
   @Column({ type: 'varchar' })
   secondaryContact: string;
 
-  @Column({ type: 'int' })
-  expectedDonations: number;
+  @Column({ type: 'longtext' })
+  expectedDonations: string; // stringified json array: [{bagType: string, quantity: number}] 
 
   @OneToMany(() => BloodBag, (bloodBag) => bloodBag.donationEvent, { nullable: true })
   bloodBags: BloodBag[];

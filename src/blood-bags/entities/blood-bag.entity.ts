@@ -24,6 +24,6 @@ export class BloodBag extends BaseEntity {
     @OneToMany(() => BloodInventory, bloodInventory => bloodInventory.bloodBag, { nullable: true })
     bloodInventory: BloodInventory[]
 
-    @ManyToOne(() => BagType, bagType => bagType.bloodBags)
+    @ManyToOne(() => BagType, bagType => bagType.bloodBags, { nullable: true })
     bagType: BagType
 }

@@ -5,8 +5,10 @@ import { UpdateServiceChargeDto } from './dto/update-service-charge.dto';
 import { Throttle } from '@nestjs/throttler';
 import { ChekcAbilities } from 'src/core/decorators/abilities.decorator';
 import { Action } from 'src/core/types/global.types';
+import { ApiTags } from '@nestjs/swagger';
 
-@Controller('service-charge')
+@ApiTags('Service Charges')
+@Controller('service-charges')
 export class ServiceChargeController {
   constructor(private readonly serviceChargeService: ServiceChargeService) { }
 

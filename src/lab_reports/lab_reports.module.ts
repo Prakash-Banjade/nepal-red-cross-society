@@ -9,6 +9,7 @@ import { TestResult } from 'src/test_cases/entities/test_result.entity';
 import { InventoryItem } from 'src/inventory/entities/inventory-item.entity';
 import { DonorsModule } from 'src/donors/donors.module';
 import { BloodInventory } from 'src/inventory/entities/blood_inventory.entity';
+import { BloodComponent } from 'src/bag-types/entities/blood-component.entity';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { BloodInventory } from 'src/inventory/entities/blood_inventory.entity';
       TestResult,
       InventoryItem,
       BloodInventory,
+      BloodComponent
     ]),
     DonorsModule,
   ],
