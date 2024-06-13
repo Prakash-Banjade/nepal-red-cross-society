@@ -5,7 +5,9 @@ import { UpdateBagTypeDto } from './dto/update-bag-type.dto';
 import { Throttle } from '@nestjs/throttler';
 import { ChekcAbilities } from 'src/core/decorators/abilities.decorator';
 import { Action } from 'src/core/types/global.types';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Bag Types')
 @Controller('bag-types')
 export class BagTypesController {
   constructor(private readonly bagTypesService: BagTypesService) { }
