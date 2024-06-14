@@ -3,9 +3,13 @@ import { BloodItems, BloodType, Gender, RhFactor } from "src/core/types/fieldsEn
 import { Hospital } from "src/hospitals/entities/hospital.entity";
 import { Column, Entity, ManyToOne, OneToMany } from "typeorm";
 import { BloodRequestCharge } from "./blood-request-charge.entity";
+import { RequestedBloodBag } from "./requestedBloodBag.entity";
 
 @Entity()
 export class BloodRequest extends BaseEntity {
+    @Column({ type: 'int' })
+    billNo: number
+
     @ManyToOne(() => Hospital, (hospital) => hospital.bloodRequests)
     hospital: Hospital
 
@@ -30,11 +34,11 @@ export class BloodRequest extends BaseEntity {
     @Column({ type: 'varchar', nullable: true })
     attendingConsultant?: string;
 
-    @OneToMany(() => BloodRequestCharge, (bloodRequestCharge) => bloodRequestCharge.bloodRequest)
+    @OneToMany(() => BloodRequestCharge, (bloodRequestCharge) => bloodRequestCharge.bloodRequest, { nullable: true }) // they are mandatory due as payload in create request, just to prevent not null constraint nullable is true
     bloodRequestCharges: BloodRequestCharge[]
 
-    @Column({ type: 'simple-array' })
-    bloodItems: BloodItems[]
+    @OneToMany(() => RequestedBloodBag, (requestedBloodBag) => requestedBloodBag.bloodRequest, { nullable: true }) // they are mandatory due as payload in create request, just to prevent not null constraint nullable is true
+    requestedBloodBags: RequestedBloodBag[]
 
     @Column({ type: 'enum', enum: BloodType })
     bloodType: BloodType;

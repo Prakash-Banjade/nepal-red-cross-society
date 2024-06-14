@@ -1,5 +1,5 @@
 import { BaseEntity } from "src/core/entities/base.entity";
-import { InventoryTransaction } from "src/core/types/fieldsEnum.types";
+import { BloodBagStatus, InventoryTransaction } from "src/core/types/fieldsEnum.types";
 import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne } from "typeorm";
 import { Inventory } from "./inventory.entity";
 
@@ -19,6 +19,9 @@ export class InventoryItem extends BaseEntity {
 
     @Column({ type: 'varchar', nullable: true })
     bagType: string // only for blood bag inventory
+
+    @Column({ type: 'enum', enum: BloodBagStatus, nullable: true })
+    status: BloodBagStatus // only for blood bag inventory
 
     @Column({ type: 'real' })
     quantity: number;

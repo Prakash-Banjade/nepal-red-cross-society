@@ -27,6 +27,7 @@ export class InventoryItemService {
 
         // checking if inventory is Blood Bag, if yes bag type is required
         if (inventory.name === CONSTANTS.BLOOD_BAG && !createInventoryItemDto.bagType) throw new BadRequestException('Bag type name is required');
+        if (inventory.name === CONSTANTS.BLOOD_BAG && !createInventoryItemDto.status) throw new BadRequestException('Bag status is required');
 
         if (createInventoryItemDto.bagType) {
             // checking if bag type with same name exists

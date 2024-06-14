@@ -117,4 +117,5 @@ export enum BloodInventoryStatus {
     WASTE = 'waste',
     EXPIRED = 'expired',
     UNVERIFIED = 'unverified',
+    USED = 'used',
 }

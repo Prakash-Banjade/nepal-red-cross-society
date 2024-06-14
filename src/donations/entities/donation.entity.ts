@@ -53,6 +53,8 @@ export class Donation extends BaseEntity {
             throw new BadRequestException("Donation event must have atleast one technician");
         }
 
+        if (this.donationType === DonationType.ORGANIZATION && !this.organization) throw new BadRequestException("Organization must be defined for organization donation type");
+        
         if (this.donationType === DonationType.INDIVIDUAL) {
             this.organization = null;
             this.donation_event = null;

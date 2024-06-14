@@ -18,6 +18,31 @@ class Charge {
     @IsUUID()
     @IsNotEmpty()
     serviceCharge!: string
+
+    constructor({ quantity, serviceCharge }: { quantity: number, serviceCharge: string }) {
+        this.quantity = quantity;
+        this.serviceCharge = serviceCharge;
+    }
+}
+
+class RequestedComponents {
+    @ApiProperty({ type: 'string' })
+    @IsString()
+    @IsNotEmpty()
+    componentName: string
+
+    @ApiProperty({ type: 'number' })
+    @Transform(({ value }) => {
+        if (isNaN(parseInt(value))) throw new BadRequestException('Quantity must be a number');
+        return parseInt(value);
+    })
+    @IsNotEmpty()
+    quantity: number
+
+    constructor({ componentName, quantity }: { componentName: string, quantity: number }) {
+        this.componentName = componentName;
+        this.quantity = quantity;
+    }
 }
 
 export class CreateBloodRequestDto {
@@ -32,7 +57,11 @@ export class CreateBloodRequestDto {
     patientName: string;
 
     @ApiProperty({ type: Number })
-    @Transform(({ value }) => parseInt(value))
+    @Transform(({ value }) => {
+        if (isNaN(parseInt(value))) throw new BadRequestException('Patient Age must be a number');
+        return parseInt(value);
+    })
+    @IsNotEmpty()
     @IsNotEmpty()
     patientAge: number;
 
@@ -46,12 +75,20 @@ export class CreateBloodRequestDto {
     inpatientNo: string;
 
     @ApiProperty({ type: 'number' })
-    @Transform(({ value }) => parseInt(value))
+    @Transform(({ value }) => {
+        if (isNaN(parseInt(value))) throw new BadRequestException('Ward must be a number');
+        return parseInt(value);
+    })
+    @IsNotEmpty()
     @IsNotEmpty()
     ward: number;
 
     @ApiPropertyOptional({ type: 'number' })
-    @Transform(({ value }) => parseInt(value))
+    @Transform(({ value }) => {
+        if (isNaN(parseInt(value))) throw new BadRequestException('Bed number must be a number');
+        return parseInt(value);
+    })
+    @IsNotEmpty()
     @IsNotEmpty()
     @IsOptional()
     bedNo?: number;
@@ -62,14 +99,32 @@ export class CreateBloodRequestDto {
     @IsOptional()
     attendingConsultant?: string;
 
-    @ApiProperty({ type: 'enum', enum: BloodItems, isArray: true })
-    @IsEnum(BloodItems, { each: true })
-    bloodItems: BloodItems[]
-
     @ApiProperty({ isArray: true, description: 'Array of service charges' })
     @IsDefined()
+    @Transform(({ value }) => {
+        try {
+            const array = JSON.parse(value)
+            return array.map((charge: { quantity: number, serviceCharge: string }) => new Charge(charge))
+
+        } catch (e) {
+            throw new BadRequestException('Invalid service charge');
+        }
+    })
     @Type(() => Charge)
     charges: Charge[]
+
+    @ApiProperty({ isArray: true, description: 'Array of requested bloods' })
+    @IsDefined()
+    @Transform(({ value }) => {
+        try {
+            const array = JSON.parse(value)
+            return array.map((component: { componentName: string, quantity: number }) => new RequestedComponents(component))
+        } catch (e) {
+            throw new BadRequestException('Invalid blood component type');
+        }
+    })
+    @Type(() => RequestedComponents)
+    requestedComponents: RequestedComponents[]
 
     @ApiProperty({ type: 'enum', enum: BloodType, description: 'Blood type' })
     @IsEnum(BloodType, { message: 'Invalid blood type. Blood type must be either ' + Object.values(BloodType).join(', ') })
@@ -92,12 +147,12 @@ export class CreateBloodRequestDto {
     previouslyTransfused?: number;
 
     @ApiProperty({ type: 'boolean', default: false })
-    @IsBoolean()
+    @Transform(({ value }) => value === 'true')
     @IsNotEmpty()
     reactionToPreviousBlood: boolean
 
     @ApiProperty({ type: 'boolean', default: false })
-    @IsBoolean()
+    @Transform(({ value }) => value === 'true')
     @IsNotEmpty()
     reactionToPreviousPlasma: boolean
 
@@ -109,11 +164,11 @@ export class CreateBloodRequestDto {
 
     @ApiProperty({ type: 'string', format: 'binary' })
     @IsFile()
-    @HasMimeType(['image/jpeg', 'image/png'])
+    // @HasMimeType(['image/jpeg', 'image/png'])
     documentFront: FileSystemStoredFile;
 
     @ApiProperty({ type: 'string', format: 'binary' })
     @IsFile()
-    @HasMimeType(['image/jpeg', 'image/png'])
+    // @HasMimeType(['image/jpeg', 'image/png'])
     documentBack: FileSystemStoredFile;
 }

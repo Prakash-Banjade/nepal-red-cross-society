@@ -54,7 +54,7 @@ export class DonationsService {
 
     // create blood inventory
     await this.bloodInventoryService.create({
-      bloodBag: bloodBag.id,
+      bloodBagId: bloodBag.id,
       component: BloodItems.FRESH_BLOOD,
       bloodType: dependentColumns.donor?.bloodType,
       rhFactor: dependentColumns.donor?.rhFactor,
@@ -77,6 +77,7 @@ export class DonationsService {
     const deletedAt = queryDto.deleted === Deleted.ONLY ? Not(IsNull()) : queryDto.deleted === Deleted.NONE ? IsNull() : Or(IsNull(), Not(IsNull()));
 
     const skipPagination: Boolean = !!(queryDto.search || queryDto.status || queryDto.donationType)
+    console.log(queryDto.rhFactor)
 
     queryBuilder
       .orderBy("donation.createdAt", queryDto.order)
@@ -94,6 +95,8 @@ export class DonationsService {
       .andWhere(new Brackets(qb => {
         if (queryDto.status) qb.andWhere({ status: ILike(`%${queryDto.status ?? ''}%`) })
         if (queryDto.donationType) qb.andWhere({ donationType: ILike(`%${queryDto.donationType ?? ''}%`) })
+        if (queryDto.bloodType) qb.andWhere("LOWER(donor.bloodType) LIKE LOWER(:donorBloodType)", { donorBloodType: `%${queryDto.bloodType ?? ''}%` });
+        if (queryDto.rhFactor) qb.andWhere("LOWER(donor.rhFactor) LIKE LOWER(:donorRhFactor)", { donorRhFactor: `%${queryDto.rhFactor ?? ''}%` });
       }))
       .leftJoinAndSelect('donation.organization', 'organization')
       .leftJoinAndSelect('donation.donation_event', 'donation_event')

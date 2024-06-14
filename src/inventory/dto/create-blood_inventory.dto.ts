@@ -1,7 +1,7 @@
 import { BadRequestException } from "@nestjs/common";
 import { ApiProperty } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
-import { IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from "class-validator";
+import { IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateIf } from "class-validator";
 import { CreateBloodBagDto } from "src/blood-bags/dto/create-blood-bag.dto";
 import { CONSTANTS } from "src/CONSTANTS";
 import { BloodComponent, BloodInventoryStatus, BloodItems, BloodType, InventoryTransaction, RhFactor } from "src/core/types/fieldsEnum.types";
@@ -56,9 +56,23 @@ export class CreateBloodInventoryDto {
     @ApiProperty({ type: 'enum', enum: BloodInventoryStatus })
     @IsEnum(BloodInventoryStatus)
     @IsOptional()
-    status: BloodInventoryStatus;
+    status?: BloodInventoryStatus;
 
     @ApiProperty({ type: 'string', format: 'uuid' })
     @IsUUID()
-    bloodBag!: string
+    @IsOptional()
+    bloodBagId?: string
+
+    @ApiProperty({ type: 'int', default: 0 })
+    @Transform(({ value }) => {
+        if (isNaN(parseInt(value))) throw new BadRequestException('Blood bag no. be a number');
+        return parseInt(value);
+    })
+    @ValidateIf(o => !o.bloodBagId)
+    bloodBagNo?: number
+
+    @ApiProperty({ type: 'string', format: 'uuid' })
+    @IsUUID()
+    @ValidateIf(o => o.bloodBagNo)
+    bagTypeId?: string
 }

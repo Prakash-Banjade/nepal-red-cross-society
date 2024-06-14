@@ -5,25 +5,38 @@ import { BloodInventory } from './entities/blood_inventory.entity';
 import { CreateBloodInventoryDto } from './dto/create-blood_inventory.dto';
 import paginatedData from 'src/core/utils/paginatedData';
 import { BloodBagsService } from 'src/blood-bags/blood-bags.service';
-import { Deleted, QueryDto } from 'src/core/dto/queryDto';
+import { Deleted } from 'src/core/dto/queryDto';
 import { RequestUser } from 'src/core/types/global.types';
 import { BranchService } from 'src/branch/branch.service';
 import { BloodInventoryQueryDto } from './dto/blood-inventory-query.dto';
-import { BloodInventoryStatus, BloodItems, BloodType, InventoryTransaction, RhFactor } from 'src/core/types/fieldsEnum.types';
+import { BloodInventoryStatus, InventoryTransaction } from 'src/core/types/fieldsEnum.types';
 import { Branch } from 'src/branch/entities/branch.entity';
 import { BloodRequest } from 'src/blood_request/entities/blood_request.entity';
 import { CONSTANTS } from 'src/CONSTANTS';
+import { CreateBloodRequestDto } from 'src/blood_request/dto/create-blood_request.dto';
+import { RequestedBloodBag } from 'src/blood_request/entities/requestedBloodBag.entity';
 
 @Injectable()
 export class BloodInventoryService {
     constructor(
         @InjectRepository(BloodInventory) private readonly bloodInventoryRepo: Repository<BloodInventory>,
         @Inject(forwardRef(() => BloodBagsService)) private readonly bloodBagService: BloodBagsService,
+        @InjectRepository(RequestedBloodBag) private readonly requestedBloodBagRepo: Repository<RequestedBloodBag>,
         private readonly branchService: BranchService,
     ) { }
 
     async create(createBloodInventoryDto: CreateBloodInventoryDto, currentUser: RequestUser) {
-        const bloodBag = await this.bloodBagService.findOne(createBloodInventoryDto.bloodBag);
+        // if bloodbagId is supplied then check if it exists, else create from bloodBagNo and bagTypeId
+        if (!createBloodInventoryDto.bloodBagId && !createBloodInventoryDto.bloodBagNo && !createBloodInventoryDto.bagTypeId) {
+            throw new BadRequestException('Please provide either bloodBagId or bloodBagNo and bagTypeId');
+        }
+        const bloodBag = createBloodInventoryDto.bloodBagId ?
+            await this.bloodBagService.findOne(createBloodInventoryDto.bloodBagId) :
+            await this.bloodBagService.create({
+                bagNo: createBloodInventoryDto.bloodBagNo,
+                bagType: createBloodInventoryDto.bagTypeId,
+            })
+
         const branch = await this.branchService.findOne(currentUser.branchId);
 
         const bloodInventoryItem = this.bloodInventoryRepo.create({
@@ -83,62 +96,74 @@ export class BloodInventoryService {
         await this.bloodInventoryRepo.remove(existingInventory);
     }
 
-    async checkIfBloodAvailable(bloodType: BloodType, rhFactor: RhFactor, bloodItems: BloodItems[], currentUser: RequestUser) {
-        let bloodItemAvailable: boolean = true;
+    async checkIfBloodAvailable(createBloodRequestDto: CreateBloodRequestDto, currentUser: RequestUser) {
+        const { bloodType, rhFactor, requestedComponents } = createBloodRequestDto;
 
-        for (const bloodItem of bloodItems) {
-            const existingBloodItem = await this.bloodInventoryRepo.findOne({
+        for (const requestedComponent of requestedComponents) {
+            const existingBloodItem = await this.bloodInventoryRepo.find({
                 relations: { branch: true },
                 where: {
                     branch: { id: currentUser.branchId },
-                    component: bloodItem,
+                    component: requestedComponent.componentName,
                     status: BloodInventoryStatus.USABLE,
                     bloodType,
                     rhFactor,
+                    transactionType: InventoryTransaction.ISSUED
                 }
             })
 
-            if (!existingBloodItem) bloodItemAvailable = false;
-
-            if (existingBloodItem) return existingBloodItem;
+            if (existingBloodItem?.length < +requestedComponent.quantity) {
+                throw new BadRequestException(`Insuffient ${requestedComponent.componentName}. Available: ${existingBloodItem?.length}`);
+            }
         }
 
-        if (!bloodItemAvailable) throw new BadRequestException('Requested blood is not available at the moment. Please try again later.');
+        return true;
     }
 
-    // async removeBloodItemFromInventory(inventoryItemId: string, branch: Branch, bloodrequest: BloodRequest) {
-    //     const existingInventoryItem = await this.bloodInventoryRepo.findOne({
-    //         where: { id: inventoryItemId },
-    //         relations: {
-    //             bloodBag: {
-    //                 donation: true,
-    //                 donationEvent: true
-    //             }
-    //         }
-    //     })
+    async createRequestedBloodBagsAndCreateIssueStatementInInventory(bloodRequest: BloodRequest, bloodRequestDto: CreateBloodRequestDto, currentUser: RequestUser, branch: Branch) {
+        const { bloodType, rhFactor } = bloodRequestDto;
 
-    //     if (!existingInventoryItem) throw new NotFoundException('Blood item not found');
+        for (const requestedComponent of bloodRequestDto.requestedComponents) {
+            for (let i = 0; i < +requestedComponent.quantity; i++) {
+                const foundInventory = await this.bloodInventoryRepo.findOne({
+                    relations: { branch: true, bloodBag: true },
+                    where: {
+                        branch: { id: currentUser.branchId },
+                        component: requestedComponent.componentName,
+                        status: BloodInventoryStatus.USABLE,
+                        bloodType,
+                        rhFactor,
+                        transactionType: InventoryTransaction.ISSUED
+                    },
+                    order: { createdAt: 'DESC' },
+                })
 
-    //     const { donation, donationEvent } = existingInventoryItem.bloodBag;
+                const createdRequestedBloodBag = this.requestedBloodBagRepo.create({
+                    bloodRequest,
+                    bloodBag: foundInventory.bloodBag,
+                })
 
-    //     for (const bloodItem of bloodrequest.bloodItems) {
-    //         const createdBloodInventoryItem = this.bloodInventoryRepo.create({
-    //             bloodBag: donation.bloodBag,
-    //             bloodType: bloodrequest.bloodType,
-    //             branch,
-    //             date: new Date().toISOString(),
-    //             rhFactor: bloodrequest.rhFactor,
-    //             source: donationEvent?.name,
-    //             destination: bloodrequest.hospitalName,
-    //             price: 0,
-    //             status: BloodInventoryStatus.USABLE,
-    //             expiry: new Date(Date.now() + CONSTANTS.BLOOD_EXPIRY_INTERVAL).toISOString(),
-    //             transactionType: InventoryTransaction.ISSUED,
-    //             component: bloodItem,
-    //         })
+                await this.requestedBloodBagRepo.save(createdRequestedBloodBag);
 
-    //         await this.bloodInventoryRepo.save(createdBloodInventoryItem)
-    //     }
 
-    // }
+                // create issue statement
+                const createdBloodInventoryIssueStatement = this.bloodInventoryRepo.create({
+                    bloodBag: foundInventory.bloodBag,
+                    bloodType: bloodType,
+                    branch,
+                    date: new Date().toISOString(),
+                    rhFactor: rhFactor,
+                    source: CONSTANTS.SELF,
+                    destination: bloodRequest.hospital?.name,
+                    price: 0,
+                    status: BloodInventoryStatus.USED,
+                    expiry: new Date(Date.now() + CONSTANTS.BLOOD_EXPIRY_INTERVAL).toISOString(),
+                    transactionType: InventoryTransaction.ISSUED,
+                    component: requestedComponent.componentName,
+                })
+
+                await this.bloodInventoryRepo.save(createdBloodInventoryIssueStatement)
+            }
+        }
+    }
 }

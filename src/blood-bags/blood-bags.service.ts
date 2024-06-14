@@ -64,15 +64,16 @@ export class BloodBagsService {
     // TODO: remove blood bags from inventory instantly or after donation added?
 
     // create blood bags issue statement in inventory
-    // await this.inventoryItemService.create({
-    //   date: new Date().toISOString(),
-    //   transactionType: InventoryTransaction.ISSUED,
-    //   destination: donationEvent.name,
-    //   quantity: quantity,
-    //   price: 0,
-    //   source: CONSTANTS.SELF,
-    //   inventoryId,
-    // }, currentUser)
+    await this.inventoryItemService.create({
+      date: new Date().toISOString(),
+      status: BloodBagStatus.USABLE,
+      transactionType: InventoryTransaction.ISSUED,
+      destination: donationEvent.name,
+      quantity: expectedDonations?.reduce((acc, curr) => acc + curr[1], 0),
+      price: 0,
+      source: CONSTANTS.SELF,
+      inventoryId,
+    }, currentUser)
   }
 
   async checkSufficientBloodBags(expectedDonations: Record<string, number>[], currentUser: RequestUser) {

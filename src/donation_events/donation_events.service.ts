@@ -93,7 +93,7 @@ export class DonationEventsService {
         if (queryDto.search) qb.orWhere("LOWER(organization.name) LIKE LOWER(:organizationName)", { organizationName: `%${queryDto.search ?? ''}%` });
       }))
       .leftJoinAndSelect('donationEvent.address', 'address')
-      .leftJoinAndSelect('donationEvent.bloodBag', 'bloodBag')
+      // .leftJoinAndSelect('donationEvent.bloodBag', 'bloodBag')
       .andWhere(new Brackets(qb => {
         if (queryDto.country) qb.andWhere("LOWER(address.country) LIKE LOWER(:country)", { country: `%${queryDto.country ?? ''}%` });
         if (queryDto.province) qb.andWhere("LOWER(address.province) LIKE LOWER(:province)", { province: `%${queryDto.province ?? ''}%` });
@@ -101,8 +101,6 @@ export class DonationEventsService {
         if (queryDto.municipality) qb.andWhere("LOWER(address.municipality) LIKE LOWER(:municipality)", { municipality: `%${queryDto.municipality ?? ''}%` });
         if (queryDto.ward) qb.andWhere("LOWER(address.ward) LIKE LOWER(:ward)", { ward: `%${queryDto.ward ?? ''}%` });
         if (queryDto.street) qb.andWhere("LOWER(address.street) LIKE LOWER(:street)", { street: `%${queryDto.street ?? ''}%` });
-      }))
-      .andWhere(new Brackets(qb => {
         if (queryDto.status) qb.andWhere("LOWER(donationEvent.status) LIKE LOWER(:status)", { status: `%${queryDto.status ?? ''}%` });
       }))
 

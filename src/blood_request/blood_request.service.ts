@@ -13,12 +13,14 @@ import { RequestUser } from 'src/core/types/global.types';
 import { BranchService } from 'src/branch/branch.service';
 import { ServiceChargeService } from 'src/service-charge/service-charge.service';
 import { BloodRequestCharge } from './entities/blood-request-charge.entity';
+import { RequestedBloodBag } from './entities/requestedBloodBag.entity';
 
 @Injectable()
 export class BloodRequestService {
   constructor(
     @InjectRepository(BloodRequest) private readonly bloodRequestRepo: Repository<BloodRequest>,
     @InjectRepository(BloodRequestCharge) private readonly bloodRequestChargeRepo: Repository<BloodRequestCharge>,
+    @InjectRepository(RequestedBloodBag) private readonly requestedBloodBagRepo: Repository<RequestedBloodBag>,
     private readonly bloodInventoryService: BloodInventoryService,
     private readonly branchService: BranchService,
     private readonly serviceChargeService: ServiceChargeService
@@ -27,16 +29,19 @@ export class BloodRequestService {
   async create(createBloodRequestDto: CreateBloodRequestDto, currentUser: RequestUser) {
     const branch = await this.branchService.findOne(currentUser.branchId);
 
-    const { bloodType, rhFactor, bloodItems } = createBloodRequestDto;
-    const existingBloodItem = await this.bloodInventoryService.checkIfBloodAvailable(bloodType, rhFactor, bloodItems, currentUser); // check if blood is available
+    await this.bloodInventoryService.checkIfBloodAvailable(createBloodRequestDto, currentUser); // check if bloods is available
 
     const documentFront = getFileName(createBloodRequestDto.documentFront);
     const documentBack = getFileName(createBloodRequestDto.documentBack);
+
+    const lastBloodRequest = await this.bloodRequestRepo.findOne({ where: { deletedAt: Not(IsNull()) }, order: { createdAt: 'DESC' } });
+    console.log(lastBloodRequest)
 
     const createdRequest = this.bloodRequestRepo.create({
       ...createBloodRequestDto,
       documentFront,
       documentBack,
+      billNo: lastBloodRequest ? lastBloodRequest.billNo + 1 : 1
     });
 
     const savedRequest = await this.bloodRequestRepo.save(createdRequest); // save blood request
@@ -44,16 +49,15 @@ export class BloodRequestService {
     // create blood request charges
     await this.createBloodRequestCharge(savedRequest, createBloodRequestDto);
 
-    // TODO: remove blood item from inventory after beign request
-    // await this.bloodInventoryService.removeBloodItemFromInventory(existingBloodItem.id, branch, createdRequest); // remove blood item from inventory after beign request
-
+    // create requested blood bags in blood request and create issue statement in inventory
+    await this.bloodInventoryService.createRequestedBloodBagsAndCreateIssueStatementInInventory(savedRequest, createBloodRequestDto, currentUser, branch);
   }
 
   async createBloodRequestCharge(bloodRequest: BloodRequest, bloodRequestDto: CreateBloodRequestDto) {
     for (const charge of bloodRequestDto.charges) {
       const serviceCharge = await this.serviceChargeService.findOne(charge.serviceCharge);
       const bloodRequestCharge = this.bloodRequestChargeRepo.create({
-        quantity: charge.quantity,
+        quantity: +charge.quantity,
         serviceCharge,
         bloodRequest
       })
@@ -84,14 +88,17 @@ export class BloodRequestService {
   }
 
   async findOne(id: string) {
-    const existingRequest = await this.bloodRequestRepo.findOneBy({ id });
+    const existingRequest = await this.bloodRequestRepo.findOne({
+      where: { id },
+      relations: { requestedBloodBags: true, bloodRequestCharges: true },
+    });
     if (!existingRequest) throw new BadRequestException('Request not found');
 
     return existingRequest;
   }
 
   async update(id: string, updateBloodRequestDto: UpdateBloodRequestDto) {
-    const { bloodType, rhFactor, bloodItems } = updateBloodRequestDto;
+    const { bloodType, rhFactor } = updateBloodRequestDto;
     // await this.bloodInventoryService.checkIfBloodAvailable(bloodType, rhFactor, bloodItems); // check if blood is available
 
     const existingRequest = await this.findOne(id);

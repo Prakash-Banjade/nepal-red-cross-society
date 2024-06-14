@@ -11,13 +11,15 @@ import { InventoryItemController } from './inventory-item.controller';
 import { InventoryItemService } from './inventory-item.service';
 import { InventoryItem } from './entities/inventory-item.entity';
 import { BloodBagsModule } from 'src/blood-bags/blood-bags.module';
+import { RequestedBloodBag } from 'src/blood_request/entities/requestedBloodBag.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       Inventory,
       BloodInventory,
-      InventoryItem
+      InventoryItem,
+      RequestedBloodBag
     ]),
     BranchModule,
     forwardRef(() => BloodBagsModule),
