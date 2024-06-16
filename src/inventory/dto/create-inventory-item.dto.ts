@@ -33,7 +33,7 @@ export class CreateInventoryItemDto {
     @IsOptional()
     status?: BloodBagStatus // this is required if inventory is Blood Bag which is validated in service
 
-    @ApiProperty({ type: 'int', default: 0 })
+    @ApiProperty({ type: 'int', default: 1 })
     @Transform(({ value }) => parseInt(value))
     @IsNotEmpty()
     quantity!: number;

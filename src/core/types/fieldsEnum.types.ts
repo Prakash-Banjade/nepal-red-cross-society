@@ -106,7 +106,7 @@ export enum BloodItems {
 }
 
 export enum BloodComponent {
-    FRESH_BLOOD = 'fresh_blood',
+    WHOLE_BLOOD = 'whole blood',
     PRP = 'prp',
     FFP = 'ffp',
     PCB = 'pcb',

@@ -1,6 +1,6 @@
 import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Brackets, In, IsNull, Not, Or, Repository } from 'typeorm';
+import { Brackets, ILike, In, IsNull, Not, Or, Repository } from 'typeorm';
 import { BloodInventory } from './entities/blood_inventory.entity';
 import { CreateBloodInventoryDto } from './dto/create-blood_inventory.dto';
 import paginatedData from 'src/core/utils/paginatedData';
@@ -27,28 +27,31 @@ export class BloodInventoryService {
 
     async create(createBloodInventoryDto: CreateBloodInventoryDto, currentUser: RequestUser) {
         // if bloodbagId is supplied then check if it exists, else create from bloodBagNo and bagTypeId
-        if (!createBloodInventoryDto.bloodBagId && !createBloodInventoryDto.bloodBagNo && !createBloodInventoryDto.bagTypeId) {
+        if (!createBloodInventoryDto.bloodBagId && !createBloodInventoryDto.bagTypeId) {
             throw new BadRequestException('Please provide either bloodBagId or bloodBagNo and bagTypeId');
         }
         const bloodBag = createBloodInventoryDto.bloodBagId ?
             await this.bloodBagService.findOne(createBloodInventoryDto.bloodBagId) :
             await this.bloodBagService.create({
-                bagNo: createBloodInventoryDto.bloodBagNo,
+                // bagNo: createBloodInventoryDto.bloodBagNo,
                 bagType: createBloodInventoryDto.bagTypeId,
-            })
+            }, currentUser);
 
         const branch = await this.branchService.findOne(currentUser.branchId);
 
         const bloodInventoryItem = this.bloodInventoryRepo.create({
             ...createBloodInventoryDto,
-            bloodBag,
+            bloodBag: 'bloodBag' in bloodBag ? bloodBag.bloodBag : bloodBag,
             branch,
         });
 
-        return this.bloodInventoryRepo.save(bloodInventoryItem);
+        const newBloodInventory = await this.bloodInventoryRepo.save(bloodInventoryItem);
+        console.log(newBloodInventory)
+
+        return newBloodInventory
     }
 
-    async findAll(queryDto: BloodInventoryQueryDto, currentUser: RequestUser) {
+    async findAll(queryDto: BloodInventoryQueryDto, currentUser: RequestUser) {        
         const queryBuilder = this.bloodInventoryRepo.createQueryBuilder('bloodInventory');
         const deletedAt = queryDto.deleted === Deleted.ONLY ? Not(IsNull()) : queryDto.deleted === Deleted.NONE ? IsNull() : Or(IsNull(), Not(IsNull()));
 
@@ -60,17 +63,21 @@ export class BloodInventoryService {
             .where({ deletedAt })
             // .leftJoinAndSelect('bloodInventory.branch', 'branch')
             .andWhere(new Brackets(qb => {
-                qb.where([
-                    // { firstName: ILike(`%${queryDto.search ?? ''}%`) },
-                ]);
+                // qb.where([
+                //     // { firstName: ILike(`%${queryDto.search ?? ''}%`) },
+                // ]);
                 qb.andWhere({ branch: { id: currentUser.branchId } })
+            }))
+            .andWhere(new Brackets(qb => {
                 queryDto.itemType && qb.andWhere({ itemType: queryDto.itemType });
-                queryDto.status && qb.andWhere({ status: queryDto.status });
+                queryDto.component && qb.andWhere({ component: ILike(queryDto.component) });
+                // queryDto.status && qb.andWhere({ status: queryDto.status });
                 queryDto.transactionType && qb.andWhere({ transactionType: queryDto.transactionType });
                 queryDto.rhFactor && qb.andWhere({ rhFactor: queryDto.rhFactor });
                 queryDto.bloodType && qb.andWhere({ bloodType: queryDto.bloodType });
             }))
-            .andWhere(new Brackets(qb => { }))
+
+        console.log('hey')
 
         return paginatedData(queryDto, queryBuilder);
     }

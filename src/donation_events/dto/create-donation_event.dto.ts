@@ -49,7 +49,7 @@ export class CreateDonationEventDto extends CreateAddressDto {
   @ApiProperty({ type: 'number', description: 'Event expected donations' })
   @IsString()
   @IsNotEmpty()
-  expectedDonations: string;
+  expectedDonations: number;
 
   @ApiPropertyOptional({
     type: 'string',

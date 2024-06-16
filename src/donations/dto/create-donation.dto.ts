@@ -1,7 +1,7 @@
 import { BadRequestException } from "@nestjs/common";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
-import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from "class-validator";
+import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateIf } from "class-validator";
 import { DonationStatus, DonationType } from "src/core/types/fieldsEnum.types";
 
 export class CreateDonationDto {
@@ -20,6 +20,7 @@ export class CreateDonationDto {
 
     @ApiPropertyOptional({ type: String, format: 'uuid', example: '123e4567-e89b-12d3-a456-426614174000' })
     @IsOptional()
+    @ValidateIf(o => o.donationType === DonationType.ORGANIZATION)
     donation_event?: string;
 
     @ApiProperty({ type: 'enum', enum: DonationType })
@@ -29,17 +30,12 @@ export class CreateDonationDto {
 
     @ApiPropertyOptional({ type: String, format: 'uuid', example: '123e4567-e89b-12d3-a456-426614174000' })
     @IsUUID()
-    @IsOptional()
-    organization?: string;
+    @ValidateIf(o => o.donationType === DonationType.ORGANIZATION)
+    bagType?: string;
 
-    @ApiPropertyOptional({ enum: DonationStatus, default: DonationStatus.PENDING, description: 'Default status will be PENDING' })
-    @IsEnum(DonationStatus, { message: 'Donation status must be one of these: ' + Object.values(DonationStatus) })
-    @IsOptional()
-    status?: DonationStatus;
-
-    @ApiPropertyOptional({ type: String })
-    @IsString()
-    @IsNotEmpty()
-    @IsOptional()
-    verifiedBy: string;
+    // @ApiPropertyOptional({ type: String, format: 'uuid', example: '123e4567-e89b-12d3-a456-426614174000' })
+    // @IsUUID()
+    // @IsOptional()
+    // @ValidateIf(o => o.donationType === DonationType.ORGANIZATION)
+    // organization?: string;
 }

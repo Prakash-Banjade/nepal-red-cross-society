@@ -12,10 +12,11 @@ import paginatedData from 'src/core/utils/paginatedData';
 import { Donor } from 'src/donors/entities/donor.entity';
 import { DonationQueryDto } from './dto/donation-query.dto';
 import { BloodInventoryService } from 'src/inventory/blood-inventory.service';
-import { BloodInventoryStatus, BloodItems, InventoryTransaction } from 'src/core/types/fieldsEnum.types';
+import { BloodComponent, BloodInventoryStatus, BloodItems, DonationType, InventoryTransaction } from 'src/core/types/fieldsEnum.types';
 import { CONSTANTS } from 'src/CONSTANTS';
 import { BloodBagsService } from 'src/blood-bags/blood-bags.service';
 import { RequestUser } from 'src/core/types/global.types';
+import { BloodBag } from 'src/blood-bags/entities/blood-bag.entity';
 
 @Injectable()
 export class DonationsService {
@@ -32,6 +33,7 @@ export class DonationsService {
   async create(createDonationDto: CreateDonationDto, currentUser: RequestUser) {
     // finding dependent entities
     const dependentColumns = await this.retrieveDependencies(createDonationDto); // donor, organization, donation_event
+    const { donationType } = createDonationDto
 
     // check if donor can donate (checking if last donation has crossed 3 months)
     const message = this.checkIfEligibleDonor(dependentColumns.donor); // if yes, warning message, not error, donation will be accepted
@@ -40,7 +42,9 @@ export class DonationsService {
     // await this.donationEventsService.canHaveDonation(createDonationDto.donation_event);
 
     // evaluate blood bag
-    const bloodBag = await this.bloodBagService.getBloodBagByBagNo(createDonationDto.bloodBagNo);
+    let bloodBag = await this.bloodBagService.getBloodBagByBagNo(createDonationDto.bloodBagNo); // for individual donations, blood bag is first created using print blood bag no in frontend
+    if (donationType === DonationType.ORGANIZATION && bloodBag?.donation) throw new BadRequestException('Duplicate entry for blood bag number');
+    if (donationType === DonationType.ORGANIZATION && bloodBag?.donationEvent !== dependentColumns?.donation_event) throw new BadRequestException('This blood bag was assigned to a different event');
 
     // create donation
     const donation = this.donationRepo.create({
@@ -51,20 +55,30 @@ export class DonationsService {
     })
 
     const savedDonation = await this.donationRepo.save(donation);
+    console.log(savedDonation)
+
+    // define blood source
+    const bloodSource = donationType === DonationType.INDIVIDUAL ?
+      'Individual: ' + dependentColumns.donor?.firstName + ' ' + dependentColumns.donor?.lastName
+      : 'Event: ' + dependentColumns.donation_event?.name;
 
     // create blood inventory
     await this.bloodInventoryService.create({
       bloodBagId: bloodBag.id,
-      component: BloodItems.FRESH_BLOOD,
+      bagTypeId: bloodBag.bagType?.id,
+      expiry: new Date(Date.now() + CONSTANTS.BLOOD_EXPIRY_INTERVAL).toISOString(),
+      component: BloodComponent.WHOLE_BLOOD,
       bloodType: dependentColumns.donor?.bloodType,
       rhFactor: dependentColumns.donor?.rhFactor,
       price: 0,
       status: BloodInventoryStatus.UNVERIFIED,
-      source: 'Event',
+      source: bloodSource,
       transactionType: InventoryTransaction.RECEIVED,
       destination: 'SELF',
-      date: dependentColumns.donation_event?.startDate,
+      date: new Date(bloodBag.createdAt)?.toISOString(),
     }, currentUser)
+
+    console.log('hey there')
 
     return {
       ...savedDonation,
@@ -189,8 +203,8 @@ export class DonationsService {
 
   private async retrieveDependencies(donationDto: CreateDonationDto | UpdateDonationDto, donation?: Donation) {
     const donor = donationDto.donor ? await this.donorsService.findDonorWithDonations(donationDto.donor) : donation?.donor ? donation.donor : null;
-    const organization = donationDto.organization ? await this.organizationsService.findOne(donationDto.organization) : donation?.organization ? donation.organization : null;
-    const donationEvent = donationDto.donation_event ? await this.donationEventsService.findOne(donationDto.donation_event) : donation?.donation_event ? donation.donation_event : null;
+    const donationEvent = (donationDto.donation_event && donationDto.donationType === DonationType.ORGANIZATION) ? await this.donationEventsService.findOne(donationDto.donation_event) : donation?.donation_event ? donation.donation_event : null;
+    const organization = donationEvent?.organization ?? null;
 
     return { donor, organization, donation_event: donationEvent };
   }

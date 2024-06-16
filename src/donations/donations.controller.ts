@@ -20,7 +20,7 @@ export class DonationsController {
 
   @Post()
   @ApiConsumes('multipart/form-data')
-  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @Throttle({ default: { limit: 5, ttl: 10000 } })
   @FormDataRequest({ storage: FileSystemStoredFile })
   @ChekcAbilities({ action: Action.CREATE, subject: 'all' })
   create(@Body() createDonationDto: CreateDonationDto, @CurrentUser() currentUser: RequestUser) {

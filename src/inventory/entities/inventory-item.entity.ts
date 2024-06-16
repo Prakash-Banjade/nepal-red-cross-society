@@ -2,6 +2,7 @@ import { BaseEntity } from "src/core/entities/base.entity";
 import { BloodBagStatus, InventoryTransaction } from "src/core/types/fieldsEnum.types";
 import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne } from "typeorm";
 import { Inventory } from "./inventory.entity";
+import { BadRequestException } from "@nestjs/common";
 
 @Entity()
 export class InventoryItem extends BaseEntity {
@@ -36,7 +37,11 @@ export class InventoryItem extends BaseEntity {
     @BeforeUpdate()
     validateTransaction() {
         if (this.transactionType === InventoryTransaction.ISSUED) {
-            if (this.inventory.quantity < this.quantity) throw new Error('Insufficient quantity');
+            if (this.bagType) {
+                if (this.inventory.bloodBagCount[this.bagType] < this.quantity) throw new BadRequestException('Insufficient quantity');
+            }
+
+            if (this.inventory.quantity < this.quantity) throw new BadRequestException('Insufficient quantity');
             this.source = 'SELF';
         }
         if (this.transactionType === InventoryTransaction.RECEIVED) {

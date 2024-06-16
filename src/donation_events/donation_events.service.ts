@@ -28,8 +28,6 @@ export class DonationEventsService {
   ) { }
 
   async create(createDonationEventDto: CreateDonationEventDto, currentUser: RequestUser) {
-    const expectedDonation = this.extractJSONArray(createDonationEventDto.expectedDonations);
-
     // retrieving technicians
     const technicians = createDonationEventDto.technicians ? await this.techniciansRepo.find({
       where: {
@@ -58,8 +56,11 @@ export class DonationEventsService {
 
     const savedEvent = await this.donationEventsRepo.save(donationEvent);
 
+    return savedEvent;
+
+    // TODO: create bloodBags on event update not in creation
     // creating bloodBags
-    await this.bloodBagService.createBloodBagsInBulk(expectedDonation, savedEvent, currentUser);
+    // await this.bloodBagService.createBloodBagsInBulk(expectedDonation, savedEvent, currentUser);
   }
 
   extractJSONArray(expectedDonations: string): Record<string, number>[] {

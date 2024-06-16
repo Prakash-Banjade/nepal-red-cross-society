@@ -63,13 +63,13 @@ export class CreateBloodInventoryDto {
     @IsOptional()
     bloodBagId?: string
 
-    @ApiProperty({ type: 'int', default: 0 })
-    @Transform(({ value }) => {
-        if (isNaN(parseInt(value))) throw new BadRequestException('Blood bag no. be a number');
-        return parseInt(value);
-    })
-    @ValidateIf(o => !o.bloodBagId)
-    bloodBagNo?: number
+    // @ApiProperty({ type: 'int', default: 0 })
+    // @Transform(({ value }) => {
+    //     if (isNaN(parseInt(value))) throw new BadRequestException('Blood bag no. be a number');
+    //     return parseInt(value);
+    // })
+    // @ValidateIf(o => !o.bloodBagId)
+    // bloodBagNo?: number
 
     @ApiProperty({ type: 'string', format: 'uuid' })
     @IsUUID()

@@ -1,7 +1,7 @@
 import { ApiPropertyOptional } from "@nestjs/swagger";
-import { IsNotEmpty, IsOptional, IsUUID } from "class-validator";
+import { IsNotEmpty, IsOptional, IsString, IsUUID } from "class-validator";
 import { QueryDto } from "src/core/dto/queryDto";
-import { InventoryTransaction } from "src/core/types/fieldsEnum.types";
+import { BloodBagStatus, InventoryTransaction } from "src/core/types/fieldsEnum.types";
 
 export class InventoryItemsQueryDto extends QueryDto {
     @ApiPropertyOptional({ type: String, description: "Inventory Id" })
@@ -12,4 +12,13 @@ export class InventoryItemsQueryDto extends QueryDto {
     @ApiPropertyOptional({ type: 'enum', enum: InventoryTransaction, description: "Transaction Type" })
     @IsOptional()
     transactionType?: InventoryTransaction
+
+    @ApiPropertyOptional()
+    @IsOptional()
+    status?: BloodBagStatus
+
+    @ApiPropertyOptional()
+    @IsString()
+    @IsOptional()
+    bagType?: string
 }

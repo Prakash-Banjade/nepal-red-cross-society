@@ -23,4 +23,8 @@ export class BloodInventoryQueryDto extends QueryDto {
     @ApiPropertyOptional({ type: 'enum', enum: InventoryTransaction, description: "Transaction Type" })
     @IsOptional()
     transactionType?: InventoryTransaction
+
+    @ApiPropertyOptional({ type: 'string', description: "Component Type" })
+    @IsOptional()
+    component?: string
 }

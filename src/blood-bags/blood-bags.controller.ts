@@ -3,6 +3,8 @@ import { BloodBagsService } from './blood-bags.service';
 import { CreateBloodBagDto } from './dto/create-blood-bag.dto';
 import { UpdateBloodBagDto } from './dto/update-blood-bag.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { CurrentUser } from 'src/core/decorators/user.decorator';
+import { RequestUser } from 'src/core/types/global.types';
 
 @ApiTags('Blood Bags')
 @Controller('blood-bags')
@@ -10,8 +12,8 @@ export class BloodBagsController {
   constructor(private readonly bloodBagsService: BloodBagsService) { }
 
   @Post()
-  create(@Body() createBloodBagDto: CreateBloodBagDto) {
-    return this.bloodBagsService.create(createBloodBagDto);
+  create(@Body() createBloodBagDto: CreateBloodBagDto, @CurrentUser() currentUser: RequestUser) {
+    return this.bloodBagsService.create(createBloodBagDto, currentUser);
   }
 
   @Get()

@@ -1,6 +1,6 @@
 import { ApiPropertyOptional, OmitType, PartialType } from '@nestjs/swagger';
 import { CreateDonationEventDto } from './create-donation_event.dto';
-import { IsEnum, IsOptional } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { FileSystemStoredFile } from 'nestjs-form-data';
 import { EventStatus } from 'src/core/types/fieldsEnum.types';
 
@@ -17,4 +17,10 @@ export class UpdateDonationEventDto extends PartialType(OmitType(CreateDonationE
     @ApiPropertyOptional({ format: 'binary', type: 'string', description: 'Event document' })
     @IsOptional()
     document?: FileSystemStoredFile | string;
+
+    @ApiPropertyOptional({ type: 'number', description: 'Inventory items count' })
+    @IsString()
+    @IsNotEmpty()
+    @IsOptional()
+    inventoryItems?: string; // stringified json array: [{bagType: string, quantity: number}, {item: string, quantity: number}] 
 }

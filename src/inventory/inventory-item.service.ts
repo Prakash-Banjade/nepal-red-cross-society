@@ -24,6 +24,7 @@ export class InventoryItemService {
 
     async create(createInventoryItemDto: CreateInventoryItemDto, currentUser: RequestUser) {
         const inventory = await this.inventoryService.findOne(createInventoryItemDto.inventoryId, currentUser);
+        const bagType = await this.bagTypeService.findOne(createInventoryItemDto.bagType);
 
         // checking if inventory is Blood Bag, if yes bag type is required
         if (inventory.name === CONSTANTS.BLOOD_BAG && !createInventoryItemDto.bagType) throw new BadRequestException('Bag type name is required');
@@ -31,7 +32,6 @@ export class InventoryItemService {
 
         if (createInventoryItemDto.bagType) {
             // checking if bag type with same name exists
-            const bagType = await this.bagTypeService.findBagTypeByName(createInventoryItemDto.bagType);
             const inventoryItem = this.inventoryItemRepo.create({
                 ...createInventoryItemDto,
                 bagType: bagType.name,
@@ -67,6 +67,8 @@ export class InventoryItemService {
                     // { firstName: ILike(`%${queryDto.search ?? ''}%`) },
                 ]);
                 queryDto.transactionType && qb.andWhere({ transactionType: queryDto.transactionType });
+                queryDto.status && qb.andWhere({ status: queryDto.status });
+                queryDto.bagType && qb.andWhere({ bagType: queryDto.bagType });
             }))
             .andWhere(new Brackets(qb => {
                 qb.andWhere("LOWER(inventory.id) LIKE LOWER(:inventoryId)", { inventoryId: queryDto.inventoryId }); // filter according to inventory
@@ -77,7 +79,8 @@ export class InventoryItemService {
             inventory: {
                 name: inventory.name,
                 availableUnits: inventory.quantity,
-                unit: inventory.unit
+                unit: inventory.unit,
+                bagCount: inventory.bloodBagCount
             }
         });
     }

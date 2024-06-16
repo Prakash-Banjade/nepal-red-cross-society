@@ -8,7 +8,7 @@ export class BagType extends BaseEntity {
     @Column({ type: 'text' })
     name: string;
 
-    @OneToMany(() => BloodComponent, (component) => component.bagType, { nullable: true })
+    @OneToMany(() => BloodComponent, (component) => component.bagType, { nullable: true, onDelete: 'CASCADE' })
     bloodComponents: BloodComponent[]
 
     @OneToMany(() => BloodBag, (bloodBag) => bloodBag.bagType, { nullable: true })
