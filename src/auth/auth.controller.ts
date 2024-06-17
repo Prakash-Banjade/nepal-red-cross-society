@@ -31,7 +31,7 @@ export class AuthController {
 
         res.cookie('refresh_token', refresh_token, this.cookieOptions);
 
-        const expiresIn = this.ACCESS_TOKEN_EXPIRES;
+        const expiresIn = new Date(Date.now() + 1 * 60 * 1000);
 
         return { access_token, payload, expiresIn };
     }
@@ -48,7 +48,7 @@ export class AuthController {
 
         res.cookie('refresh_token', new_refresh_token, this.cookieOptions);
 
-        const expiresIn = this.ACCESS_TOKEN_EXPIRES;
+        const expiresIn = new Date(Date.now() + 1 * 60 * 1000);
 
         return { access_token: new_access_token, expiresIn, payload };
     }
