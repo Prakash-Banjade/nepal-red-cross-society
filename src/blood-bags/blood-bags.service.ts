@@ -11,6 +11,7 @@ import { RequestUser } from 'src/core/types/global.types';
 import { InventoryItemService } from 'src/inventory/inventory-item.service';
 import { BloodBagStatus, InventoryTransaction } from 'src/core/types/fieldsEnum.types';
 import { BagTypesService } from 'src/bag-types/bag-types.service';
+import { BagType } from 'src/bag-types/entities/bag-type.entity';
 
 @Injectable()
 export class BloodBagsService {
@@ -22,7 +23,7 @@ export class BloodBagsService {
     private readonly bagTypeService: BagTypesService,
 
   ) { }
-  async create(createBloodBagDto: CreateBloodBagDto, currentUser: RequestUser) {
+  async create(createBloodBagDto: CreateBloodBagDto, currentUser: RequestUser, createIssueStatement: boolean = true, donationEvent?: DonationEvent) {
     // const existignBloodBagWithSameNo = await this.bloodBagsRepository.findOneBy({ bagNo: createBloodBagDto.bagNo });
     // if (existignBloodBagWithSameNo) throw new BadRequestException('Blood bag with same number already exists');
 
@@ -31,7 +32,7 @@ export class BloodBagsService {
 
     // check if there is sufficient blood bag in inventory
     const inventory = await this.inventoryService.getInventoryByName(CONSTANTS.BLOOD_BAG, currentUser);
-    if (typeof inventory.bloodBagCount[bagType.name] === "undefined" || inventory.bloodBagCount[bagType.name] <= 0) throw new BadRequestException('Not enough blood bags of type ' + bagType.name);
+    if (typeof inventory.bloodBagCount[bagType.name] === "undefined" || inventory.bloodBagCount[bagType.name][BloodBagStatus.USABLE] <= 0) throw new BadRequestException('Not enough blood bags of type ' + bagType.name);
 
     // create new blood bag
     let lastBloodBagNo: number;
@@ -42,12 +43,12 @@ export class BloodBagsService {
       lastBloodBagNo = createBloodBagDto.bagNo
     }
 
-    const newBloodBag = this.bloodBagsRepository.create({ bagNo: lastBloodBagNo + 1, bagType: bagType });
+    const newBloodBag = this.bloodBagsRepository.create({ bagNo: lastBloodBagNo + 1, bagType: bagType, donationEvent });
 
     const savedBloodBag = await this.bloodBagsRepository.save(newBloodBag);
 
     // create blood bag inventory issue statement
-    await this.createIssueStatement(savedBloodBag, inventory, currentUser);
+    createIssueStatement && await this.createIssueStatement(savedBloodBag, inventory, currentUser);
 
     return {
       message: 'Blood bag created successfully',
@@ -116,10 +117,18 @@ export class BloodBagsService {
     const bloodBagCount = inventory.bloodBagCount;
 
     for (const [key, value] of Object.entries(expectedDonations)) {
-      if (bloodBagCount[key] < value) throw new BadRequestException('Not enough blood bags of type ' + key);
+      if (!bloodBagCount[key][BloodBagStatus.USABLE] || bloodBagCount[key][BloodBagStatus.USABLE] < value) throw new BadRequestException('Not enough blood bags of type ' + key);
     }
 
     return inventory.id
+  }
+
+  async updateBagType(bloodBag: BloodBag, bagTypeId: string) {
+    const bagType = await this.bagTypeService.findOne(bagTypeId);
+
+    bloodBag.bagType = bagType;
+
+    return await this.bloodBagsRepository.save(bloodBag);
   }
 
   async getBloodBagByBagNo(bagNo: number) {

@@ -61,11 +61,9 @@ export class BloodInventoryService {
             .take(queryDto.search ? undefined : queryDto.take)
             .withDeleted()
             .where({ deletedAt })
-            // .leftJoinAndSelect('bloodInventory.branch', 'branch')
+            .leftJoinAndSelect('bloodInventory.bloodBag', 'bloodBag')
+            .leftJoinAndSelect('bloodBag.bagType', 'bagType')
             .andWhere(new Brackets(qb => {
-                // qb.where([
-                //     // { firstName: ILike(`%${queryDto.search ?? ''}%`) },
-                // ]);
                 qb.andWhere({ branch: { id: currentUser.branchId } })
             }))
             .andWhere(new Brackets(qb => {
@@ -76,8 +74,6 @@ export class BloodInventoryService {
                 queryDto.rhFactor && qb.andWhere({ rhFactor: queryDto.rhFactor });
                 queryDto.bloodType && qb.andWhere({ bloodType: queryDto.bloodType });
             }))
-
-        console.log('hey')
 
         return paginatedData(queryDto, queryBuilder);
     }

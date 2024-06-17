@@ -47,7 +47,10 @@ export class CreateDonationEventDto extends CreateAddressDto {
   secondaryContact: string;
 
   @ApiProperty({ type: 'number', description: 'Event expected donations' })
-  @IsString()
+  @Transform(({ value }) => {
+    if (isNaN(parseInt(value))) throw new BadRequestException('Expected Donations must be a number');
+    return parseInt(value);
+  })
   @IsNotEmpty()
   expectedDonations: number;
 

@@ -19,7 +19,7 @@ export class BloodBag extends BaseEntity {
     @Column({ type: 'enum', enum: BloodBagStatus, default: BloodBagStatus.USABLE })
     status: BloodBagStatus
 
-    @ManyToOne(() => DonationEvent, donationEvent => donationEvent.bloodBags)
+    @ManyToOne(() => DonationEvent, donationEvent => donationEvent.bloodBags, { nullable: true })
     donationEvent: DonationEvent
 
     @OneToMany(() => BloodInventory, bloodInventory => bloodInventory.bloodBag, { nullable: true })

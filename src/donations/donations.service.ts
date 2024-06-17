@@ -17,6 +17,7 @@ import { CONSTANTS } from 'src/CONSTANTS';
 import { BloodBagsService } from 'src/blood-bags/blood-bags.service';
 import { RequestUser } from 'src/core/types/global.types';
 import { BloodBag } from 'src/blood-bags/entities/blood-bag.entity';
+import { BagTypesService } from 'src/bag-types/bag-types.service';
 
 @Injectable()
 export class DonationsService {
@@ -38,13 +39,16 @@ export class DonationsService {
     // check if donor can donate (checking if last donation has crossed 3 months)
     const message = this.checkIfEligibleDonor(dependentColumns.donor); // if yes, warning message, not error, donation will be accepted
 
-    // TODO: check if donation is valid for the event because expected donation count may be reached
-    // await this.donationEventsService.canHaveDonation(createDonationDto.donation_event);
+    // check if donation is valid for the event because expected donation count may be reached
+    await this.donationEventsService.canHaveDonation(createDonationDto.donation_event);
 
     // evaluate blood bag
     let bloodBag = await this.bloodBagService.getBloodBagByBagNo(createDonationDto.bloodBagNo); // for individual donations, blood bag is first created using print blood bag no in frontend
     if (donationType === DonationType.ORGANIZATION && bloodBag?.donation) throw new BadRequestException('Duplicate entry for blood bag number');
-    if (donationType === DonationType.ORGANIZATION && bloodBag?.donationEvent !== dependentColumns?.donation_event) throw new BadRequestException('This blood bag was assigned to a different event');
+    if (donationType === DonationType.ORGANIZATION && bloodBag?.donationEvent.id !== dependentColumns?.donation_event.id) throw new BadRequestException('This blood bag was assigned to a different event');
+
+    // change bag type according to provided data
+    await this.bloodBagService.updateBagType(bloodBag, createDonationDto.bagType);
 
     // create donation
     const donation = this.donationRepo.create({
@@ -55,7 +59,6 @@ export class DonationsService {
     })
 
     const savedDonation = await this.donationRepo.save(donation);
-    console.log(savedDonation)
 
     // define blood source
     const bloodSource = donationType === DonationType.INDIVIDUAL ?
@@ -77,8 +80,6 @@ export class DonationsService {
       destination: 'SELF',
       date: new Date(bloodBag.createdAt)?.toISOString(),
     }, currentUser)
-
-    console.log('hey there')
 
     return {
       ...savedDonation,

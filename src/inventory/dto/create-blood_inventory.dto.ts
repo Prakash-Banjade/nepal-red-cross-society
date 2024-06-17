@@ -1,5 +1,5 @@
 import { BadRequestException } from "@nestjs/common";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
 import { IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateIf } from "class-validator";
 import { CreateBloodBagDto } from "src/blood-bags/dto/create-blood-bag.dto";
@@ -57,6 +57,11 @@ export class CreateBloodInventoryDto {
     @IsEnum(BloodInventoryStatus)
     @IsOptional()
     status?: BloodInventoryStatus;
+
+    @ApiPropertyOptional({type: String})
+    @IsOptional()
+    @IsString()
+    bagType?: string;
 
     @ApiProperty({ type: 'string', format: 'uuid' })
     @IsUUID()

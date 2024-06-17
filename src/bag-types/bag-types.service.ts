@@ -3,7 +3,7 @@ import { CreateBagTypeDto } from './dto/create-bag-type.dto';
 import { UpdateBagTypeDto } from './dto/update-bag-type.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BagType } from './entities/bag-type.entity';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { BloodComponent } from './entities/blood-component.entity';
 
 @Injectable()
@@ -57,7 +57,7 @@ export class BagTypesService {
   }
 
   async findBagTypeByName(name: string) {
-    const existing = await this.bagTypeRepo.findOne({ where: { name }, relations: ['bloodComponents'] });
+    const existing = await this.bagTypeRepo.findOne({ where: { name: ILike(`%${name}%`) }, relations: ['bloodComponents'] });
 
     if (!existing) throw new BadRequestException('Invalid Bag type name');
 

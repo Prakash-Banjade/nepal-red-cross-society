@@ -55,6 +55,14 @@ export class DonationEventsController {
     return this.donationEventsService.findOne(id);
   }
 
+  @Post(':id/issue-inventory-items')
+  @Throttle({ default: { limit: 1, ttl: 2000 } })
+  @ApiOperation({ description: "Update a donation event", summary: "Edit existing donation event" })
+  @ChekcAbilities({ action: Action.UPDATE, subject: 'all' })
+  async issueInventoryItems(@Param('id', ParseUUIDPipe) id: string, @Body('inventoryItems') inventoryItems: string, @CurrentUser() currentUser: RequestUser) {
+    return await this.donationEventsService.updateRequiredInventoryItems(id, inventoryItems, currentUser);
+  }
+
   @Patch(':id')
   @FormDataRequest({ storage: FileSystemStoredFile })
   @Throttle({ default: { limit: 1, ttl: 2000 } })

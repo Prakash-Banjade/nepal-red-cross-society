@@ -15,6 +15,11 @@ import { FileSystemStoredFile } from 'nestjs-form-data';
 import { EventQueryDto } from './dto/event-query.dto';
 import { BloodBagsService } from 'src/blood-bags/blood-bags.service';
 import { RequestUser } from 'src/core/types/global.types';
+import { CONSTANTS } from 'src/CONSTANTS';
+import { InventoryService } from 'src/inventory/inventory.service';
+import { InventoryItemService } from 'src/inventory/inventory-item.service';
+import { BloodBagStatus, InventoryTransaction } from 'src/core/types/fieldsEnum.types';
+import { BagTypesService } from 'src/bag-types/bag-types.service';
 
 @Injectable()
 export class DonationEventsService {
@@ -25,6 +30,9 @@ export class DonationEventsService {
     private readonly organizationsService: OrganizationsService,
     private readonly addressService: AddressService,
     private readonly bloodBagService: BloodBagsService,
+    private readonly inventoryService: InventoryService,
+    private readonly inventoryItemService: InventoryItemService,
+    private readonly bagTypeService: BagTypesService
   ) { }
 
   async create(createDonationEventDto: CreateDonationEventDto, currentUser: RequestUser) {
@@ -58,23 +66,22 @@ export class DonationEventsService {
 
     return savedEvent;
 
-    // TODO: create bloodBags on event update not in creation
     // creating bloodBags
     // await this.bloodBagService.createBloodBagsInBulk(expectedDonation, savedEvent, currentUser);
   }
 
-  extractJSONArray(expectedDonations: string): Record<string, number>[] {
+  jsonParse(stringifiedJson: string): Record<string, number | Record<string, number>> {
     try {
-      return JSON.parse(expectedDonations);
+      return JSON.parse(stringifiedJson);
     } catch (e) {
-      throw new BadRequestException('Expected Donations must be an array');
+      throw new BadRequestException('Failed to parse string to array');
     }
   }
 
-  // async canHaveDonation(eventId: string) {
-  //   const event = await this.findOne(eventId);
-  //   if (event.donations.length >= event.expectedDonations) throw new BadRequestException('Donation event can not have more than expected donations');
-  // }
+  async canHaveDonation(eventId: string) {
+    const event = await this.findOne(eventId);
+    if (event.donations.length >= event.expectedDonations) throw new BadRequestException('Donation event can not have more than expected donations');
+  }
 
   async findAll(queryDto: EventQueryDto) {
     const queryBuilder = this.donationEventsRepo.createQueryBuilder('donationEvent');
@@ -158,6 +165,97 @@ export class DonationEventsService {
     });
 
     return await this.donationEventsRepo.save(existingEvent);
+  }
+
+  async updateRequiredInventoryItems(id: string, inventoryItems: string, currentUser: RequestUser) {
+    /*
+      {
+        scissor: 6,
+        bagSet: 6,
+        bloodBag: {
+          single: 5,
+          triple: 1,
+        }
+      }
+    */
+    const inventoryItemsArray = this.jsonParse(inventoryItems)
+    const existingEvent = await this.findOne(id);
+    let createdBloodBagNo: number[] = []
+
+    // check if blood bags are requested more than expectedDonations
+    let requestedBloodBags: number = 0
+    for (const [_, value] of Object.entries(inventoryItemsArray[CONSTANTS.BLOOD_BAG_KEY] as Record<string, number>)) requestedBloodBags += value
+    if (existingEvent.expectedDonations < requestedBloodBags) throw new BadRequestException("You can't request more blood bags than expected donations");
+
+    // checking if inventory items are sufficient
+    for (const [key, value] of Object.entries(inventoryItemsArray)) {
+      const inventory = await this.inventoryService.getInventoryByName(key === CONSTANTS.BLOOD_BAG_KEY ? CONSTANTS.BLOOD_BAG : key, currentUser)
+      if (key === CONSTANTS.BLOOD_BAG_KEY) { // checking quantity of blood bags
+        const bloodBagCount = inventory.bloodBagCount;
+
+        for (const [key, quantity] of Object.entries(value as Record<string, number>)) {
+          console.log(inventory.bloodBagCount)
+          if (!bloodBagCount[key][BloodBagStatus.USABLE] || bloodBagCount[key][BloodBagStatus.USABLE] < quantity) throw new BadRequestException('Not enough blood bags of type ' + key);
+        }
+      } else {
+        if (typeof value === 'number' && inventory.quantity < value) throw new BadRequestException('Not enough ' + key);
+      }
+    }
+
+    // generate inventory issue statement for inventory items
+    for (const [key, value] of Object.entries(inventoryItemsArray)) {
+      const inventory = await this.inventoryService.getInventoryByName(key === CONSTANTS.BLOOD_BAG_KEY ? CONSTANTS.BLOOD_BAG : key, currentUser)
+      if (key === CONSTANTS.BLOOD_BAG_KEY) { // checking quantity of blood bags
+        for (const [key, quantity] of Object.entries(value as Record<string, number>)) {
+          // evaluate bagType
+          const bagType = await this.bagTypeService.findBagTypeByName(key)
+
+          // generate issue statement for each blood bag type
+          await this.inventoryItemService.create({
+            date: new Date().toISOString(),
+            destination: existingEvent.name + ' - ' + existingEvent.organization.name,
+            inventoryId: inventory.id,
+            price: 0,
+            quantity,
+            source: CONSTANTS.SELF,
+            status: BloodBagStatus.USABLE,
+            transactionType: InventoryTransaction.ISSUED,
+            bagType: bagType.id,
+          }, currentUser)
+
+          // also create blood bag
+          for (let i = 0; i < quantity; i++) {
+            const newBloodBag = await this.bloodBagService.create({ bagType: bagType.id, }, currentUser, false, existingEvent)
+            const { bagNo } = newBloodBag.bloodBag
+
+            createdBloodBagNo.push(bagNo)
+          }
+        }
+      } else {
+        await this.inventoryItemService.create({
+          date: new Date().toISOString(),
+          destination: existingEvent.name + ' - ' + existingEvent.organization.name,
+          inventoryId: inventory.id,
+          price: 0,
+          quantity: value as number,
+          source: CONSTANTS.SELF,
+          transactionType: InventoryTransaction.ISSUED,
+        }, currentUser)
+      }
+    }
+
+    existingEvent.inventoryItems = inventoryItems;
+    existingEvent.assignedBloodBags = createdBloodBagNo;
+
+    console.log(createdBloodBagNo)
+
+    await this.donationEventsRepo.save(existingEvent);
+
+    return {
+      message: 'Inventory items issued successfully',
+      eventId: existingEvent.id,
+      eventName: existingEvent.name,
+    }
   }
 
   async remove(ids: string[]) {
