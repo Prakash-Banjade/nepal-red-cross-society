@@ -4,9 +4,9 @@ import { QueryDto } from "src/core/dto/queryDto";
 import { BloodInventoryStatus, BloodItems, BloodType, InventoryTransaction, RhFactor } from "src/core/types/fieldsEnum.types";
 
 export class BloodInventoryQueryDto extends QueryDto {
-    @ApiPropertyOptional({ type: 'enum', enum: BloodInventoryStatus, default: BloodInventoryStatus.USABLE })
+    @ApiPropertyOptional({ type: 'enum', enum: BloodInventoryStatus })
     @IsOptional()
-    status?: BloodInventoryStatus = BloodInventoryStatus.USABLE;
+    status?: BloodInventoryStatus;
 
     @ApiPropertyOptional({ type: 'enum', enum: BloodItems })
     @IsOptional()
@@ -27,4 +27,12 @@ export class BloodInventoryQueryDto extends QueryDto {
     @ApiPropertyOptional({ type: 'string', description: "Component Type" })
     @IsOptional()
     component?: string
+
+    @ApiPropertyOptional({ type: 'number', description: "Bag No" })
+    @IsOptional()
+    bagNo?: number
+
+    @ApiPropertyOptional({ type: 'string', description: "Bag Type" })
+    @IsOptional()
+    bagType?: string
 }

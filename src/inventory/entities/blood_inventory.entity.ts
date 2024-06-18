@@ -24,6 +24,9 @@ export class BloodInventory extends BaseEntity {
     @Column({ type: 'datetime' })
     date: string;
 
+    @Column({ type: 'int', default: 1 })
+    quantity: number
+
     @Column({ type: 'enum', enum: InventoryTransaction })
     transactionType: InventoryTransaction
 

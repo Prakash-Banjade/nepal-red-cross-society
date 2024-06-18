@@ -29,7 +29,7 @@ export class BloodRequestService {
   async create(createBloodRequestDto: CreateBloodRequestDto, currentUser: RequestUser) {
     const branch = await this.branchService.findOne(currentUser.branchId);
 
-    await this.bloodInventoryService.checkIfBloodAvailable(createBloodRequestDto, currentUser); // check if bloods is available
+    await this.bloodInventoryService.checkIfBloodAvailableForRequest(createBloodRequestDto, currentUser); // check if bloods is available
 
     const documentFront = getFileName(createBloodRequestDto.documentFront);
     const documentBack = getFileName(createBloodRequestDto.documentBack);

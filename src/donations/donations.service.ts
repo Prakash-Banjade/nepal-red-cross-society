@@ -69,7 +69,7 @@ export class DonationsService {
     await this.bloodInventoryService.create({
       bloodBagId: bloodBag.id,
       bagTypeId: bloodBag.bagType?.id,
-      expiry: new Date(Date.now() + CONSTANTS.BLOOD_EXPIRY_INTERVAL).toISOString(),
+      expiry: CONSTANTS.BLOOD_EXPIRY_INTERVAL,
       component: BloodComponent.WHOLE_BLOOD,
       bloodType: dependentColumns.donor?.bloodType,
       rhFactor: dependentColumns.donor?.rhFactor,
@@ -101,6 +101,7 @@ export class DonationsService {
       .leftJoinAndSelect('donation.donor', 'donor')
       .withDeleted()
       .leftJoinAndSelect('donation.bloodBag', 'bloodBag')
+      .leftJoinAndSelect('bloodBag.bagType', 'bagType')
       .where({ deletedAt })
       .andWhere(new Brackets(qb => {
         if (queryDto.search) qb.orWhere("LOWER(bloodBag.bagNo) LIKE LOWER(:bagNo)", { bagNo: `%${queryDto.search ?? ''}%` });

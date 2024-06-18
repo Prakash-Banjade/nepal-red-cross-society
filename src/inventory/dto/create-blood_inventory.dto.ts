@@ -2,9 +2,7 @@ import { BadRequestException } from "@nestjs/common";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
 import { IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateIf } from "class-validator";
-import { CreateBloodBagDto } from "src/blood-bags/dto/create-blood-bag.dto";
-import { CONSTANTS } from "src/CONSTANTS";
-import { BloodComponent, BloodInventoryStatus, BloodItems, BloodType, InventoryTransaction, RhFactor } from "src/core/types/fieldsEnum.types";
+import { BloodInventoryStatus, BloodType, InventoryTransaction, RhFactor } from "src/core/types/fieldsEnum.types";
 
 export class CreateBloodInventoryDto {
     @ApiProperty({ type: 'enum', enum: BloodType })
@@ -43,22 +41,25 @@ export class CreateBloodInventoryDto {
     @IsEnum(InventoryTransaction)
     transactionType!: InventoryTransaction
 
-    @ApiProperty({ type: 'string'})
+    @ApiProperty({ type: 'string' })
     @IsString()
     @IsNotEmpty()
     component!: string;
 
     @ApiProperty({ type: 'string', format: 'date-time' })
-    @IsDateString()
+    @Transform(({ value }) => {
+        if (isNaN(parseInt(value))) throw new BadRequestException('Expiry must be a number');
+        return parseInt(value);
+    })
     @IsOptional()
-    expiry?: string = '';
+    expiry?: number;
 
     @ApiProperty({ type: 'enum', enum: BloodInventoryStatus })
     @IsEnum(BloodInventoryStatus)
     @IsOptional()
     status?: BloodInventoryStatus;
 
-    @ApiPropertyOptional({type: String})
+    @ApiPropertyOptional({ type: String })
     @IsOptional()
     @IsString()
     bagType?: string;
@@ -67,6 +68,15 @@ export class CreateBloodInventoryDto {
     @IsUUID()
     @IsOptional()
     bloodBagId?: string
+
+    @ApiProperty({ type: Number, default: 1 })
+    @IsNotEmpty()
+    @Transform(({ value }) => {
+        if (isNaN(parseInt(value))) throw new BadRequestException('Quantity must be a number');
+        return parseInt(value);
+    })
+    @IsOptional()
+    quantity?: number = 1;
 
     // @ApiProperty({ type: 'int', default: 0 })
     // @Transform(({ value }) => {

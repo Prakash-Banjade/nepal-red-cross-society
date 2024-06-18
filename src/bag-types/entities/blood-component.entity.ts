@@ -10,6 +10,6 @@ export class BloodComponent extends BaseEntity {
     @Column({ type: 'int' })
     expiryInDays!: number
 
-    @ManyToOne(() => BagType, bagType => bagType.bloodComponents)
+    @ManyToOne(() => BagType, bagType => bagType.bloodComponents, { onDelete: 'CASCADE' })
     bagType: BagType
 }

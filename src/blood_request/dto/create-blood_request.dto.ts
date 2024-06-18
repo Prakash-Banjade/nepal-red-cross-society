@@ -25,7 +25,7 @@ class Charge {
     }
 }
 
-class RequestedComponents {
+class RequestedComponent {
     @ApiProperty({ type: 'string' })
     @IsString()
     @IsNotEmpty()
@@ -118,13 +118,13 @@ export class CreateBloodRequestDto {
     @Transform(({ value }) => {
         try {
             const array = JSON.parse(value)
-            return array.map((component: { componentName: string, quantity: number }) => new RequestedComponents(component))
+            return array.map((component: { componentName: string, quantity: number }) => new RequestedComponent(component))
         } catch (e) {
             throw new BadRequestException('Invalid blood component type');
         }
     })
-    @Type(() => RequestedComponents)
-    requestedComponents: RequestedComponents[]
+    @Type(() => RequestedComponent)
+    requestedComponents: RequestedComponent[]
 
     @ApiProperty({ type: 'enum', enum: BloodType, description: 'Blood type' })
     @IsEnum(BloodType, { message: 'Invalid blood type. Blood type must be either ' + Object.values(BloodType).join(', ') })

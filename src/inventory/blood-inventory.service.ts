@@ -9,7 +9,7 @@ import { Deleted } from 'src/core/dto/queryDto';
 import { RequestUser } from 'src/core/types/global.types';
 import { BranchService } from 'src/branch/branch.service';
 import { BloodInventoryQueryDto } from './dto/blood-inventory-query.dto';
-import { BloodInventoryStatus, InventoryTransaction } from 'src/core/types/fieldsEnum.types';
+import { BloodInventoryStatus, BloodType, InventoryTransaction, RhFactor } from 'src/core/types/fieldsEnum.types';
 import { Branch } from 'src/branch/entities/branch.entity';
 import { BloodRequest } from 'src/blood_request/entities/blood_request.entity';
 import { CONSTANTS } from 'src/CONSTANTS';
@@ -30,6 +30,11 @@ export class BloodInventoryService {
         if (!createBloodInventoryDto.bloodBagId && !createBloodInventoryDto.bagTypeId) {
             throw new BadRequestException('Please provide either bloodBagId or bloodBagNo and bagTypeId');
         }
+
+        const branch = await this.branchService.findOne(currentUser.branchId);
+
+        createBloodInventoryDto.transactionType === InventoryTransaction.ISSUED && await this.checkIfBloodAvailableToIssue(createBloodInventoryDto, branch);
+
         const bloodBag = createBloodInventoryDto.bloodBagId ?
             await this.bloodBagService.findOne(createBloodInventoryDto.bloodBagId) :
             await this.bloodBagService.create({
@@ -37,12 +42,12 @@ export class BloodInventoryService {
                 bagType: createBloodInventoryDto.bagTypeId,
             }, currentUser);
 
-        const branch = await this.branchService.findOne(currentUser.branchId);
 
         const bloodInventoryItem = this.bloodInventoryRepo.create({
             ...createBloodInventoryDto,
             bloodBag: 'bloodBag' in bloodBag ? bloodBag.bloodBag : bloodBag,
             branch,
+            expiry: new Date(Date.now() + (createBloodInventoryDto.expiry * 24 * 60 * 60 * 1000)).toISOString(),
         });
 
         const newBloodInventory = await this.bloodInventoryRepo.save(bloodInventoryItem);
@@ -51,7 +56,7 @@ export class BloodInventoryService {
         return newBloodInventory
     }
 
-    async findAll(queryDto: BloodInventoryQueryDto, currentUser: RequestUser) {        
+    async findAll(queryDto: BloodInventoryQueryDto, currentUser: RequestUser) {
         const queryBuilder = this.bloodInventoryRepo.createQueryBuilder('bloodInventory');
         const deletedAt = queryDto.deleted === Deleted.ONLY ? Not(IsNull()) : queryDto.deleted === Deleted.NONE ? IsNull() : Or(IsNull(), Not(IsNull()));
 
@@ -62,6 +67,7 @@ export class BloodInventoryService {
             .withDeleted()
             .where({ deletedAt })
             .leftJoinAndSelect('bloodInventory.bloodBag', 'bloodBag')
+            .leftJoinAndSelect('bloodBag.donation', 'donation')
             .leftJoinAndSelect('bloodBag.bagType', 'bagType')
             .andWhere(new Brackets(qb => {
                 qb.andWhere({ branch: { id: currentUser.branchId } })
@@ -69,10 +75,14 @@ export class BloodInventoryService {
             .andWhere(new Brackets(qb => {
                 queryDto.itemType && qb.andWhere({ itemType: queryDto.itemType });
                 queryDto.component && qb.andWhere({ component: ILike(queryDto.component) });
-                // queryDto.status && qb.andWhere({ status: queryDto.status });
+                queryDto.status && qb.andWhere({ status: queryDto.status });
                 queryDto.transactionType && qb.andWhere({ transactionType: queryDto.transactionType });
                 queryDto.rhFactor && qb.andWhere({ rhFactor: queryDto.rhFactor });
                 queryDto.bloodType && qb.andWhere({ bloodType: queryDto.bloodType });
+            }))
+            .andWhere(new Brackets(qb => {
+                if (queryDto.search) qb.andWhere("LOWER(bloodBag.bagNo) LIKE LOWER(:bagNo)", { bagNo: `%${+queryDto.search ?? ''}%` });
+                if (queryDto.bagType) qb.andWhere("LOWER(bagType.name) LIKE LOWER(:bagType)", { bagType: `%${queryDto.bagType ?? ''}%` });
             }))
 
         return paginatedData(queryDto, queryBuilder);
@@ -99,28 +109,74 @@ export class BloodInventoryService {
         await this.bloodInventoryRepo.remove(existingInventory);
     }
 
-    async checkIfBloodAvailable(createBloodRequestDto: CreateBloodRequestDto, currentUser: RequestUser) {
+    async checkIfBloodAvailableForRequest(createBloodRequestDto: CreateBloodRequestDto, currentUser: RequestUser) {
         const { bloodType, rhFactor, requestedComponents } = createBloodRequestDto;
 
         for (const requestedComponent of requestedComponents) {
-            const existingBloodItem = await this.bloodInventoryRepo.find({
-                relations: { branch: true },
-                where: {
-                    branch: { id: currentUser.branchId },
-                    component: requestedComponent.componentName,
-                    status: BloodInventoryStatus.USABLE,
-                    bloodType,
-                    rhFactor,
-                    transactionType: InventoryTransaction.ISSUED
-                }
-            })
+            // const existingBloodItem = await this.bloodInventoryRepo.find({
+            //     relations: { branch: true },
+            //     where: {
+            //         branch: { id: currentUser.branchId },
+            //         component: requestedComponent.componentName,
+            //         status: BloodInventoryStatus.USABLE,
+            //         bloodType,
+            //         rhFactor,
+            //         transactionType: InventoryTransaction.ISSUED
+            //     },
+            //     select: { quantity: true }
+            // })
 
-            if (existingBloodItem?.length < +requestedComponent.quantity) {
-                throw new BadRequestException(`Insuffient ${requestedComponent.componentName}. Available: ${existingBloodItem?.length}`);
+            const componentQuantity = await this.getSumOfQuantities(requestedComponent.componentName, bloodType, rhFactor, currentUser.branchId,);
+
+            if (componentQuantity < +requestedComponent.quantity) {
+                throw new BadRequestException(`Insuffient ${requestedComponent.componentName}. Available: ${componentQuantity}`);
             }
         }
 
         return true;
+    }
+
+    async checkIfBloodAvailableToIssue(createBloodInventoryDto: CreateBloodInventoryDto, branch: Branch) {
+        const { bloodType, rhFactor, component, quantity, bagTypeId } = createBloodInventoryDto;
+
+        // const existingBloodItems = await this.bloodInventoryRepo.find({
+        //     relations: { branch: true },
+        //     where: {
+        //         branch: { id: branch.id },
+        //         component: component,
+        //         status: BloodInventoryStatus.USABLE,
+        //         bloodType,
+        //         rhFactor,
+        //         transactionType: InventoryTransaction.ISSUED
+        //     }
+        // })
+
+        const componentQuantity = await this.getSumOfQuantities(component, bloodType, rhFactor, branch.id);
+
+        if (componentQuantity < +quantity) {
+            throw new BadRequestException(`Insuffient ${component}. Available: ${componentQuantity}`);
+        }
+
+        return true;
+    }
+
+
+    async getSumOfQuantities(component: string, bloodType: BloodType, rhFactor: RhFactor, branchId: string): Promise<number> {
+        const sum = await this.bloodInventoryRepo.createQueryBuilder("bloodInventory")
+            .select("SUM(bloodInventory.quantity)", "sum")
+            .where("bloodInventory.branch.id = :branchId", { branchId })
+            .where(new Brackets(qb => {
+                qb.andWhere({ component: ILike(component) })
+                qb.andWhere({ status: BloodInventoryStatus.USABLE })
+                qb.andWhere({ transactionType: InventoryTransaction.ISSUED })
+                qb.andWhere({ bloodType })
+                qb.andWhere({ rhFactor })
+            }))
+            .getRawOne();
+
+        console.log(sum)
+
+        return sum.sum;
     }
 
     async createRequestedBloodBagsAndCreateIssueStatementInInventory(bloodRequest: BloodRequest, bloodRequestDto: CreateBloodRequestDto, currentUser: RequestUser, branch: Branch) {

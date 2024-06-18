@@ -33,6 +33,7 @@ export class LabReportsService {
   ) { }
 
   async create(createLabReportDto: CreateLabReportDto, currentUser: RequestUser) {
+    console.log('hey')
     const donation = await this.donation(createLabReportDto.donation)
 
     const labReport = this.labReportRepo.create({
@@ -51,8 +52,8 @@ export class LabReportsService {
 
     await this.donationRepo.save(donation);
 
-    // update blood inventory item with corresponding blood bag no
-    await this.updateBloodInventory(donation, isSucceed, createLabReportDto, currentUser);
+    // update blood inventory item with corresponding blood bag no only if the test result is positive
+    isSucceed && await this.updateBloodInventory(donation, isSucceed, createLabReportDto, currentUser, savedLabReport);
 
     // update blood type of donor which has been found after testing, the initial blood type while creating donor may be incorrect
     await this.donorService.update(donation.donor.id, {
@@ -66,34 +67,50 @@ export class LabReportsService {
     }
   }
 
-  async updateBloodInventory(donation: Donation, isSucceed: boolean, labReportDto: CreateLabReportDto | UpdateLabReportDto, currentUser: RequestUser) {
+  async updateBloodInventory(donation: Donation, isSucceed: boolean, labReportDto: CreateLabReportDto | UpdateLabReportDto, currentUser: RequestUser, labReport: LabReport) {
     const branch = await this.branchService.findOne(currentUser.branchId)
 
-    // remove blood inventory items with same blood bag no that were created after donation
+    if (isSucceed && !labReportDto.componentIds?.length) throw new BadRequestException('Select at least one component');
+
     const oldInventory = await this.bloodInventoryRepo.find({ where: { bloodBag: { id: donation.bloodBag.id } } })
-    if (oldInventory) await this.bloodInventoryRepo.remove(oldInventory)
+    // remove blood inventory items with same blood bag no that were created after donation
+    if (oldInventory && isSucceed) await this.bloodInventoryRepo.remove(oldInventory)
 
-    // creating blood inventory based on the components the blood is break down into
-    for (const componentId of labReportDto.componentIds) {
-      const component = await this.bloodComponentRepo.findOne({ where: { id: componentId } })
+    let componentIds: string[] = []
 
-      const createdBloodInventoryItem = this.bloodInventoryRepo.create({
-        bloodBag: donation.bloodBag,
-        bloodType: labReportDto.bloodType,
-        rhFactor: labReportDto.rhFactor,
-        branch,
-        date: labReportDto.date,
-        source: donation.donation_event?.name,
-        destination: CONSTANTS.SELF,
-        price: 0,
-        status: isSucceed ? BloodInventoryStatus.USABLE : BloodInventoryStatus.WASTE,
-        expiry: new Date(Date.now() + component.expiryInDays).toISOString(),
-        transactionType: InventoryTransaction.RECEIVED,
-        component: component.componentName,
-      })
+    if (isSucceed) { // create components only if the lab report is positive
+      // creating blood inventory based on the components the blood is break down into
+      for (const componentId of labReportDto.componentIds) {
+        const component = await this.bloodComponentRepo.findOne({ where: { id: componentId } })
 
-      await this.bloodInventoryRepo.save(createdBloodInventoryItem)
+        const createdBloodInventoryItem = this.bloodInventoryRepo.create({
+          bloodBag: donation.bloodBag,
+          bloodType: labReportDto.bloodType,
+          rhFactor: labReportDto.rhFactor,
+          branch,
+          date: labReportDto.date,
+          source: `Event: ${donation.donation_event?.name}`,
+          destination: CONSTANTS.SELF,
+          price: 0,
+          status: isSucceed ? BloodInventoryStatus.USABLE : BloodInventoryStatus.WASTE,
+          expiry: new Date(Date.now() + component.expiryInDays).toISOString(),
+          transactionType: InventoryTransaction.RECEIVED,
+          component: component.componentName,
+        })
+
+        await this.bloodInventoryRepo.save(createdBloodInventoryItem)
+        componentIds.push(componentId)
+      }
+    } else {
+      for (const inventory of oldInventory) {
+        inventory.status = BloodInventoryStatus.WASTE
+        await this.bloodInventoryRepo.save(inventory)
+      }
     }
+
+    labReport.separatedComponents = componentIds
+
+    await this.labReportRepo.save(labReport);
 
   }
 
@@ -126,7 +143,6 @@ export class LabReportsService {
     const existingLabReport = await this.findOne(id);
     // evaluating donation
     const existingDonation = await this.donation(updateLabReportDto.donation);
-    if (!existingDonation) throw new BadRequestException('Donation not found');
 
     Object.assign(existingLabReport, {
       ...updateLabReportDto,
@@ -144,7 +160,7 @@ export class LabReportsService {
     await this.donationRepo.save(existingDonation);
 
     // update blood inventory item with corresponding blood bag no
-    await this.updateBloodInventory(existingDonation, isSucceed, updateLabReportDto, currentUser);
+    await this.updateBloodInventory(existingDonation, isSucceed, updateLabReportDto, currentUser, savedLabReport);
 
     // update blood type of donor which has been found after testing, the initial blood type while creating donor may be incorrect
     await this.donorService.update(existingDonation.donor.id, {
@@ -175,7 +191,7 @@ export class LabReportsService {
   async donation(id: string) {
     const existingDonation = await this.donationRepo.findOne({
       where: { id },
-      relations: { donor: true, bloodBag: true, donation_event: true }
+      relations: { donor: true, bloodBag: true, donation_event: true, organization: true }
     });
     if (!existingDonation) throw new BadRequestException('Donation not found');
 

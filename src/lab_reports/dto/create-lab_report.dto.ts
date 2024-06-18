@@ -49,8 +49,8 @@ export class CreateLabReportDto {
     @Type(() => TestCase)
     testCases: TestCase[];
 
-    @ApiProperty({ type: 'string' })
-    @IsUUID()
+    @ApiProperty({ type: [String], description: 'Array of component ids', format: 'uuidv4', isArray: true })
+    @IsUUID("all", { message: 'Invalid component ids. Component ids must be UUIDs', each: true })
     @IsNotEmpty()
-    componentIds: string;
+    componentIds: string[]
 }

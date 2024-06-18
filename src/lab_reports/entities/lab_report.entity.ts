@@ -15,6 +15,9 @@ export class LabReport extends BaseEntity {
     @JoinColumn()
     donation: Donation;
 
+    @Column({ type: 'simple-array', nullable: true })
+    separatedComponents: string[]
+
     @OneToMany(() => TestResult, (testResult) => testResult.labReport, { nullable: true })
     testResults: TestResult[];
 }
