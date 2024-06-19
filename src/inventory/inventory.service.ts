@@ -77,6 +77,11 @@ export class InventoryService {
     const inventory = await this.inventoryRepo.findOne({
       where: { name, branch: { id: branch.id } },
       relations: { items: true },
+      order: {
+        items: {
+          createdAt: 'DESC'
+        }
+      }
     })
 
     if (!inventory) throw new NotFoundException('Inventory not found');
@@ -89,7 +94,7 @@ export class InventoryService {
     const bloodBagCount = inventory.bloodBagCount;
 
     for (const [key, value] of Object.entries(requiredBloodBags)) {
-      if (!bloodBagCount[key][BloodBagStatus.USABLE] || bloodBagCount[key][BloodBagStatus.USABLE] < value) throw new BadRequestException('Not enough blood bags of type ' + key);
+      if (!bloodBagCount[key] || !bloodBagCount[key][BloodBagStatus.USABLE] || bloodBagCount[key][BloodBagStatus.USABLE] < value) throw new BadRequestException('Not enough blood bags of type ' + key);
     }
 
     return inventory.id

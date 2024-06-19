@@ -47,7 +47,7 @@ export class DonationEvent extends BaseEntity {
   inventoryItems?: string; // stringified json array: [{bagType: string, quantity: number}, {item: string, quantity: number}] 
 
   @Column({ type: 'simple-array', nullable: true })
-  assignedBloodBags: number[]
+  assignedBloodBags: string[]
 
   @OneToMany(() => BloodBag, (bloodBag) => bloodBag.donationEvent, { nullable: true })
   bloodBags: BloodBag[];

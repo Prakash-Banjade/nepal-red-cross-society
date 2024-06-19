@@ -33,7 +33,6 @@ export class LabReportsService {
   ) { }
 
   async create(createLabReportDto: CreateLabReportDto, currentUser: RequestUser) {
-    console.log('hey')
     const donation = await this.donation(createLabReportDto.donation)
 
     const labReport = this.labReportRepo.create({

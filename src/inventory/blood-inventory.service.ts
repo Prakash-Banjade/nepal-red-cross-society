@@ -2,7 +2,7 @@ import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException 
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, ILike, In, IsNull, Not, Or, Repository } from 'typeorm';
 import { BloodInventory } from './entities/blood_inventory.entity';
-import { CreateBloodInventoryDto } from './dto/create-blood_inventory.dto';
+import { AvailableInventoryDto, BloodInventoryIssueDto, CreateBloodInventoryDto } from './dto/create-blood_inventory.dto';
 import paginatedData from 'src/core/utils/paginatedData';
 import { BloodBagsService } from 'src/blood-bags/blood-bags.service';
 import { Deleted } from 'src/core/dto/queryDto';
@@ -25,6 +25,7 @@ export class BloodInventoryService {
         private readonly branchService: BranchService,
     ) { }
 
+    // this one is for automated ones
     async create(createBloodInventoryDto: CreateBloodInventoryDto, currentUser: RequestUser) {
         // if bloodbagId is supplied then check if it exists, else create from bloodBagNo and bagTypeId
         if (!createBloodInventoryDto.bloodBagId && !createBloodInventoryDto.bagTypeId) {
@@ -51,9 +52,73 @@ export class BloodInventoryService {
         });
 
         const newBloodInventory = await this.bloodInventoryRepo.save(bloodInventoryItem);
-        console.log(newBloodInventory)
 
         return newBloodInventory
+    }
+
+    async createIssueStatements(bloodInventoryIssueDto: BloodInventoryIssueDto, currentUser: RequestUser) {
+        const { inventoryIds, date, source, destination, price } = bloodInventoryIssueDto;
+
+        for (const inventoryId of inventoryIds) {
+            const inventory = await this.findOne(inventoryId, currentUser);
+
+            const issueStatement = this.bloodInventoryRepo.create({
+                ...inventory,
+                transactionType: InventoryTransaction.ISSUED,
+                date,
+                source,
+                destination,
+                price
+            })
+
+            await this.bloodInventoryRepo.save(issueStatement);
+        }
+
+        return {
+            message: 'Blood items successfully issued',
+        }
+    }
+
+    async getAvailableBloodInventory(availableInventoryDto: AvailableInventoryDto, currentUser: RequestUser) {
+        const { component, bloodType, rhFactor } = availableInventoryDto;
+
+        // First, fetch the issued statements with the blood bag numbers
+        // First, fetch the issued blood bag numbers
+        const issuedBloodBagNumbers = await this.bloodInventoryRepo.createQueryBuilder("bloodInventory")
+            .leftJoinAndSelect("bloodInventory.bloodBag", "bloodBag")
+            .leftJoinAndSelect("bloodInventory.branch", "branch")
+            .where("branch.id = :branchId", { branchId: currentUser.branchId })
+            .andWhere(new Brackets(qb => {
+                qb.andWhere({ component: ILike(component) })
+                qb.andWhere({ status: BloodInventoryStatus.USABLE })
+                qb.andWhere({ transactionType: InventoryTransaction.ISSUED })
+                qb.andWhere({ bloodType })
+                qb.andWhere({ rhFactor })
+            }))
+            .getMany();
+
+        const issuedBloodBagNumbersArray = issuedBloodBagNumbers.map(item => item.bloodBag.bagNo);
+
+        // Now, fetch the received statements, handling the case when the array is empty
+        let receivedStatementsQuery = this.bloodInventoryRepo.createQueryBuilder("bloodInventory")
+            .leftJoinAndSelect("bloodInventory.bloodBag", "bloodBag")
+            .leftJoinAndSelect("bloodInventory.branch", "branch")
+            .where("branch.id = :branchId", { branchId: currentUser.branchId })
+            .andWhere(new Brackets(qb => {
+                qb.andWhere({ component: ILike(component) })
+                qb.andWhere({ status: BloodInventoryStatus.USABLE })
+                qb.andWhere({ transactionType: InventoryTransaction.RECEIVED })
+                qb.andWhere({ bloodType })
+                qb.andWhere({ rhFactor })
+            }));
+
+        if (issuedBloodBagNumbersArray.length > 0) {
+            receivedStatementsQuery = receivedStatementsQuery.andWhere("bloodBag.bagNo NOT IN (:...issuedBloodBagNumbers)", { issuedBloodBagNumbers: issuedBloodBagNumbersArray });
+        }
+
+        const receivedStatements = await receivedStatementsQuery.getMany();
+
+        return receivedStatements
     }
 
     async findAll(queryDto: BloodInventoryQueryDto, currentUser: RequestUser) {
@@ -162,21 +227,34 @@ export class BloodInventoryService {
 
 
     async getSumOfQuantities(component: string, bloodType: BloodType, rhFactor: RhFactor, branchId: string): Promise<number> {
-        const sum = await this.bloodInventoryRepo.createQueryBuilder("bloodInventory")
-            .select("SUM(bloodInventory.quantity)", "sum")
+        // console.log(component, bloodType, rhFactor)
+        console.log(rhFactor, bloodType)
+
+        const issuedSum = await this.bloodInventoryRepo.createQueryBuilder("bloodInventory")
             .where("bloodInventory.branch.id = :branchId", { branchId })
-            .where(new Brackets(qb => {
+            .andWhere(new Brackets(qb => {
                 qb.andWhere({ component: ILike(component) })
                 qb.andWhere({ status: BloodInventoryStatus.USABLE })
                 qb.andWhere({ transactionType: InventoryTransaction.ISSUED })
                 qb.andWhere({ bloodType })
                 qb.andWhere({ rhFactor })
             }))
+            .select("SUM(bloodInventory.quantity)", "sum")
             .getRawOne();
 
-        console.log(sum)
+        const receivedSum = await this.bloodInventoryRepo.createQueryBuilder("bloodInventory")
+            .where("bloodInventory.branch.id = :branchId", { branchId })
+            .andWhere(new Brackets(qb => {
+                qb.andWhere({ component: ILike(component) })
+                qb.andWhere({ status: BloodInventoryStatus.USABLE })
+                qb.andWhere({ transactionType: InventoryTransaction.RECEIVED })
+                qb.andWhere({ bloodType })
+                qb.andWhere({ rhFactor })
+            }))
+            .select("SUM(bloodInventory.quantity)", "sum")
+            .getRawOne();
 
-        return sum.sum;
+        return receivedSum.sum - issuedSum.sum;
     }
 
     async createRequestedBloodBagsAndCreateIssueStatementInInventory(bloodRequest: BloodRequest, bloodRequestDto: CreateBloodRequestDto, currentUser: RequestUser, branch: Branch) {

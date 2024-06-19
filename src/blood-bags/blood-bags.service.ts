@@ -117,7 +117,7 @@ export class BloodBagsService {
     const bloodBagCount = inventory.bloodBagCount;
 
     for (const [key, value] of Object.entries(expectedDonations)) {
-      if (!bloodBagCount[key][BloodBagStatus.USABLE] || bloodBagCount[key][BloodBagStatus.USABLE] < value) throw new BadRequestException('Not enough blood bags of type ' + key);
+      if (!bloodBagCount[key] || !bloodBagCount[key][BloodBagStatus.USABLE] || bloodBagCount[key][BloodBagStatus.USABLE] < value) throw new BadRequestException('Not enough blood bags of type ' + key);
     }
 
     return inventory.id

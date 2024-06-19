@@ -5,7 +5,7 @@ import { ChekcAbilities } from 'src/core/decorators/abilities.decorator';
 import { Action, RequestUser } from 'src/core/types/global.types';
 import { FileSystemStoredFile, FormDataRequest } from 'nestjs-form-data';
 import { BloodInventoryService } from './blood-inventory.service';
-import { CreateBloodInventoryDto } from './dto/create-blood_inventory.dto';
+import { AvailableInventoryDto, CreateBloodInventoryDto } from './dto/create-blood_inventory.dto';
 import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.decorator';
 import { CurrentUser } from 'src/core/decorators/user.decorator';
 import { BloodInventoryQueryDto } from './dto/blood-inventory-query.dto';
@@ -28,6 +28,12 @@ export class BloodInventoryController {
     @ChekcAbilities({ action: Action.READ, subject: 'all' })
     findAll(@Query() queryDto: BloodInventoryQueryDto, @CurrentUser() currentUser: RequestUser) {
         return this.bloodInventoryService.findAll(queryDto, currentUser);
+    }
+
+    @Get('available')
+    @ChekcAbilities({ action: Action.READ, subject: 'all' })
+    getAvailableBloodInventory(@Query() availableInventoryDto: AvailableInventoryDto, @CurrentUser() currentUser: RequestUser) {
+        return this.bloodInventoryService.getAvailableBloodInventory(availableInventoryDto, currentUser);
     }
 
     @Get(':id')

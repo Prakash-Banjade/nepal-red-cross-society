@@ -180,7 +180,7 @@ export class DonationEventsService {
     */
     const inventoryItemsArray = this.jsonParse(inventoryItems)
     const existingEvent = await this.findOne(id);
-    let createdBloodBagNo: number[] = []
+    let createdBloodBagNo: string[] = []
 
     // check if blood bags are requested more than expectedDonations
     let requestedBloodBags: number = 0
@@ -194,8 +194,7 @@ export class DonationEventsService {
         const bloodBagCount = inventory.bloodBagCount;
 
         for (const [key, quantity] of Object.entries(value as Record<string, number>)) {
-          console.log(inventory.bloodBagCount)
-          if (!bloodBagCount[key][BloodBagStatus.USABLE] || bloodBagCount[key][BloodBagStatus.USABLE] < quantity) throw new BadRequestException('Not enough blood bags of type ' + key);
+          if (!(key in bloodBagCount) || !bloodBagCount[key][BloodBagStatus.USABLE] || bloodBagCount[key][BloodBagStatus.USABLE] < quantity) throw new BadRequestException('Not enough blood bags of type ' + key);
         }
       } else {
         if (typeof value === 'number' && inventory.quantity < value) throw new BadRequestException('Not enough ' + key);
@@ -228,7 +227,7 @@ export class DonationEventsService {
             const newBloodBag = await this.bloodBagService.create({ bagType: bagType.id, }, currentUser, false, existingEvent)
             const { bagNo } = newBloodBag.bloodBag
 
-            createdBloodBagNo.push(bagNo)
+            createdBloodBagNo.push(`${bagNo}-${bagType.name}`)
           }
         }
       } else {
@@ -244,10 +243,39 @@ export class DonationEventsService {
       }
     }
 
-    existingEvent.inventoryItems = inventoryItems;
-    existingEvent.assignedBloodBags = createdBloodBagNo;
+    existingEvent.assignedBloodBags = existingEvent?.assignedBloodBags?.length ? [...existingEvent.assignedBloodBags, ...createdBloodBagNo] : createdBloodBagNo;
 
-    console.log(createdBloodBagNo)
+    // <--------------- UPDATE INVENTORY ITEMS, ALSO ADD MORE ITEMS - STARTS ----------------->
+    let newInventoryItems = this.jsonParse(existingEvent.inventoryItems) ?? {}
+
+    for (const [key, value] of Object.entries(inventoryItemsArray)) {
+      if (!key || !value) continue;
+
+      if (key === CONSTANTS.BLOOD_BAG_KEY) { // handle blood bag items
+        for (const [key, quantity] of Object.entries(value as Record<string, number>)) {
+          if (newInventoryItems[CONSTANTS.BLOOD_BAG_KEY] && key in (newInventoryItems[CONSTANTS.BLOOD_BAG_KEY] as Record<string, number>)) {
+            newInventoryItems[CONSTANTS.BLOOD_BAG_KEY] = +newInventoryItems[CONSTANTS.BLOOD_BAG_KEY][key] + +quantity
+          } else {
+            newInventoryItems = {
+              ...newInventoryItems,
+              [CONSTANTS.BLOOD_BAG_KEY]: {
+                ...(newInventoryItems[CONSTANTS.BLOOD_BAG_KEY] as Record<string, number>),
+                [key]: quantity
+              }
+            }
+          }
+        }
+      } else { // handle non blood bag items
+        if (key in newInventoryItems) {
+          newInventoryItems[key] = +newInventoryItems[key] + +value
+        } else {
+          newInventoryItems[key] = value
+        }
+      }
+    }
+
+    existingEvent.inventoryItems = JSON.stringify(newInventoryItems)
+    // <--------------- UPDATE INVENTORY ITEMS, ALSO ADD MORE ITEMS - ENDS ----------------->
 
     await this.donationEventsRepo.save(existingEvent);
 

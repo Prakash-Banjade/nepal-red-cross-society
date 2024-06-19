@@ -5,19 +5,17 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Donation } from './entities/donation.entity';
 import { Brackets, ILike, In, IsNull, Not, Or, Repository } from 'typeorm';
 import { DonorsService } from 'src/donors/donors.service';
-import { OrganizationsService } from 'src/organizations/organizations.service';
 import { DonationEventsService } from 'src/donation_events/donation_events.service';
 import { Deleted } from 'src/core/dto/queryDto';
 import paginatedData from 'src/core/utils/paginatedData';
 import { Donor } from 'src/donors/entities/donor.entity';
 import { DonationQueryDto } from './dto/donation-query.dto';
 import { BloodInventoryService } from 'src/inventory/blood-inventory.service';
-import { BloodComponent, BloodInventoryStatus, BloodItems, DonationType, InventoryTransaction } from 'src/core/types/fieldsEnum.types';
+import { BloodComponent, BloodInventoryStatus, DonationType, InventoryTransaction } from 'src/core/types/fieldsEnum.types';
 import { CONSTANTS } from 'src/CONSTANTS';
 import { BloodBagsService } from 'src/blood-bags/blood-bags.service';
 import { RequestUser } from 'src/core/types/global.types';
 import { BloodBag } from 'src/blood-bags/entities/blood-bag.entity';
-import { BagTypesService } from 'src/bag-types/bag-types.service';
 
 @Injectable()
 export class DonationsService {
@@ -26,7 +24,6 @@ export class DonationsService {
     @InjectRepository(Donation) private donationRepo: Repository<Donation>,
     private readonly donationEventsService: DonationEventsService,
     private readonly donorsService: DonorsService,
-    private readonly organizationsService: OrganizationsService,
     private readonly bloodInventoryService: BloodInventoryService,
     private readonly bloodBagService: BloodBagsService,
   ) { }
@@ -47,8 +44,8 @@ export class DonationsService {
     if (donationType === DonationType.ORGANIZATION && bloodBag?.donation) throw new BadRequestException('Duplicate entry for blood bag number');
     if (donationType === DonationType.ORGANIZATION && bloodBag?.donationEvent.id !== dependentColumns?.donation_event.id) throw new BadRequestException('This blood bag was assigned to a different event');
 
-    // change bag type according to provided data
-    await this.bloodBagService.updateBagType(bloodBag, createDonationDto.bagType);
+    // // change bag type according to provided data
+    // await this.bloodBagService.updateBagType(bloodBag, createDonationDto.bagType);
 
     // create donation
     const donation = this.donationRepo.create({
@@ -69,7 +66,7 @@ export class DonationsService {
     await this.bloodInventoryService.create({
       bloodBagId: bloodBag.id,
       bagTypeId: bloodBag.bagType?.id,
-      expiry: CONSTANTS.BLOOD_EXPIRY_INTERVAL,
+      expiry: CONSTANTS.BLOOD_EXPIRY_INTERVAL_IN_DAYS,
       component: BloodComponent.WHOLE_BLOOD,
       bloodType: dependentColumns.donor?.bloodType,
       rhFactor: dependentColumns.donor?.rhFactor,
