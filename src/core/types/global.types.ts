@@ -1,3 +1,5 @@
+import { BloodType, RhFactor } from "./fieldsEnum.types";
+
 export enum Roles {
     ADMIN = 'admin',
     MODERATOR = 'moderator',
@@ -27,4 +29,12 @@ export enum Action {
     UPDATE = 'update',
     DELETE = 'delete',
     RESTORE = 'restore',
+}
+
+export interface BloodInventoryCount {
+    bloodType: BloodType;
+    rhFactor: RhFactor;
+    count: {
+        [key: string]: number
+    }
 }
