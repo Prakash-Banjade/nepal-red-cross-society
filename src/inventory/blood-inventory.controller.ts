@@ -5,10 +5,11 @@ import { ChekcAbilities } from 'src/core/decorators/abilities.decorator';
 import { Action, RequestUser } from 'src/core/types/global.types';
 import { FileSystemStoredFile, FormDataRequest } from 'nestjs-form-data';
 import { BloodInventoryService } from './blood-inventory.service';
-import { AvailableInventoryDto, CreateBloodInventoryDto } from './dto/create-blood_inventory.dto';
+import { AvailableInventoryDto, BloodInventoryIssueDto, CreateBloodInventoryDto } from './dto/create-blood_inventory.dto';
 import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.decorator';
 import { CurrentUser } from 'src/core/decorators/user.decorator';
 import { BloodInventoryQueryDto } from './dto/blood-inventory-query.dto';
+import { BloodInventoryStatus } from 'src/core/types/fieldsEnum.types';
 
 @ApiTags('Blood Inventory')
 @Controller('bloodInventory')
@@ -36,11 +37,23 @@ export class BloodInventoryController {
         return this.bloodInventoryService.getAvailableBloodInventory(availableInventoryDto, currentUser);
     }
 
+    @Get('count')
+    @ChekcAbilities({ action: Action.READ, subject: 'all' })
+    count(@Query('status') status: BloodInventoryStatus, @CurrentUser() currentUser: RequestUser) {
+        return this.bloodInventoryService.count(status, currentUser);
+    }
+
     @Get(':id')
     @ApiPaginatedResponse(CreateBloodInventoryDto)
     @ChekcAbilities({ action: Action.READ, subject: 'all' })
     findOne(@Param('id') id: string, @CurrentUser() currentUser: RequestUser) {
         return this.bloodInventoryService.findOne(id, currentUser);
+    }
+
+    @Post('issue')
+    @ChekcAbilities({ action: Action.CREATE, subject: 'all' })
+    issue(@Body() bloodInventoryIssueDto: BloodInventoryIssueDto, @CurrentUser() currentUser: RequestUser) {
+        return this.bloodInventoryService.createIssueStatements(bloodInventoryIssueDto, currentUser);
     }
 
     // @Patch(':id')

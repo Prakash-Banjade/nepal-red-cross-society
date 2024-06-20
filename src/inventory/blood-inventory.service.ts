@@ -12,9 +12,10 @@ import { BloodInventoryQueryDto } from './dto/blood-inventory-query.dto';
 import { BloodInventoryStatus, BloodType, InventoryTransaction, RhFactor } from 'src/core/types/fieldsEnum.types';
 import { Branch } from 'src/branch/entities/branch.entity';
 import { BloodRequest } from 'src/blood_request/entities/blood_request.entity';
-import { CONSTANTS } from 'src/CONSTANTS';
+import { CONSTANTS, initialBloodInventoryCount } from 'src/CONSTANTS';
 import { CreateBloodRequestDto } from 'src/blood_request/dto/create-blood_request.dto';
 import { RequestedBloodBag } from 'src/blood_request/entities/requestedBloodBag.entity';
+import { BagTypesService } from 'src/bag-types/bag-types.service';
 
 @Injectable()
 export class BloodInventoryService {
@@ -23,6 +24,7 @@ export class BloodInventoryService {
         @Inject(forwardRef(() => BloodBagsService)) private readonly bloodBagService: BloodBagsService,
         @InjectRepository(RequestedBloodBag) private readonly requestedBloodBagRepo: Repository<RequestedBloodBag>,
         private readonly branchService: BranchService,
+        private readonly bagTypeService: BagTypesService,
     ) { }
 
     // this one is for automated ones
@@ -62,9 +64,16 @@ export class BloodInventoryService {
         for (const inventoryId of inventoryIds) {
             const inventory = await this.findOne(inventoryId, currentUser);
 
+            delete inventory.id;
+            delete inventory.createdAt
+            delete inventory.updatedAt
+
+            console.log(inventory.bloodBag)
+
             const issueStatement = this.bloodInventoryRepo.create({
                 ...inventory,
                 transactionType: InventoryTransaction.ISSUED,
+                bloodBag: inventory.bloodBag,
                 date,
                 source,
                 destination,
@@ -81,6 +90,7 @@ export class BloodInventoryService {
 
     async getAvailableBloodInventory(availableInventoryDto: AvailableInventoryDto, currentUser: RequestUser) {
         const { component, bloodType, rhFactor } = availableInventoryDto;
+        if (!component || !bloodType || !rhFactor) return []
 
         // First, fetch the issued statements with the blood bag numbers
         // First, fetch the issued blood bag numbers
@@ -102,6 +112,7 @@ export class BloodInventoryService {
         // Now, fetch the received statements, handling the case when the array is empty
         let receivedStatementsQuery = this.bloodInventoryRepo.createQueryBuilder("bloodInventory")
             .leftJoinAndSelect("bloodInventory.bloodBag", "bloodBag")
+            .leftJoinAndSelect("bloodBag.bagType", "bagType")
             .leftJoinAndSelect("bloodInventory.branch", "branch")
             .where("branch.id = :branchId", { branchId: currentUser.branchId })
             .andWhere(new Brackets(qb => {
@@ -155,7 +166,7 @@ export class BloodInventoryService {
 
     async findOne(id: string, currentUser: RequestUser) {
         const existingInventory = await this.bloodInventoryRepo.findOne({
-            relations: { branch: true },
+            relations: { branch: true, bloodBag: true },
             where: { id, branch: { id: currentUser.branchId } },
         })
         if (!existingInventory) throw new NotFoundException('BloodInventory not found');
@@ -172,6 +183,46 @@ export class BloodInventoryService {
         if (!existingInventory) throw new NotFoundException('BloodInventory not found');
 
         await this.bloodInventoryRepo.remove(existingInventory);
+    }
+
+    async count(status: BloodInventoryStatus = BloodInventoryStatus.USABLE, currentUser: RequestUser) {
+        let bloodCounts = initialBloodInventoryCount;
+        const queryBuilder = this.bloodInventoryRepo.createQueryBuilder('bloodInventory');
+
+        const componentNames = await this.bagTypeService.getBloodComponents();
+        const componentCount = Object.fromEntries(componentNames.map(componentName => [componentName, 0]));
+
+        for (const bloodCount of bloodCounts) {
+            const { bloodType, rhFactor } = bloodCount;
+
+            bloodCount.count = componentCount;
+
+            for (const componentName of componentNames) {
+                const availableCount = await queryBuilder
+                    .select(`
+              SUM(CASE WHEN bloodInventory.transactionType = :received THEN bloodInventory.quantity ELSE 0 END) -
+              SUM(CASE WHEN bloodInventory.transactionType = :issued THEN bloodInventory.quantity ELSE 0 END) as available
+            `)
+                    .where({ branch: { id: currentUser.branchId } })
+                    .andWhere(new Brackets(qb => {
+                        qb.andWhere({ status: status ?? BloodInventoryStatus.USABLE });
+                        qb.andWhere({ bloodType });
+                        qb.andWhere({ component: componentName });
+                        qb.andWhere({ rhFactor });
+                    }))
+                    .setParameters({
+                        received: InventoryTransaction.RECEIVED,
+                        issued: InventoryTransaction.ISSUED
+                    })
+                    .getRawOne();
+
+                const available = availableCount.available as number;
+
+                bloodCount[componentName] = available;
+            }
+        }
+
+        return bloodCounts
     }
 
     async checkIfBloodAvailableForRequest(createBloodRequestDto: CreateBloodRequestDto, currentUser: RequestUser) {
