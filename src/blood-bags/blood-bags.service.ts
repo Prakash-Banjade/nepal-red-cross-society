@@ -30,9 +30,11 @@ export class BloodBagsService {
     // bagtype
     const bagType = await this.bagTypeService.findOne(createBloodBagDto.bagType);
 
-    // check if there is sufficient blood bag in inventory
     const inventory = await this.inventoryService.getInventoryByName(CONSTANTS.BLOOD_BAG, currentUser);
-    if (typeof inventory.bloodBagCount[bagType.name] === "undefined" || inventory.bloodBagCount[bagType.name][BloodBagStatus.USABLE] <= 0) throw new BadRequestException('Not enough blood bags of type ' + bagType.name);
+    const bloodBagCount = await this.inventoryItemService.getBloodBagsCount(currentUser);
+
+    // check if there is sufficient blood bag in inventory
+    if (bagType.name in bloodBagCount && bloodBagCount[bagType.name] <= 0) throw new BadRequestException('Not enough blood bags of type ' + bagType.name);
 
     // create new blood bag
     let lastBloodBagNo: number;
@@ -68,59 +70,6 @@ export class BloodBagsService {
       inventoryId: inventory.id,
       bagType: bloodBag.bagType?.id,
     }, currentUser);
-  }
-
-  // async createNewBloog() {
-  //   const lastBloodBag = await this.bloodBagsRepository.findOne({ order: { bagNo: 'DESC' } });
-
-  //   let lastBloodBagNo = lastBloodBag ? lastBloodBag.bagNo : 1;
-  //   const newBloodBag = this.bloodBagsRepository.create({ bagNo: lastBloodBagNo + 1 });
-
-  //   return await this.bloodBagsRepository.save(newBloodBag);
-  // }
-
-  async createBloodBagsInBulk(expectedDonations: Record<string, number>[], donationEvent: DonationEvent, currentUser: RequestUser) {
-    if (expectedDonations.length <= 0) throw new BadRequestException('Quantity must be greater than 0');
-
-    const inventoryId = await this.checkSufficientBloodBags(expectedDonations, currentUser); // check if there is enough blood bags
-
-    const lastBloodBag = await this.bloodBagsRepository.findOne({ where: { bagNo: Not(IsNull()) }, order: { bagNo: 'DESC' } });
-
-    const totalBloodBagsNeeded = expectedDonations.reduce((acc, curr) => acc + curr[1], 0); // adding the quantity of each blood bag, second value
-
-    let lastBloodBagNo = lastBloodBag ? lastBloodBag.bagNo : 0;
-    for (let i = 0; i < totalBloodBagsNeeded; i++) {
-      const bagNo = lastBloodBagNo + i;
-
-      const newBloodBag = this.bloodBagsRepository.create({ bagNo, donationEvent }); // creating blood bags with no type assigned now, bagType will be assigned on donation
-      await this.bloodBagsRepository.save(newBloodBag);
-    }
-
-    // TODO: remove blood bags from inventory instantly or after donation added?
-
-    // create blood bags issue statement in inventory
-    await this.inventoryItemService.create({
-      date: new Date().toISOString(),
-      status: BloodBagStatus.USABLE,
-      transactionType: InventoryTransaction.ISSUED,
-      destination: donationEvent.name,
-      quantity: expectedDonations?.reduce((acc, curr) => acc + curr[1], 0),
-      price: 0,
-      source: CONSTANTS.SELF,
-      inventoryId,
-    }, currentUser)
-  }
-
-  async checkSufficientBloodBags(expectedDonations: Record<string, number>[], currentUser: RequestUser) {
-    const inventory = await this.inventoryService.getInventoryByName(CONSTANTS.BLOOD_BAG, currentUser)
-
-    const bloodBagCount = inventory.bloodBagCount;
-
-    for (const [key, value] of Object.entries(expectedDonations)) {
-      if (!bloodBagCount[key] || !bloodBagCount[key][BloodBagStatus.USABLE] || bloodBagCount[key][BloodBagStatus.USABLE] < value) throw new BadRequestException('Not enough blood bags of type ' + key);
-    }
-
-    return inventory.id
   }
 
   async updateBagType(bloodBag: BloodBag, bagTypeId: string) {

@@ -126,14 +126,17 @@ export class BloodInventoryIssueDto {
 export class AvailableInventoryDto extends QueryDto {
     @ApiProperty({ type: 'enum', enum: BloodType })
     @IsEnum(BloodType)
+    @IsOptional()
     bloodType: BloodType
 
     @ApiProperty({ type: 'enum', enum: RhFactor })
     @IsEnum(RhFactor)
+    @IsOptional()
     rhFactor: RhFactor;
 
     @ApiProperty({ type: 'string' })
     @IsString()
     @IsNotEmpty()
+    @IsOptional()
     component!: string;
 }

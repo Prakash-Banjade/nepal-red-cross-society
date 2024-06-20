@@ -37,11 +37,6 @@ export class InventoryItem extends BaseEntity {
     @BeforeUpdate()
     validateTransaction() {
         if (this.transactionType === InventoryTransaction.ISSUED) {
-            if (this.bagType && this.status) {
-                console.log(this.bagType, this.status, this.inventory.bloodBagCount[this.bagType][this.status]);
-                if (!this.inventory.bloodBagCount[this.bagType][this.status] || this.inventory.bloodBagCount[this.bagType][this.status] < this.quantity) throw new BadRequestException('Insufficient quantity of type ' + this.bagType + ' with status ' + this.status);
-            }
-
             if (this.inventory.quantity < this.quantity) throw new BadRequestException(`Insufficient ${this.inventory.name} quantity`);
             this.source = 'SELF';
         }

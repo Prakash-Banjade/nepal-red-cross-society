@@ -12,6 +12,7 @@ import { InventoryItemService } from './inventory-item.service';
 import { InventoryItem } from './entities/inventory-item.entity';
 import { BloodBagsModule } from 'src/blood-bags/blood-bags.module';
 import { RequestedBloodBag } from 'src/blood_request/entities/requestedBloodBag.entity';
+import { BagTypesModule } from 'src/bag-types/bag-types.module';
 
 @Module({
   imports: [
@@ -21,8 +22,9 @@ import { RequestedBloodBag } from 'src/blood_request/entities/requestedBloodBag.
       InventoryItem,
       RequestedBloodBag
     ]),
-    BranchModule,
     forwardRef(() => BloodBagsModule),
+    BranchModule,
+    BagTypesModule,
   ],
   controllers: [InventoryController, BloodInventoryController, InventoryItemController],
   providers: [InventoryService, BloodInventoryService, InventoryItemService],

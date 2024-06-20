@@ -65,9 +65,6 @@ export class DonationEventsService {
     const savedEvent = await this.donationEventsRepo.save(donationEvent);
 
     return savedEvent;
-
-    // creating bloodBags
-    // await this.bloodBagService.createBloodBagsInBulk(expectedDonation, savedEvent, currentUser);
   }
 
   jsonParse(stringifiedJson: string): Record<string, number | Record<string, number>> {
@@ -187,16 +184,18 @@ export class DonationEventsService {
     for (const [_, value] of Object.entries(inventoryItemsArray[CONSTANTS.BLOOD_BAG_KEY] as Record<string, number>)) requestedBloodBags += value
     if (existingEvent.expectedDonations < requestedBloodBags) throw new BadRequestException("You can't request more blood bags than expected donations");
 
+    // extracting blood bags count
+    const bloodBagCount = await this.inventoryItemService.getBloodBagsCount(currentUser)
+
     // checking if inventory items are sufficient
     for (const [key, value] of Object.entries(inventoryItemsArray)) {
-      const inventory = await this.inventoryService.getInventoryByName(key === CONSTANTS.BLOOD_BAG_KEY ? CONSTANTS.BLOOD_BAG : key, currentUser)
       if (key === CONSTANTS.BLOOD_BAG_KEY) { // checking quantity of blood bags
-        const bloodBagCount = inventory.bloodBagCount;
-
         for (const [key, quantity] of Object.entries(value as Record<string, number>)) {
-          if (!(key in bloodBagCount) || !bloodBagCount[key][BloodBagStatus.USABLE] || bloodBagCount[key][BloodBagStatus.USABLE] < quantity) throw new BadRequestException('Not enough blood bags of type ' + key);
+          // if (!(key in bloodBagCount) || !bloodBagCount[key][BloodBagStatus.USABLE] || bloodBagCount[key][BloodBagStatus.USABLE] < quantity) throw new BadRequestException('Not enough blood bags of type ' + key);
+          if (key in bloodBagCount && bloodBagCount[key] < quantity) throw new BadRequestException('Not enough blood bags of type ' + key);
         }
       } else {
+        const inventory = await this.inventoryService.getInventoryByName(key, currentUser)
         if (typeof value === 'number' && inventory.quantity < value) throw new BadRequestException('Not enough ' + key);
       }
     }
@@ -245,7 +244,7 @@ export class DonationEventsService {
 
     existingEvent.assignedBloodBags = existingEvent?.assignedBloodBags?.length ? [...existingEvent.assignedBloodBags, ...createdBloodBagNo] : createdBloodBagNo;
 
-    // <--------------- UPDATE INVENTORY ITEMS, ALSO ADD MORE ITEMS - STARTS ----------------->
+    // <--------------- UPDATE INVENTORY ITEMS FOR DONATION EVENT, ALSO ADD MORE ITEMS - STARTS ----------------->
     let newInventoryItems = this.jsonParse(existingEvent.inventoryItems) ?? {}
 
     for (const [key, value] of Object.entries(inventoryItemsArray)) {
@@ -253,8 +252,9 @@ export class DonationEventsService {
 
       if (key === CONSTANTS.BLOOD_BAG_KEY) { // handle blood bag items
         for (const [key, quantity] of Object.entries(value as Record<string, number>)) {
-          if (newInventoryItems[CONSTANTS.BLOOD_BAG_KEY] && key in (newInventoryItems[CONSTANTS.BLOOD_BAG_KEY] as Record<string, number>)) {
-            newInventoryItems[CONSTANTS.BLOOD_BAG_KEY] = +newInventoryItems[CONSTANTS.BLOOD_BAG_KEY][key] + +quantity
+          // console.log('hi there', Date.now(), newInventoryItems[CONSTANTS.BLOOD_BAG_KEY])
+          if (CONSTANTS.BLOOD_BAG_KEY in newInventoryItems && key in (newInventoryItems[CONSTANTS.BLOOD_BAG_KEY] as Record<string, number>)) {
+            newInventoryItems[CONSTANTS.BLOOD_BAG_KEY][key] += +quantity
           } else {
             newInventoryItems = {
               ...newInventoryItems,
