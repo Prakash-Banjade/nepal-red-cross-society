@@ -190,12 +190,9 @@ export class BloodInventoryService {
         const queryBuilder = this.bloodInventoryRepo.createQueryBuilder('bloodInventory');
 
         const componentNames = await this.bagTypeService.getBloodComponents();
-        const componentCount = Object.fromEntries(componentNames.map(componentName => [componentName, 0]));
 
         for (const bloodCount of bloodCounts) {
             const { bloodType, rhFactor } = bloodCount;
-
-            bloodCount.count = componentCount;
 
             for (const componentName of componentNames) {
                 const availableCount = await queryBuilder
@@ -218,7 +215,7 @@ export class BloodInventoryService {
 
                 const available = availableCount.available as number;
 
-                bloodCount[componentName] = available;
+                bloodCount.count[componentName] = available;
             }
         }
 
