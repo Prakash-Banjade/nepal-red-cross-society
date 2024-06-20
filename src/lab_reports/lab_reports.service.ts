@@ -92,7 +92,7 @@ export class LabReportsService {
           destination: CONSTANTS.SELF,
           price: 0,
           status: isSucceed ? BloodInventoryStatus.USABLE : BloodInventoryStatus.WASTE,
-          expiry: new Date(Date.now() + component.expiryInDays).toISOString(),
+          expiry: new Date(Date.now() + component.expiryInDays * 24 * 60 * 60 * 1000).toISOString(),
           transactionType: InventoryTransaction.RECEIVED,
           component: component.componentName,
         })
