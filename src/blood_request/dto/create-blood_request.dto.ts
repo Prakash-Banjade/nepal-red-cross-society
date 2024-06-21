@@ -1,7 +1,7 @@
 import { BadRequestException } from "@nestjs/common";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Transform, Type } from "class-transformer";
-import { IsBoolean, IsDefined, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, Matches } from "class-validator";
+import { IsBoolean, IsDefined, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, Matches, ValidateNested } from "class-validator";
 import { FileSystemStoredFile, HasMimeType, IsFile } from "nestjs-form-data";
 import { BloodItems, BloodType, Gender, RhFactor } from "src/core/types/fieldsEnum.types";
 
@@ -19,30 +19,10 @@ class Charge {
     @IsNotEmpty()
     serviceCharge!: string
 
-    constructor({ quantity, serviceCharge }: { quantity: number, serviceCharge: string }) {
-        this.quantity = quantity;
-        this.serviceCharge = serviceCharge;
-    }
-}
-
-class RequestedComponent {
-    @ApiProperty({ type: 'string' })
-    @IsString()
-    @IsNotEmpty()
-    componentName: string
-
-    @ApiProperty({ type: 'number' })
-    @Transform(({ value }) => {
-        if (isNaN(parseInt(value))) throw new BadRequestException('Quantity must be a number');
-        return parseInt(value);
-    })
-    @IsNotEmpty()
-    quantity: number
-
-    constructor({ componentName, quantity }: { componentName: string, quantity: number }) {
-        this.componentName = componentName;
-        this.quantity = quantity;
-    }
+    // constructor({ quantity, serviceCharge }: { quantity: number, serviceCharge: string }) {
+    //     this.quantity = quantity;
+    //     this.serviceCharge = serviceCharge;
+    // }
 }
 
 export class CreateBloodRequestDto {
@@ -75,56 +55,47 @@ export class CreateBloodRequestDto {
     inpatientNo: string;
 
     @ApiProperty({ type: 'number' })
-    @Transform(({ value }) => {
-        if (isNaN(parseInt(value))) throw new BadRequestException('Ward must be a number');
-        return parseInt(value);
-    })
+    // @Transform(({ value }) => {
+    //     if (isNaN(parseInt(value))) throw new BadRequestException('Ward must be a number');
+    //     return parseInt(value);
+    // })
+    @IsInt()
     @IsNotEmpty()
     @IsNotEmpty()
     ward: number;
 
     @ApiPropertyOptional({ type: 'number' })
-    @Transform(({ value }) => {
-        if (isNaN(parseInt(value))) throw new BadRequestException('Bed number must be a number');
-        return parseInt(value);
-    })
-    @IsNotEmpty()
-    @IsNotEmpty()
+    // @Transform(({ value }) => {
+    //     if (isNaN(parseInt(value))) throw new BadRequestException('Bed number must be a number');
+    //     return parseInt(value);
+    // })
+    @IsInt()
     @IsOptional()
     bedNo?: number;
 
     @ApiProperty({ type: 'string' })
     @IsString()
-    @IsNotEmpty()
     @IsOptional()
     attendingConsultant?: string;
 
     @ApiProperty({ isArray: true, description: 'Array of service charges' })
-    @IsDefined()
-    @Transform(({ value }) => {
-        try {
-            const array = JSON.parse(value)
-            return array.map((charge: { quantity: number, serviceCharge: string }) => new Charge(charge))
+    // @Transform(({ value }) => {
+    //     try {
+    //         const array = JSON.parse(value)
+    //         return array.map((charge: { quantity: number, serviceCharge: string }) => new Charge(charge))
 
-        } catch (e) {
-            throw new BadRequestException('Invalid service charge');
-        }
-    })
+    //     } catch (e) {
+    //         throw new BadRequestException('Invalid service charge');
+    //     }
+    // })
+    @ValidateNested({ each: true })
     @Type(() => Charge)
     charges: Charge[]
 
-    @ApiProperty({ isArray: true, description: 'Array of requested bloods' })
-    @IsDefined()
-    @Transform(({ value }) => {
-        try {
-            const array = JSON.parse(value)
-            return array.map((component: { componentName: string, quantity: number }) => new RequestedComponent(component))
-        } catch (e) {
-            throw new BadRequestException('Invalid blood component type');
-        }
-    })
-    @Type(() => RequestedComponent)
-    requestedComponents: RequestedComponent[]
+    @ApiProperty({ type: String, format: 'uuid', isArray: true })
+    @IsUUID('4', { each: true })
+    @IsNotEmpty()
+    inventoryIds: string[]
 
     @ApiProperty({ type: 'enum', enum: BloodType, description: 'Blood type' })
     @IsEnum(BloodType, { message: 'Invalid blood type. Blood type must be either ' + Object.values(BloodType).join(', ') })

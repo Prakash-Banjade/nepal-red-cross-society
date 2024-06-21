@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, UseInterceptors } from '@nestjs/common';
 import { ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { ChekcAbilities } from 'src/core/decorators/abilities.decorator';
@@ -10,6 +10,7 @@ import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.d
 import { CurrentUser } from 'src/core/decorators/user.decorator';
 import { BloodInventoryQueryDto } from './dto/blood-inventory-query.dto';
 import { BloodInventoryStatus } from 'src/core/types/fieldsEnum.types';
+import { TransactionInterceptor } from 'src/core/interceptors/transaction.interceptor';
 
 @ApiTags('Blood Inventory')
 @Controller('bloodInventory')
@@ -21,6 +22,7 @@ export class BloodInventoryController {
     @Throttle({ default: { limit: 5, ttl: 60000 } })
     @ChekcAbilities({ action: Action.CREATE, subject: 'all' })
     @FormDataRequest({ storage: FileSystemStoredFile })
+    @UseInterceptors(TransactionInterceptor)
     create(@Body() createBloodInventoryDto: CreateBloodInventoryDto, @CurrentUser() currentUser: RequestUser) {
         return this.bloodInventoryService.create(createBloodInventoryDto, currentUser);
     }
@@ -52,6 +54,7 @@ export class BloodInventoryController {
 
     @Post('issue')
     @ChekcAbilities({ action: Action.CREATE, subject: 'all' })
+    @UseInterceptors(TransactionInterceptor)
     issue(@Body() bloodInventoryIssueDto: BloodInventoryIssueDto, @CurrentUser() currentUser: RequestUser) {
         return this.bloodInventoryService.createIssueStatements(bloodInventoryIssueDto, currentUser);
     }

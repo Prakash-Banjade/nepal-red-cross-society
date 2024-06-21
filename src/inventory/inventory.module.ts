@@ -13,6 +13,7 @@ import { InventoryItem } from './entities/inventory-item.entity';
 import { BloodBagsModule } from 'src/blood-bags/blood-bags.module';
 import { RequestedBloodBag } from 'src/blood_request/entities/requestedBloodBag.entity';
 import { BagTypesModule } from 'src/bag-types/bag-types.module';
+import { BloodInventoryRepository } from './repository/blood-inventory.repository';
 
 @Module({
   imports: [
@@ -27,7 +28,7 @@ import { BagTypesModule } from 'src/bag-types/bag-types.module';
     BagTypesModule,
   ],
   controllers: [InventoryController, BloodInventoryController, InventoryItemController],
-  providers: [InventoryService, BloodInventoryService, InventoryItemService],
+  providers: [InventoryService, BloodInventoryService, InventoryItemService, BloodInventoryRepository],
   exports: [InventoryService, InventoryItemService, BloodInventoryService]
 })
 export class InventoryModule { }

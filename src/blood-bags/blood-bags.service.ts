@@ -1,4 +1,4 @@
-import { BadRequestException, forwardRef, Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common';
 import { CreateBloodBagDto } from './dto/create-blood-bag.dto';
 import { UpdateBloodBagDto } from './dto/update-blood-bag.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -11,7 +11,6 @@ import { RequestUser } from 'src/core/types/global.types';
 import { InventoryItemService } from 'src/inventory/inventory-item.service';
 import { BloodBagStatus, InventoryTransaction } from 'src/core/types/fieldsEnum.types';
 import { BagTypesService } from 'src/bag-types/bag-types.service';
-import { BagType } from 'src/bag-types/entities/bag-type.entity';
 
 @Injectable()
 export class BloodBagsService {
@@ -21,6 +20,7 @@ export class BloodBagsService {
     @Inject(forwardRef(() => InventoryService)) private readonly inventoryService: InventoryService,
     private readonly inventoryItemService: InventoryItemService,
     private readonly bagTypeService: BagTypesService,
+    private readonly branchService: BagTypesService,
 
   ) { }
   async create(createBloodBagDto: CreateBloodBagDto, currentUser: RequestUser, createIssueStatement: boolean = true, donationEvent?: DonationEvent) {
@@ -59,14 +59,16 @@ export class BloodBagsService {
   }
 
   async createIssueStatement(bloodBag: BloodBag, inventory: any, currentUser: RequestUser) {
+    const branch = await this.branchService.findOne(currentUser.branchId);
+
     await this.inventoryItemService.create({
       date: new Date().toISOString(),
       status: BloodBagStatus.USABLE,
       transactionType: InventoryTransaction.ISSUED,
-      destination: CONSTANTS.SELF,
+      destination: `${branch.name} Blood Bank`,
       quantity: 1,
       price: 0,
-      source: CONSTANTS.SELF,
+      source: `${branch.name} Blood Bank`,
       inventoryId: inventory.id,
       bagType: bloodBag.bagType?.id,
     }, currentUser);

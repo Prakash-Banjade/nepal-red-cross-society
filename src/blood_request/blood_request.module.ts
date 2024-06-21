@@ -7,6 +7,10 @@ import { InventoryModule } from 'src/inventory/inventory.module';
 import { ServiceChargeModule } from 'src/service-charge/service-charge.module';
 import { BloodRequestCharge } from './entities/blood-request-charge.entity';
 import { RequestedBloodBag } from './entities/requestedBloodBag.entity';
+import { HospitalsModule } from 'src/hospitals/hospitals.module';
+import { BloodRequestsRepository } from './repository/blood_request.repository';
+import { BloodRequestsChargeRepository } from './repository/blood_request_charge.repository';
+import { RequestedBloodBagRepository } from './repository/requestedBloodBag.repository';
 
 @Module({
   imports: [
@@ -17,8 +21,9 @@ import { RequestedBloodBag } from './entities/requestedBloodBag.entity';
     ]),
     InventoryModule,
     ServiceChargeModule,
+    HospitalsModule,
   ],
   controllers: [BloodRequestController],
-  providers: [BloodRequestService],
+  providers: [BloodRequestService, BloodRequestsChargeRepository, BloodRequestsRepository, RequestedBloodBagRepository],
 })
 export class BloodRequestModule { }

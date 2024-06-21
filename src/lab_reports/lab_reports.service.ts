@@ -9,14 +9,12 @@ import { TestCase } from 'src/test_cases/entities/test_case.entity';
 import { TestResult } from 'src/test_cases/entities/test_result.entity';
 import { Deleted, QueryDto } from 'src/core/dto/queryDto';
 import paginatedData from 'src/core/utils/paginatedData';
-import { BloodInventoryStatus, BloodItems, DonationStatus, InventoryTransaction, TestCaseStatus } from 'src/core/types/fieldsEnum.types';
-import { InventoryItem } from 'src/inventory/entities/inventory-item.entity';
+import { BloodInventoryStatus, DonationStatus, InventoryTransaction, TestCaseStatus } from 'src/core/types/fieldsEnum.types';
 import { DonorsService } from 'src/donors/donors.service';
 import { UpdateDonorDto } from 'src/donors/dto/update-donor.dto';
 import { BloodInventory } from 'src/inventory/entities/blood_inventory.entity';
 import { RequestUser } from 'src/core/types/global.types';
 import { BranchService } from 'src/branch/branch.service';
-import { CONSTANTS } from 'src/CONSTANTS';
 import { BloodComponent } from 'src/bag-types/entities/blood-component.entity';
 
 @Injectable()
@@ -89,7 +87,7 @@ export class LabReportsService {
           branch,
           date: labReportDto.date,
           source: `Event: ${donation.donation_event?.name}`,
-          destination: CONSTANTS.SELF,
+          destination: `${branch.name} Blood Bank`,
           price: 0,
           status: isSucceed ? BloodInventoryStatus.USABLE : BloodInventoryStatus.WASTE,
           expiry: new Date(Date.now() + component.expiryInDays * 24 * 60 * 60 * 1000).toISOString(),

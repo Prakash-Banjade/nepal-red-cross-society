@@ -20,6 +20,7 @@ import { InventoryService } from 'src/inventory/inventory.service';
 import { InventoryItemService } from 'src/inventory/inventory-item.service';
 import { BloodBagStatus, InventoryTransaction } from 'src/core/types/fieldsEnum.types';
 import { BagTypesService } from 'src/bag-types/bag-types.service';
+import { BranchService } from 'src/branch/branch.service';
 
 @Injectable()
 export class DonationEventsService {
@@ -32,7 +33,8 @@ export class DonationEventsService {
     private readonly bloodBagService: BloodBagsService,
     private readonly inventoryService: InventoryService,
     private readonly inventoryItemService: InventoryItemService,
-    private readonly bagTypeService: BagTypesService
+    private readonly bagTypeService: BagTypesService,
+    private readonly branchService: BranchService,
   ) { }
 
   async create(createDonationEventDto: CreateDonationEventDto, currentUser: RequestUser) {
@@ -175,6 +177,8 @@ export class DonationEventsService {
         }
       }
     */
+   const branch = await this.branchService.findOne(currentUser.branchId);
+   
     const inventoryItemsArray = this.jsonParse(inventoryItems)
     const existingEvent = await this.findOne(id);
     let createdBloodBagNo: string[] = []
@@ -215,7 +219,7 @@ export class DonationEventsService {
             inventoryId: inventory.id,
             price: 0,
             quantity,
-            source: CONSTANTS.SELF,
+            source: `${branch.name} Blood Bank`,
             status: BloodBagStatus.USABLE,
             transactionType: InventoryTransaction.ISSUED,
             bagType: bagType.id,
@@ -236,7 +240,7 @@ export class DonationEventsService {
           inventoryId: inventory.id,
           price: 0,
           quantity: value as number,
-          source: CONSTANTS.SELF,
+          source: `${branch.name} Blood Bank`,
           transactionType: InventoryTransaction.ISSUED,
         }, currentUser)
       }

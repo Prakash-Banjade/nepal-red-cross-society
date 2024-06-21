@@ -14,6 +14,10 @@ import { BranchService } from 'src/branch/branch.service';
 import { ServiceChargeService } from 'src/service-charge/service-charge.service';
 import { BloodRequestCharge } from './entities/blood-request-charge.entity';
 import { RequestedBloodBag } from './entities/requestedBloodBag.entity';
+import { HospitalsService } from 'src/hospitals/hospitals.service';
+import { BloodRequestsRepository } from './repository/blood_request.repository';
+import { BloodRequestsChargeRepository } from './repository/blood_request_charge.repository';
+import { RequestedBloodBagRepository } from './repository/requestedBloodBag.repository';
 
 @Injectable()
 export class BloodRequestService {
@@ -23,34 +27,57 @@ export class BloodRequestService {
     @InjectRepository(RequestedBloodBag) private readonly requestedBloodBagRepo: Repository<RequestedBloodBag>,
     private readonly bloodInventoryService: BloodInventoryService,
     private readonly branchService: BranchService,
-    private readonly serviceChargeService: ServiceChargeService
+    private readonly serviceChargeService: ServiceChargeService,
+    private readonly hospitalService: HospitalsService,
+    private readonly bloodRequestsRepository: BloodRequestsRepository,
+    private readonly bloodRequestChargesRepository: BloodRequestsChargeRepository,
+    private readonly requestedBloodBagRepository: RequestedBloodBagRepository,
   ) { }
 
   async create(createBloodRequestDto: CreateBloodRequestDto, currentUser: RequestUser) {
     const branch = await this.branchService.findOne(currentUser.branchId);
 
-    await this.bloodInventoryService.checkIfBloodAvailableForRequest(createBloodRequestDto, currentUser); // check if bloods is available
+    const hospital = await this.hospitalService.findOne(createBloodRequestDto.hospitalId);
+
+    // VALIDATE BLOOD INVENTORIES
+    await this.bloodInventoryService.checkIfBloodAvailableForRequest(createBloodRequestDto, currentUser);
 
     const documentFront = getFileName(createBloodRequestDto.documentFront);
     const documentBack = getFileName(createBloodRequestDto.documentBack);
 
-    const lastBloodRequest = await this.bloodRequestRepo.findOne({ where: { deletedAt: Not(IsNull()) }, order: { createdAt: 'DESC' } });
-    console.log(lastBloodRequest)
+    // CREATE BILL NO.
+    const lastBloodRequest = await this.bloodRequestRepo.findOne({ where: { deletedAt: Not(IsNull()) }, order: { createdAt: 'DESC' }, select: { billNo: true } });
+    const billNo = lastBloodRequest ? lastBloodRequest.billNo + 1 : 1
 
     const createdRequest = this.bloodRequestRepo.create({
       ...createBloodRequestDto,
       documentFront,
       documentBack,
-      billNo: lastBloodRequest ? lastBloodRequest.billNo + 1 : 1
+      billNo,
+      hospital,
     });
 
-    const savedRequest = await this.bloodRequestRepo.save(createdRequest); // save blood request
+    const savedRequest = await this.bloodRequestsRepository.saveBloodRequest(createdRequest); // TRANSACTION
 
-    // create blood request charges
+    // CREATE BLOOD REQUEST CHARGES
     await this.createBloodRequestCharge(savedRequest, createBloodRequestDto);
 
-    // create requested blood bags in blood request and create issue statement in inventory
-    await this.bloodInventoryService.createRequestedBloodBagsAndCreateIssueStatementInInventory(savedRequest, createBloodRequestDto, currentUser, branch);
+    // CREATE BLOOD ISSUE STATEMENTS
+    await this.bloodInventoryService.createIssueStatements({
+      inventoryIds: createBloodRequestDto.inventoryIds,
+      date: new Date().toISOString(),
+      source: `${branch.name} Blood Bank`,
+      destination: hospital.name,
+      price: 0,
+    }, currentUser);
+
+    // CREATE REQUESTED BLOOD BAGS IN BLOOD REQUEST
+    for (const inventoryId of createBloodRequestDto.inventoryIds) {
+      const { bloodBag } = await this.bloodInventoryService.findOne(inventoryId, currentUser);
+
+      const requestedBloodBag = this.requestedBloodBagRepo.create({ bloodBag, bloodRequest: savedRequest });
+      await this.requestedBloodBagRepository.saveRequestedBloodBag(requestedBloodBag); // TRANSACTION
+    }
   }
 
   async createBloodRequestCharge(bloodRequest: BloodRequest, bloodRequestDto: CreateBloodRequestDto) {
@@ -62,7 +89,7 @@ export class BloodRequestService {
         bloodRequest
       })
 
-      await this.bloodRequestChargeRepo.save(bloodRequestCharge);
+      await this.bloodRequestChargesRepository.saveCharge(bloodRequestCharge); // TRANSACTION
     }
   }
 
@@ -76,6 +103,8 @@ export class BloodRequestService {
       .take(queryDto.take)
       .withDeleted()
       .where({ deletedAt })
+      .leftJoinAndSelect('bloodRequest.bloodRequestCharges', 'bloodRequestCharges')
+      .leftJoinAndSelect('bloodRequest.requestedBloodBags', 'requestedBloodBags')
       .andWhere(new Brackets(qb => {
         qb.where([
           { patientName: ILike(`%${queryDto.search ?? ''}%`) },

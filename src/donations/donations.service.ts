@@ -16,6 +16,7 @@ import { CONSTANTS } from 'src/CONSTANTS';
 import { BloodBagsService } from 'src/blood-bags/blood-bags.service';
 import { RequestUser } from 'src/core/types/global.types';
 import { BloodBag } from 'src/blood-bags/entities/blood-bag.entity';
+import { BranchService } from 'src/branch/branch.service';
 
 @Injectable()
 export class DonationsService {
@@ -26,12 +27,15 @@ export class DonationsService {
     private readonly donorsService: DonorsService,
     private readonly bloodInventoryService: BloodInventoryService,
     private readonly bloodBagService: BloodBagsService,
+    private readonly branchService: BranchService,
   ) { }
 
   async create(createDonationDto: CreateDonationDto, currentUser: RequestUser) {
     // finding dependent entities
     const dependentColumns = await this.retrieveDependencies(createDonationDto); // donor, organization, donation_event
     const { donationType } = createDonationDto
+
+    const branch = await this.branchService.findOne(currentUser.branchId);
 
     // check if donor can donate (checking if last donation has crossed 3 months)
     const message = this.checkIfEligibleDonor(dependentColumns.donor); // if yes, warning message, not error, donation will be accepted
@@ -74,7 +78,7 @@ export class DonationsService {
       status: BloodInventoryStatus.UNVERIFIED,
       source: bloodSource,
       transactionType: InventoryTransaction.RECEIVED,
-      destination: 'SELF',
+      destination: `${branch.name} Blood Bank`,
       date: new Date(bloodBag.createdAt)?.toISOString(),
     }, currentUser)
 

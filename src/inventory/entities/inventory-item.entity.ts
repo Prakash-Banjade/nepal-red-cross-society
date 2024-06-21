@@ -38,10 +38,6 @@ export class InventoryItem extends BaseEntity {
     validateTransaction() {
         if (this.transactionType === InventoryTransaction.ISSUED) {
             if (this.inventory.quantity < this.quantity) throw new BadRequestException(`Insufficient ${this.inventory.name} quantity`);
-            this.source = 'SELF';
-        }
-        if (this.transactionType === InventoryTransaction.RECEIVED) {
-            this.destination = 'SELF';
         }
     }
 }

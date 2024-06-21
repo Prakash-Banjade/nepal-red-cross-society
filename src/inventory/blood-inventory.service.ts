@@ -16,6 +16,7 @@ import { CONSTANTS, initialBloodInventoryCount } from 'src/CONSTANTS';
 import { CreateBloodRequestDto } from 'src/blood_request/dto/create-blood_request.dto';
 import { RequestedBloodBag } from 'src/blood_request/entities/requestedBloodBag.entity';
 import { BagTypesService } from 'src/bag-types/bag-types.service';
+import { BloodInventoryRepository } from './repository/blood-inventory.repository';
 
 @Injectable()
 export class BloodInventoryService {
@@ -25,6 +26,7 @@ export class BloodInventoryService {
         @InjectRepository(RequestedBloodBag) private readonly requestedBloodBagRepo: Repository<RequestedBloodBag>,
         private readonly branchService: BranchService,
         private readonly bagTypeService: BagTypesService,
+        private readonly bloodInventoryRepository: BloodInventoryRepository,
     ) { }
 
     // this one is for automated ones
@@ -53,7 +55,7 @@ export class BloodInventoryService {
             expiry: new Date(Date.now() + (createBloodInventoryDto.expiry * 24 * 60 * 60 * 1000)).toISOString(),
         });
 
-        const newBloodInventory = await this.bloodInventoryRepo.save(bloodInventoryItem);
+        const newBloodInventory = await this.bloodInventoryRepository.saveBloodInventory(bloodInventoryItem); // TRANSACTION
 
         return newBloodInventory
     }
@@ -68,8 +70,6 @@ export class BloodInventoryService {
             delete inventory.createdAt
             delete inventory.updatedAt
 
-            console.log(inventory.bloodBag)
-
             const issueStatement = this.bloodInventoryRepo.create({
                 ...inventory,
                 transactionType: InventoryTransaction.ISSUED,
@@ -80,7 +80,7 @@ export class BloodInventoryService {
                 price
             })
 
-            await this.bloodInventoryRepo.save(issueStatement);
+            await this.bloodInventoryRepository.saveBloodInventory(issueStatement); // TRANSACTION
         }
 
         return {
@@ -223,26 +223,23 @@ export class BloodInventoryService {
     }
 
     async checkIfBloodAvailableForRequest(createBloodRequestDto: CreateBloodRequestDto, currentUser: RequestUser) {
-        const { bloodType, rhFactor, requestedComponents } = createBloodRequestDto;
+        const { bloodType, rhFactor, inventoryIds } = createBloodRequestDto;
 
-        for (const requestedComponent of requestedComponents) {
-            // const existingBloodItem = await this.bloodInventoryRepo.find({
-            //     relations: { branch: true },
-            //     where: {
-            //         branch: { id: currentUser.branchId },
-            //         component: requestedComponent.componentName,
-            //         status: BloodInventoryStatus.USABLE,
-            //         bloodType,
-            //         rhFactor,
-            //         transactionType: InventoryTransaction.ISSUED
-            //     },
-            //     select: { quantity: true }
-            // })
+        for (const ivnentoryId of inventoryIds) {
+            const existingBloodItem = await this.bloodInventoryRepo.find({
+                relations: { branch: true },
+                where: {
+                    id: ivnentoryId,
+                    branch: { id: currentUser.branchId },
+                    status: BloodInventoryStatus.USABLE,
+                    bloodType,
+                    rhFactor,
+                    transactionType: InventoryTransaction.RECEIVED
+                },
+            })
 
-            const componentQuantity = await this.getSumOfQuantities(requestedComponent.componentName, bloodType, rhFactor, currentUser.branchId,);
-
-            if (componentQuantity < +requestedComponent.quantity) {
-                throw new BadRequestException(`Insuffient ${requestedComponent.componentName}. Available: ${componentQuantity}`);
+            if (!existingBloodItem) {
+                throw new BadRequestException(`${bloodType} ${rhFactor} not available`);
             }
         }
 
@@ -303,52 +300,5 @@ export class BloodInventoryService {
             .getRawOne();
 
         return receivedSum.sum - issuedSum.sum;
-    }
-
-    async createRequestedBloodBagsAndCreateIssueStatementInInventory(bloodRequest: BloodRequest, bloodRequestDto: CreateBloodRequestDto, currentUser: RequestUser, branch: Branch) {
-        const { bloodType, rhFactor } = bloodRequestDto;
-
-        for (const requestedComponent of bloodRequestDto.requestedComponents) {
-            for (let i = 0; i < +requestedComponent.quantity; i++) {
-                const foundInventory = await this.bloodInventoryRepo.findOne({
-                    relations: { branch: true, bloodBag: true },
-                    where: {
-                        branch: { id: currentUser.branchId },
-                        component: requestedComponent.componentName,
-                        status: BloodInventoryStatus.USABLE,
-                        bloodType,
-                        rhFactor,
-                        transactionType: InventoryTransaction.ISSUED
-                    },
-                    order: { createdAt: 'DESC' },
-                })
-
-                const createdRequestedBloodBag = this.requestedBloodBagRepo.create({
-                    bloodRequest,
-                    bloodBag: foundInventory.bloodBag,
-                })
-
-                await this.requestedBloodBagRepo.save(createdRequestedBloodBag);
-
-
-                // create issue statement
-                const createdBloodInventoryIssueStatement = this.bloodInventoryRepo.create({
-                    bloodBag: foundInventory.bloodBag,
-                    bloodType: bloodType,
-                    branch,
-                    date: new Date().toISOString(),
-                    rhFactor: rhFactor,
-                    source: CONSTANTS.SELF,
-                    destination: bloodRequest.hospital?.name,
-                    price: 0,
-                    status: BloodInventoryStatus.USED,
-                    expiry: new Date(Date.now() + CONSTANTS.BLOOD_EXPIRY_INTERVAL).toISOString(),
-                    transactionType: InventoryTransaction.ISSUED,
-                    component: requestedComponent.componentName,
-                })
-
-                await this.bloodInventoryRepo.save(createdBloodInventoryIssueStatement)
-            }
-        }
     }
 }
