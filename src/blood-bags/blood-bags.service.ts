@@ -11,6 +11,7 @@ import { RequestUser } from 'src/core/types/global.types';
 import { InventoryItemService } from 'src/inventory/inventory-item.service';
 import { BloodBagStatus, InventoryTransaction } from 'src/core/types/fieldsEnum.types';
 import { BagTypesService } from 'src/bag-types/bag-types.service';
+import { BranchService } from 'src/branch/branch.service';
 
 @Injectable()
 export class BloodBagsService {
@@ -20,7 +21,7 @@ export class BloodBagsService {
     @Inject(forwardRef(() => InventoryService)) private readonly inventoryService: InventoryService,
     private readonly inventoryItemService: InventoryItemService,
     private readonly bagTypeService: BagTypesService,
-    private readonly branchService: BagTypesService,
+    private readonly branchService: BranchService,
 
   ) { }
   async create(createBloodBagDto: CreateBloodBagDto, currentUser: RequestUser, createIssueStatement: boolean = true, donationEvent?: DonationEvent) {
