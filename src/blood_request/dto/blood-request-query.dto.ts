@@ -16,4 +16,8 @@ export class BloodRequestQueryDto extends QueryDto {
     @ApiPropertyOptional({ type: 'enum', enum: Municipal, description: 'Hospital Municipal' })
     @IsOptional()
     municipality?: Municipal;
+
+    @ApiPropertyOptional({ type: 'string', description: 'Hospital name' })
+    @IsOptional()
+    hospitalName?: string;
 }

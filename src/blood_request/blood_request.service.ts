@@ -128,6 +128,7 @@ export class BloodRequestService {
         queryDto.bloodType && qb.andWhere({ bloodType: queryDto.bloodType });
         queryDto.rhFactor && qb.andWhere({ rhFactor: queryDto.rhFactor })
         queryDto.municipality && qb.andWhere("LOWER(address.municipality) LIKE LOWER(:municipality)", { municipality: `%${queryDto.municipality ?? ''}%` });
+        queryDto.hospitalName && qb.andWhere("LOWER(hospital.name) LIKE LOWER(:hospitalName)", { hospitalName: `%${queryDto.hospitalName ?? ''}%` });
       }))
       .select([
         'bloodRequest.id',
