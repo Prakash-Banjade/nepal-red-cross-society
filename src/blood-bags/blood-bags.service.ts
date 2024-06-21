@@ -24,7 +24,7 @@ export class BloodBagsService {
     private readonly branchService: BranchService,
 
   ) { }
-  async create(createBloodBagDto: CreateBloodBagDto, currentUser: RequestUser, createIssueStatement: boolean = true, donationEvent?: DonationEvent) {
+  async create(createBloodBagDto: CreateBloodBagDto, currentUser: RequestUser, createIssueStatement: boolean = true, donationEvent?: DonationEvent, transactionType: InventoryTransaction = InventoryTransaction.RECEIVED) {
     // const existignBloodBagWithSameNo = await this.bloodBagsRepository.findOneBy({ bagNo: createBloodBagDto.bagNo });
     // if (existignBloodBagWithSameNo) throw new BadRequestException('Blood bag with same number already exists');
 
@@ -35,7 +35,7 @@ export class BloodBagsService {
     const bloodBagCount = await this.inventoryItemService.getBloodBagsCount(currentUser);
 
     // check if there is sufficient blood bag in inventory
-    if (bagType.name in bloodBagCount && bloodBagCount[bagType.name] <= 0) throw new BadRequestException('Not enough blood bags of type ' + bagType.name);
+    if (bagType.name in bloodBagCount && bloodBagCount[bagType.name] <= 0 && transactionType && transactionType === InventoryTransaction.ISSUED) throw new BadRequestException('Not enough blood bags of type ' + bagType.name);
 
     // create new blood bag
     let lastBloodBagNo: number;
