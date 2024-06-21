@@ -1,5 +1,5 @@
 import { BaseEntity } from "src/core/entities/base.entity";
-import { Column, Entity, ManyToOne } from "typeorm";
+import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne } from "typeorm";
 import { BloodRequest } from "./blood_request.entity";
 import { ServiceCharge } from "src/service-charge/entities/service-charge.entity";
 
@@ -13,4 +13,13 @@ export class BloodRequestCharge extends BaseEntity {
 
     @ManyToOne(() => BloodRequest, (bloodRequest) => bloodRequest.bloodRequestCharges)
     bloodRequest: BloodRequest
+
+    @Column({ type: 'int' })
+    amount: number
+
+    @BeforeInsert()
+    @BeforeUpdate()
+    async calculateAmount() {
+        this.amount = this.quantity * this.serviceCharge.publicRate
+    }
 }

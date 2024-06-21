@@ -1,7 +1,7 @@
 import { BaseEntity } from "src/core/entities/base.entity";
 import { BloodItems, BloodType, Gender, RhFactor } from "src/core/types/fieldsEnum.types";
 import { Hospital } from "src/hospitals/entities/hospital.entity";
-import { Column, Entity, ManyToOne, OneToMany } from "typeorm";
+import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne, OneToMany } from "typeorm";
 import { BloodRequestCharge } from "./blood-request-charge.entity";
 import { RequestedBloodBag } from "./requestedBloodBag.entity";
 
@@ -36,6 +36,17 @@ export class BloodRequest extends BaseEntity {
 
     @OneToMany(() => BloodRequestCharge, (bloodRequestCharge) => bloodRequestCharge.bloodRequest, { nullable: true }) // they are mandatory due as payload in create request, just to prevent not null constraint nullable is true
     bloodRequestCharges: BloodRequestCharge[]
+
+    @Column({ type: 'int' })
+    totalAmount: number
+
+    @BeforeInsert()
+    @BeforeUpdate()
+    calculateTotalAmount() {
+        if (this.bloodRequestCharges) {
+            this.totalAmount = this.bloodRequestCharges.reduce((acc, curr) => acc + curr.amount, 0)
+        }
+    }
 
     @OneToMany(() => RequestedBloodBag, (requestedBloodBag) => requestedBloodBag.bloodRequest, { nullable: true }) // they are mandatory due as payload in create request, just to prevent not null constraint nullable is true
     requestedBloodBags: RequestedBloodBag[]
