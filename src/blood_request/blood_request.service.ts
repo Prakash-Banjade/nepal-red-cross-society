@@ -36,6 +36,8 @@ export class BloodRequestService {
 
   async create(createBloodRequestDto: CreateBloodRequestDto, currentUser: RequestUser) {
     const branch = await this.branchService.findOne(currentUser.branchId);
+    // transform inventoryIds to array, it can be single string also so convert it into array
+    createBloodRequestDto.inventoryIds = typeof createBloodRequestDto.inventoryIds === 'string' ? [createBloodRequestDto.inventoryIds] : createBloodRequestDto.inventoryIds;
 
     const hospital = await this.hospitalService.findOne(createBloodRequestDto.hospitalId);
 
@@ -78,6 +80,10 @@ export class BloodRequestService {
       const requestedBloodBag = this.requestedBloodBagRepo.create({ bloodBag, bloodRequest: savedRequest });
       await this.requestedBloodBagRepository.saveRequestedBloodBag(requestedBloodBag); // TRANSACTION
     }
+
+    return {
+      message: 'Blood request created successfully',
+    }
   }
 
   async createBloodRequestCharge(bloodRequest: BloodRequest, bloodRequestDto: CreateBloodRequestDto) {
@@ -111,15 +117,38 @@ export class BloodRequestService {
       .take(queryDto.take)
       .withDeleted()
       .where({ deletedAt })
-      .leftJoinAndSelect('bloodRequest.bloodRequestCharges', 'bloodRequestCharges')
-      .leftJoinAndSelect('bloodRequest.requestedBloodBags', 'requestedBloodBags')
+      .leftJoin('bloodRequest.bloodRequestCharges', 'bloodRequestCharges')
+      .leftJoin('bloodRequest.requestedBloodBags', 'requestedBloodBags')
+      .leftJoin('bloodRequest.hospital', 'hospital')
+      .leftJoin('hospital.address', 'address')
       .andWhere(new Brackets(qb => {
         qb.where([
           { patientName: ILike(`%${queryDto.search ?? ''}%`) },
         ]);
         queryDto.bloodType && qb.andWhere({ bloodType: queryDto.bloodType });
         queryDto.rhFactor && qb.andWhere({ rhFactor: queryDto.rhFactor })
+        queryDto.municipality && qb.andWhere("LOWER(address.municipality) LIKE LOWER(:municipality)", { municipality: `%${queryDto.municipality ?? ''}%` });
       }))
+      .select([
+        'bloodRequest.id',
+        'bloodRequest.patientName',
+        'bloodRequest.bloodType',
+        'bloodRequest.patientGender',
+        'bloodRequest.patientAge',
+        'bloodRequest.rhFactor',
+        'bloodRequest.createdAt',
+        'bloodRequest.documentFront',
+        'bloodRequest.documentBack',
+        'bloodRequest.billNo',
+        'bloodRequest.hospital',
+        'bloodRequestCharges.quantity',
+        'bloodRequestCharges.serviceCharge',
+        'requestedBloodBags.id',
+        'requestedBloodBags.bloodBag',
+        'hospital.id',
+        'hospital.name',
+        'address.municipality',
+      ])
 
     return paginatedData(queryDto, queryBuilder);
   }
@@ -127,7 +156,7 @@ export class BloodRequestService {
   async findOne(id: string) {
     const existingRequest = await this.bloodRequestRepo.findOne({
       where: { id },
-      relations: { requestedBloodBags: true, bloodRequestCharges: true },
+      relations: { requestedBloodBags: true, bloodRequestCharges: true, hospital: true },
     });
     if (!existingRequest) throw new BadRequestException('Request not found');
 
