@@ -1,11 +1,11 @@
 import { BadRequestException } from "@nestjs/common";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Transform, Type } from "class-transformer";
-import { IsBoolean, IsDefined, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, Matches, ValidateNested } from "class-validator";
-import { FileSystemStoredFile, HasMimeType, IsFile } from "nestjs-form-data";
-import { BloodItems, BloodType, Gender, RhFactor } from "src/core/types/fieldsEnum.types";
+import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateNested } from "class-validator";
+import { FileSystemStoredFile, IsFile } from "nestjs-form-data";
+import { BloodType, Gender, RhFactor } from "src/core/types/fieldsEnum.types";
 
-class Charge {
+export class Charge {
     @ApiProperty({ type: Number })
     @IsNotEmpty()
     @Transform(({ value }) => {
@@ -19,10 +19,10 @@ class Charge {
     @IsNotEmpty()
     serviceCharge!: string
 
-    // constructor({ quantity, serviceCharge }: { quantity: number, serviceCharge: string }) {
-    //     this.quantity = quantity;
-    //     this.serviceCharge = serviceCharge;
-    // }
+    constructor({ quantity, serviceCharge }: { quantity: number, serviceCharge: string }) {
+        this.quantity = quantity;
+        this.serviceCharge = serviceCharge;
+    }
 }
 
 export class CreateBloodRequestDto {
@@ -55,21 +55,19 @@ export class CreateBloodRequestDto {
     inpatientNo: string;
 
     @ApiProperty({ type: 'number' })
-    // @Transform(({ value }) => {
-    //     if (isNaN(parseInt(value))) throw new BadRequestException('Ward must be a number');
-    //     return parseInt(value);
-    // })
-    @IsInt()
+    @Transform(({ value }) => {
+        if (isNaN(parseInt(value))) throw new BadRequestException('Ward must be a number');
+        return parseInt(value);
+    })
     @IsNotEmpty()
     @IsNotEmpty()
     ward: number;
 
     @ApiPropertyOptional({ type: 'number' })
-    // @Transform(({ value }) => {
-    //     if (isNaN(parseInt(value))) throw new BadRequestException('Bed number must be a number');
-    //     return parseInt(value);
-    // })
-    @IsInt()
+    @Transform(({ value }) => {
+        if (isNaN(parseInt(value))) throw new BadRequestException('Bed number must be a number');
+        return parseInt(value);
+    })
     @IsOptional()
     bedNo?: number;
 
@@ -78,19 +76,10 @@ export class CreateBloodRequestDto {
     @IsOptional()
     attendingConsultant?: string;
 
-    @ApiProperty({ isArray: true, description: 'Array of service charges' })
-    // @Transform(({ value }) => {
-    //     try {
-    //         const array = JSON.parse(value)
-    //         return array.map((charge: { quantity: number, serviceCharge: string }) => new Charge(charge))
-
-    //     } catch (e) {
-    //         throw new BadRequestException('Invalid service charge');
-    //     }
-    // })
-    @ValidateNested({ each: true })
-    @Type(() => Charge)
-    charges: Charge[]
+    @ApiProperty({ type: String, description: 'Stringified array of service charges' })
+    @IsString()
+    @IsNotEmpty()
+    charges: string;
 
     @ApiProperty({ type: String, format: 'uuid', isArray: true })
     @IsUUID('4', { each: true })

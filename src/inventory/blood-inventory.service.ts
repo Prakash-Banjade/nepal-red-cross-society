@@ -45,7 +45,7 @@ export class BloodInventoryService {
             await this.bloodBagService.create({
                 // bagNo: createBloodInventoryDto.bloodBagNo,
                 bagType: createBloodInventoryDto.bagTypeId,
-            }, currentUser);
+            }, currentUser, false);
 
 
         const bloodInventoryItem = this.bloodInventoryRepo.create({
@@ -226,7 +226,7 @@ export class BloodInventoryService {
         const { bloodType, rhFactor, inventoryIds } = createBloodRequestDto;
 
         for (const ivnentoryId of inventoryIds) {
-            const existingBloodItem = await this.bloodInventoryRepo.find({
+            const existingBloodItem = await this.bloodInventoryRepo.findOne({
                 relations: { branch: true },
                 where: {
                     id: ivnentoryId,
@@ -238,7 +238,9 @@ export class BloodInventoryService {
                 },
             })
 
-            if (!existingBloodItem) {
+            const available = await this.getSumOfQuantities(existingBloodItem.component, bloodType, rhFactor, currentUser.branchId);
+
+            if (available < 1) {
                 throw new BadRequestException(`${bloodType} ${rhFactor} not available`);
             }
         }
@@ -248,18 +250,6 @@ export class BloodInventoryService {
 
     async checkIfBloodAvailableToIssue(createBloodInventoryDto: CreateBloodInventoryDto, branch: Branch) {
         const { bloodType, rhFactor, component, quantity, bagTypeId } = createBloodInventoryDto;
-
-        // const existingBloodItems = await this.bloodInventoryRepo.find({
-        //     relations: { branch: true },
-        //     where: {
-        //         branch: { id: branch.id },
-        //         component: component,
-        //         status: BloodInventoryStatus.USABLE,
-        //         bloodType,
-        //         rhFactor,
-        //         transactionType: InventoryTransaction.ISSUED
-        //     }
-        // })
 
         const componentQuantity = await this.getSumOfQuantities(component, bloodType, rhFactor, branch.id);
 
@@ -272,9 +262,6 @@ export class BloodInventoryService {
 
 
     async getSumOfQuantities(component: string, bloodType: BloodType, rhFactor: RhFactor, branchId: string): Promise<number> {
-        // console.log(component, bloodType, rhFactor)
-        console.log(rhFactor, bloodType)
-
         const issuedSum = await this.bloodInventoryRepo.createQueryBuilder("bloodInventory")
             .where("bloodInventory.branch.id = :branchId", { branchId })
             .andWhere(new Brackets(qb => {

@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { CreateBloodRequestDto } from './dto/create-blood_request.dto';
+import { Charge, CreateBloodRequestDto } from './dto/create-blood_request.dto';
 import { UpdateBloodRequestDto } from './dto/update-blood_request.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BloodRequest } from './entities/blood_request.entity';
@@ -81,15 +81,23 @@ export class BloodRequestService {
   }
 
   async createBloodRequestCharge(bloodRequest: BloodRequest, bloodRequestDto: CreateBloodRequestDto) {
-    for (const charge of bloodRequestDto.charges) {
-      const serviceCharge = await this.serviceChargeService.findOne(charge.serviceCharge);
-      const bloodRequestCharge = this.bloodRequestChargeRepo.create({
-        quantity: +charge.quantity,
-        serviceCharge,
-        bloodRequest
-      })
+    try {
+      const array = JSON.parse(bloodRequestDto.charges);
+      const chargeArray = array.map((charge: { quantity: number, serviceCharge: string }) => new Charge(charge))
 
-      await this.bloodRequestChargesRepository.saveCharge(bloodRequestCharge); // TRANSACTION
+      for (const charge of chargeArray) {
+        const serviceCharge = await this.serviceChargeService.findOne(charge.serviceCharge);
+        const bloodRequestCharge = this.bloodRequestChargeRepo.create({
+          quantity: +charge.quantity,
+          serviceCharge,
+          bloodRequest
+        })
+
+        await this.bloodRequestChargesRepository.saveCharge(bloodRequestCharge); // TRANSACTION
+      }
+
+    } catch (e) {
+      throw new BadRequestException('Invalid service charge');
     }
   }
 

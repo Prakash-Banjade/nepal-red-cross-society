@@ -19,9 +19,9 @@ export class BloodRequestController {
   @Post()
   @ApiConsumes('multipart/form-data')
   @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @UseInterceptors(TransactionInterceptor)
   @FormDataRequest({ storage: FileSystemStoredFile })
   @ChekcAbilities({ action: Action.CREATE, subject: 'all' })
-  @UseInterceptors(TransactionInterceptor)
   create(@Body() createBloodRequestDto: CreateBloodRequestDto, @CurrentUser() currentUser: RequestUser) {
     return this.bloodRequestService.create(createBloodRequestDto, currentUser);
   }

@@ -93,7 +93,6 @@ export class DonationsService {
     const deletedAt = queryDto.deleted === Deleted.ONLY ? Not(IsNull()) : queryDto.deleted === Deleted.NONE ? IsNull() : Or(IsNull(), Not(IsNull()));
 
     const skipPagination: Boolean = !!(queryDto.search || queryDto.status || queryDto.donationType)
-    console.log(queryDto.rhFactor)
 
     queryBuilder
       .orderBy("donation.createdAt", queryDto.order)

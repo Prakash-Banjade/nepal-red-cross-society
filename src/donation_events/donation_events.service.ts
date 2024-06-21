@@ -256,7 +256,6 @@ export class DonationEventsService {
 
       if (key === CONSTANTS.BLOOD_BAG_KEY) { // handle blood bag items
         for (const [key, quantity] of Object.entries(value as Record<string, number>)) {
-          // console.log('hi there', Date.now(), newInventoryItems[CONSTANTS.BLOOD_BAG_KEY])
           if (CONSTANTS.BLOOD_BAG_KEY in newInventoryItems && key in (newInventoryItems[CONSTANTS.BLOOD_BAG_KEY] as Record<string, number>)) {
             newInventoryItems[CONSTANTS.BLOOD_BAG_KEY][key] += +quantity
           } else {

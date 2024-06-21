@@ -19,15 +19,11 @@ export class CertificateService {
   async create(createCertificateDto: CreateCertificateDto) {
     const donation = await this.findDonation(createCertificateDto.donation);
 
-    console.log(donation)
-
     const certificate = this.certificateRepo.create({
       ...createCertificateDto,
       donation,
     });
 
-    console.log(certificate)
-    
     return await this.certificateRepo.save(certificate);
   }
 
