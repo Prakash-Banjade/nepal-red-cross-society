@@ -14,6 +14,7 @@ import { OrganizationsModule } from "src/organizations/organizations.module";
 import { TestCasesModule } from "src/test_cases/test_cases.module";
 import { UsersModule } from "src/users/users.module";
 import { TechniciansModule } from "src/technicians/technicians.module";
+import { ReportsModule } from "src/reports/reports.module";
 
 export function setupSwagger(app: INestApplication): void {
     const config = new DocumentBuilder()
@@ -51,6 +52,7 @@ export function setupSwagger(app: INestApplication): void {
             TestCasesModule,
             BloodRequestModule,
             InventoryModule,
+            ReportsModule,
         ],
     });
     SwaggerModule.setup('api', app, document, {
