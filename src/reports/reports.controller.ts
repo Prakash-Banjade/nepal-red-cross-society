@@ -18,16 +18,21 @@ export class ReportsController {
   }
 
   @Get('donation-by-blood-group')
-  async byDonationByBloodGroup(@Query() queryDto: ReportQueryDto) {
+  async byDonationByBloodGroup(@Query() queryDto: ReportQueryDto) { // REPORT NO. 4
     return this.reportsService.byDonationByBloodGroup(queryDto);
   }
 
-  @Get('byPositiveRhFactorCentrifuged')
-  async byBloodRequestByBloodGroup(@Query() queryDto: ReportQueryDto) {
-    return this.reportsService.byPositiveRhFactorCentrifuged(queryDto);
+  @Get('byBloodRequestByBloodGroup')
+  async byBloodRequestByBloodGroup(@Query() queryDto: ReportQueryDto) { // REPORT NO. 5
+    return this.reportsService.byBloodRequestByBloodGroup(queryDto);
   }
 
-  @Get('municipal/butwal')
+  @Get('byBloodRequestByBloodGroupCentrifuged')
+  async byBloodRequestByBloodGroupCentrifuged(@Query() queryDto: ReportQueryDto) { // REPORT NO. 6
+    return this.reportsService.byBloodRequestByBloodGroupCentrifuged(queryDto);
+  }
+
+  @Get('municipal')
   async butwal(@Query() queryDto: ReportQueryDto & { municipal: Municipal }) {
     return this.reportsService.byMunicipalButwal(queryDto, queryDto.municipal);
   }

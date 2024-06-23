@@ -15,24 +15,27 @@ export class ReportsService {
     @InjectRepository(BloodRequest) private readonly bloodRequestRepo: Repository<BloodRequest>,
   ) { }
 
-  async byOrganization({ year, month, quarter, period }: ReportQueryDto) {
+  async byOrganization({ startDate, endDate }: ReportQueryDto) {
+    const adjustedEndDate = new Date(new Date(endDate).setDate(new Date(endDate).getDate() + 1));
+
     const qb = this.donationRepo.createQueryBuilder('donation')
       .leftJoin('donation.donor', 'donor')
       .leftJoin('donation.organization', 'organization')
       .leftJoin('organization.address', 'address')
       .where('donation.donationType = :type', { type: DonationType.ORGANIZATION }) // Filter out donations without an organization
-      .andWhere('donor.gender IN (:...genders)', { genders: [Gender.MALE, Gender.FEMALE] });
+      .andWhere('donor.gender IN (:...genders)', { genders: [Gender.MALE, Gender.FEMALE] })
+      .andWhere('donation.createdAt BETWEEN :startDate AND :adjustedEndDate', { startDate, adjustedEndDate }) // FILTER BY DATE
 
-    if (period === 'monthly' && month) {
-      qb.andWhere('YEAR(donation.createdAt) = :year AND MONTH(donation.createdAt) = :month', { year, month });
-    } else if (period === ReportPeriod.YEARLY) {
-      qb.andWhere('YEAR(donation.createdAt) = :year', { year });
-    } else if (period === ReportPeriod.QUARTERLY && quarter) {
-      const startMonth = (quarter - 1) * 3 + 1;
-      const endMonth = startMonth + 2;
-      qb.andWhere('YEAR(donation.createdAt) = :year AND MONTH(donation.createdAt) BETWEEN :startMonth AND :endMonth',
-        { year, startMonth, endMonth });
-    }
+    // if (period === 'monthly' && month) {
+    //   qb.andWhere('YEAR(donation.createdAt) = :year AND MONTH(donation.createdAt) = :month', { year, month });
+    // } else if (period === ReportPeriod.YEARLY) {
+    //   qb.andWhere('YEAR(donation.createdAt) = :year', { year });
+    // } else if (period === ReportPeriod.QUARTERLY && quarter) {
+    //   const startMonth = (quarter - 1) * 3 + 1;
+    //   const endMonth = startMonth + 2;
+    //   qb.andWhere('YEAR(donation.createdAt) = :year AND MONTH(donation.createdAt) BETWEEN :startMonth AND :endMonth',
+    //     { year, startMonth, endMonth });
+    // }
 
     qb.select([
       'organization.name AS organizationName',
@@ -68,53 +71,9 @@ export class ReportsService {
     };
   }
 
-  // async byHospital({ year, month, quarter, period }: ReportQueryDto) {
-  //   const qb = this.bloodRequestRepo.createQueryBuilder('bloodRequest')
-  //     .leftJoinAndSelect('bloodRequest.hospital', 'hospital')
-  //     .leftJoinAndSelect('bloodRequest.requestedBloodBags', 'requestedBloodBags')
-  //     .leftJoinAndSelect('requestedBloodBags.bloodBag', 'bloodBag');
+  async byHospital({ startDate, endDate }: ReportQueryDto) {
+    const adjustedEndDate = new Date(new Date(endDate).setDate(new Date(endDate).getDate() + 1));
 
-  //   if (period === 'monthly' && month) {
-  //     qb.andWhere('YEAR(donation.createdAt) = :year AND MONTH(donation.createdAt) = :month', { year, month });
-  //   } else if (period === ReportPeriod.YEARLY) {
-  //     qb.andWhere('YEAR(donation.createdAt) = :year', { year });
-  //   } else if (period === ReportPeriod.QUARTERLY && quarter) {
-  //     const startMonth = (quarter - 1) * 3 + 1;
-  //     const endMonth = startMonth + 2;
-  //     qb.andWhere('YEAR(donation.createdAt) = :year AND MONTH(donation.createdAt) BETWEEN :startMonth AND :endMonth',
-  //       { year, startMonth, endMonth });
-  //   }
-
-  //   const bloodRequests = await qb.getMany();
-
-  //   const report = bloodRequests.reduce((acc, bloodRequest) => {
-  //     const hospitalName = bloodRequest.hospital.name;
-
-  //     if (!acc[hospitalName]) {
-  //       acc[hospitalName] = {
-  //         hospital: hospitalName,
-  //         nonCentrifugedCount: 0,
-  //         centrifugedCount: 0,
-  //         total: 0
-  //       };
-  //     }
-
-  //     bloodRequest.requestedBloodBags.forEach(bag => {
-  //       if (bag.centrifuged) {
-  //         acc[hospitalName].centrifugedCount += 1;
-  //       } else {
-  //         acc[hospitalName].nonCentrifugedCount += 1;
-  //       }
-  //       acc[hospitalName].total += 1;
-  //     });
-
-  //     return acc;
-  //   }, {});
-
-  //   return Object.values(report);
-  // }
-
-  async byHospital({ year, month, quarter, period }: ReportQueryDto) {
     const qb = this.bloodRequestRepo.createQueryBuilder('bloodRequest')
       .leftJoin('bloodRequest.hospital', 'hospital')
       .leftJoin('bloodRequest.requestedBloodBags', 'requestedBloodBags')
@@ -122,18 +81,19 @@ export class ReportsService {
       .addSelect('SUM(CASE WHEN requestedBloodBags.centrifuged = false THEN 1 ELSE 0 END)', 'nonCentrifugedCount')
       .addSelect('SUM(CASE WHEN requestedBloodBags.centrifuged = true THEN 1 ELSE 0 END)', 'centrifugedCount')
       .addSelect('COUNT(requestedBloodBags.id)', 'total')
+      .where('bloodRequest.createdAt BETWEEN :startDate AND :adjustedEndDate', { startDate, adjustedEndDate }) // FILTER BY DATE
       .groupBy('hospital.name');
 
-    if (period === 'monthly' && month) {
-      qb.andWhere('YEAR(bloodRequest.createdAt) = :year AND MONTH(bloodRequest.createdAt) = :month', { year, month });
-    } else if (period === ReportPeriod.YEARLY) {
-      qb.andWhere('YEAR(bloodRequest.createdAt) = :year', { year });
-    } else if (period === ReportPeriod.QUARTERLY && quarter) {
-      const startMonth = (quarter - 1) * 3 + 1;
-      const endMonth = startMonth + 2;
-      qb.andWhere('YEAR(bloodRequest.createdAt) = :year AND MONTH(bloodRequest.createdAt) BETWEEN :startMonth AND :endMonth',
-        { year, startMonth, endMonth });
-    }
+    // if (period === 'monthly' && month) {
+    //   qb.andWhere('YEAR(bloodRequest.createdAt) = :year AND MONTH(bloodRequest.createdAt) = :month', { year, month });
+    // } else if (period === ReportPeriod.YEARLY) {
+    //   qb.andWhere('YEAR(bloodRequest.createdAt) = :year', { year });
+    // } else if (period === ReportPeriod.QUARTERLY && quarter) {
+    //   const startMonth = (quarter - 1) * 3 + 1;
+    //   const endMonth = startMonth + 2;
+    //   qb.andWhere('YEAR(bloodRequest.createdAt) = :year AND MONTH(bloodRequest.createdAt) BETWEEN :startMonth AND :endMonth',
+    //     { year, startMonth, endMonth });
+    // }
 
     const result = await qb.getRawMany();
 
@@ -155,27 +115,30 @@ export class ReportsService {
     };
   }
 
-  async byDonationByBloodGroup({ year, month, quarter, period }: ReportQueryDto) {
+  async byDonationByBloodGroup({ startDate, endDate }: ReportQueryDto) {
+    const adjustedEndDate = new Date(new Date(endDate).setDate(new Date(endDate).getDate() + 1)); // ENSURE END DATE IS INCLUSIVE ( CONTANT OF THE ENTIRE DAY )
+
     const qb = this.donationRepo.createQueryBuilder('donation')
       .leftJoin('donation.donor', 'donor')
       .leftJoin('donation.organization', 'organization')
       .leftJoin('organization.address', 'address')
       // .where('donation.donationType = :type', { type: DonationType.ORGANIZATION }) // Filter out donations without an organization
-      .where('donor.gender IN (:...genders)', { genders: [Gender.MALE, Gender.FEMALE] });
+      .where('donor.gender IN (:...genders)', { genders: [Gender.MALE, Gender.FEMALE] })
+      .andWhere('donation.createdAt BETWEEN :startDate AND :adjustedEndDate', { startDate, adjustedEndDate }) // FILTER BY DATE
 
-    if (period === 'monthly' && month) {
-      qb.andWhere('YEAR(donation.createdAt) = :year AND MONTH(donation.createdAt) = :month', { year, month });
-    } else if (period === ReportPeriod.YEARLY) {
-      qb.andWhere('YEAR(donation.createdAt) = :year', { year });
-    } else if (period === ReportPeriod.QUARTERLY && quarter) {
-      const startMonth = (quarter - 1) * 3 + 1;
-      const endMonth = startMonth + 2;
-      qb.andWhere('YEAR(donation.createdAt) = :year AND MONTH(donation.createdAt) BETWEEN :startMonth AND :endMonth',
-        { year, startMonth, endMonth });
-    }
+    // if (period === 'monthly' && month) {
+    //   qb.andWhere('YEAR(donation.createdAt) = :year AND MONTH(donation.createdAt) = :month', { year, month });
+    // } else if (period === ReportPeriod.YEARLY) {
+    //   qb.andWhere('YEAR(donation.createdAt) = :year', { year });
+    // } else if (period === ReportPeriod.QUARTERLY && quarter) {
+    //   const startMonth = (quarter - 1) * 3 + 1;
+    //   const endMonth = startMonth + 2;
+    //   qb.andWhere('YEAR(donation.createdAt) = :year AND MONTH(donation.createdAt) BETWEEN :startMonth AND :endMonth',
+    //     { year, startMonth, endMonth });
+    // }
 
     qb.select([
-      'CASE WHEN donor.rhFactor = :positive THEN "Positive" ELSE "Negative" END AS rhFactorGroup',
+      'CASE WHEN donor.rhFactor = :positive THEN "positive" ELSE "Negative" END AS rhFactorGroup',
       'donor.bloodType AS bloodType',
       'SUM(CASE WHEN donor.gender = :male THEN 1 ELSE 0 END) AS maleCount',
       'SUM(CASE WHEN donor.gender = :female THEN 1 ELSE 0 END) AS femaleCount',
@@ -231,124 +194,177 @@ export class ReportsService {
     };
   }
 
-  async byBloodRequestByBloodGroup({ year, month, quarter, period }: ReportQueryDto) {
+  // REPORT NO. 5
+  async byBloodRequestByBloodGroup({ startDate, endDate }: ReportQueryDto) {
+    const adjustedEndDate = new Date(new Date(endDate).setDate(new Date(endDate).getDate() + 1));
+
     const qb = this.bloodRequestRepo.createQueryBuilder('bloodRequest')
-      .leftJoin('bloodRequest.requestedBloodBags', 'requestedBloodBags')
-      .leftJoin('requestedBloodBags.bloodBag', 'bloodBag')
+      .leftJoin('bloodRequest.patient', 'patient')
       .select([
-        'CASE WHEN bloodRequest.rhFactor = :positive THEN "Positive" ELSE "Negative" END AS rhFactorGroup',
+        'bloodRequest.rhFactor AS rhFactorGroup',
         'bloodRequest.bloodType AS bloodType',
-        'SUM(CASE WHEN bloodRequest.patientGender = :male THEN 1 ELSE 0 END) AS maleCount',
-        'SUM(CASE WHEN bloodRequest.patientGender = :female THEN 1 ELSE 0 END) AS femaleCount',
-        'COUNT(bloodRequest.id) AS totalCount',
-        'SUM(CASE WHEN requestedBloodBags.centrifuged = true THEN 1 ELSE 0 END) AS centrifugedCount',
-        'SUM(CASE WHEN requestedBloodBags.centrifuged = false THEN 1 ELSE 0 END) AS nonCentrifugedCount',
+        'SUM(CASE WHEN patient.patientGender = :male THEN 1 ELSE 0 END) AS maleCount',
+        'SUM(CASE WHEN patient.patientGender = :female THEN 1 ELSE 0 END) AS femaleCount',
+        'COUNT(bloodRequest.id) AS totalCount'
       ])
-      .where('bloodRequest.patientGender IN (:...genders)', { genders: [Gender.MALE, Gender.FEMALE] })
-      .andWhere('bloodRequest.bloodType IN (:...bloodTypes)', { bloodTypes: Object.values(BloodType) })
-      .addGroupBy('rhFactorGroup')
+      .where('patient.patientGender IN (:...genders)', { genders: [Gender.MALE, Gender.FEMALE] })
+      .andWhere('bloodRequest.createdAt BETWEEN :startDate AND :adjustedEndDate', { startDate, adjustedEndDate }) // FILTER BY DATE
+      .groupBy('bloodRequest.rhFactor')
       .addGroupBy('bloodRequest.bloodType')
-      .addGroupBy('requestedBloodBags.centrifuged')
-      .setParameters({ positive: RhFactor.POSITIVE, male: Gender.MALE, female: Gender.FEMALE });
-
-    if (period === 'monthly' && month) {
-      qb.andWhere('YEAR(bloodRequest.createdAt) = :year AND MONTH(bloodRequest.createdAt) = :month', { year, month });
-    } else if (period === ReportPeriod.YEARLY) {
-      qb.andWhere('YEAR(bloodRequest.createdAt) = :year', { year });
-    } else if (period === ReportPeriod.QUARTERLY && quarter) {
-      const startMonth = (quarter - 1) * 3 + 1;
-      const endMonth = startMonth + 2;
-      qb.andWhere('YEAR(bloodRequest.createdAt) = :year AND MONTH(bloodRequest.createdAt) BETWEEN :startMonth AND :endMonth',
-        { year, startMonth, endMonth });
-    }
-
-    try {
-      const results = await qb.getRawMany();
-
-      // Prepare the report format
-      const report = {};
-
-      results.forEach(row => {
-        const rhFactorGroup = row.rhFactorGroup;
-        const bloodType = row.bloodType;
-
-        if (!report[rhFactorGroup]) {
-          report[rhFactorGroup] = {};
-        }
-
-        if (!report[rhFactorGroup][bloodType]) {
-          report[rhFactorGroup][bloodType] = {
-            maleCount: 0,
-            femaleCount: 0,
-            total: 0,
-            centrifugedCount: 0,
-            nonCentrifugedCount: 0,
-          };
-        }
-
-        report[rhFactorGroup][bloodType].maleCount += parseInt(row.maleCount);
-        report[rhFactorGroup][bloodType].femaleCount += parseInt(row.femaleCount);
-        report[rhFactorGroup][bloodType].total += parseInt(row.totalCount);
-        report[rhFactorGroup][bloodType].centrifugedCount += parseInt(row.centrifugedCount);
-        report[rhFactorGroup][bloodType].nonCentrifugedCount += parseInt(row.nonCentrifugedCount);
-      });
-
-      return {
-        report,
-      };
-    } catch (error) {
-      console.error('Error fetching blood request report:', error);
-      throw error; // Throw the error to handle it appropriately
-    }
-  }
-
-  async byPositiveRhFactorCentrifuged({ year, month, quarter, period }: ReportQueryDto) {
-    const qb = this.bloodRequestRepo.createQueryBuilder('bloodRequest')
-      .leftJoin('bloodRequest.requestedBloodBags', 'requestedBloodBags')
-      .leftJoin('requestedBloodBags.bloodBag', 'bloodBag')
-      .leftJoin('bloodBag.donation', 'donation')
-      .leftJoin('donation.donor', 'donor')
-      .where('donor.rhFactor = :rhFactor', { rhFactor: RhFactor.POSITIVE })
-      .andWhere('requestedBloodBags.centrifuged = true')
-      .andWhere('donor.gender IN (:...genders)', { genders: [Gender.MALE, Gender.FEMALE] })
-      .select([
-        'donor.bloodType AS bloodType',
-        'SUM(CASE WHEN donor.gender = :male THEN 1 ELSE 0 END) AS maleCount',
-        'SUM(CASE WHEN donor.gender = :female THEN 1 ELSE 0 END) AS femaleCount',
-        'COUNT(bloodRequest.id) AS totalCount',
-      ])
-      .addGroupBy('donor.bloodType')
       .setParameters({ male: Gender.MALE, female: Gender.FEMALE });
 
-    if (period === 'monthly' && month) {
-      qb.andWhere('YEAR(bloodRequest.createdAt) = :year AND MONTH(bloodRequest.createdAt) = :month', { year, month });
-    } else if (period === ReportPeriod.YEARLY) {
-      qb.andWhere('YEAR(bloodRequest.createdAt) = :year', { year });
-    } else if (period === ReportPeriod.QUARTERLY && quarter) {
-      const startMonth = (quarter - 1) * 3 + 1;
-      const endMonth = startMonth + 2;
-      qb.andWhere('YEAR(bloodRequest.createdAt) = :year AND MONTH(bloodRequest.createdAt) BETWEEN :startMonth AND :endMonth',
-        { year, startMonth, endMonth });
-    }
+    // if (period === 'monthly' && month) {
+    //   qb.andWhere('YEAR(bloodRequest.createdAt) = :year AND MONTH(bloodRequest.createdAt) = :month', { year, month });
+    // } else if (period === 'yearly') {
+    //   qb.andWhere('YEAR(bloodRequest.createdAt) = :year', { year });
+    // } else if (period === 'quarterly' && quarter) {
+    //   const startMonth = (quarter - 1) * 3 + 1;
+    //   const endMonth = startMonth + 2;
+    //   qb.andWhere('YEAR(bloodRequest.createdAt) = :year AND MONTH(bloodRequest.createdAt) BETWEEN :startMonth AND :endMonth',
+    //     { year, startMonth, endMonth });
+    // }
 
-    try {
-      const results = await qb.getRawMany();
+    const results = await qb.getRawMany();
 
-      return {
-        report: results.map(row => ({
-          bloodType: row.bloodType,
-          maleCount: parseInt(row.maleCount),
-          femaleCount: parseInt(row.femaleCount),
-          total: parseInt(row.totalCount),
-        })),
-      };
-    } catch (error) {
-      console.error('Error fetching blood request report:', error);
-      throw error; // Throw the error to handle it appropriately
-    }
+    const report = {
+      positive: {},
+      negative: {},
+      grandTotalMalesPositive: 0,
+      grandTotalFemalesPositive: 0,
+      grandTotalMalesNegative: 0,
+      grandTotalFemalesNegative: 0,
+    };
+
+    results.forEach(row => {
+      const rhFactorGroup = row.rhFactorGroup;
+      const bloodType = row.bloodType;
+
+      if (!report[rhFactorGroup][bloodType]) {
+        report[rhFactorGroup][bloodType] = {
+          maleCount: 0,
+          femaleCount: 0,
+          total: 0,
+        };
+      }
+
+      report[rhFactorGroup][bloodType].maleCount += parseInt(row.maleCount);
+      report[rhFactorGroup][bloodType].femaleCount += parseInt(row.femaleCount);
+      report[rhFactorGroup][bloodType].total += parseInt(row.totalCount);
+
+      if (rhFactorGroup === RhFactor.POSITIVE) {
+        report.grandTotalMalesPositive += parseInt(row.maleCount);
+        report.grandTotalFemalesPositive += parseInt(row.femaleCount);
+      } else {
+        report.grandTotalMalesNegative += parseInt(row.maleCount);
+        report.grandTotalFemalesNegative += parseInt(row.femaleCount);
+      }
+    });
+
+    return report;
   }
 
-  async byMunicipalButwal({ year, month, quarter, period }: ReportQueryDto, municipal: Municipal) {
+  // REPORT NO. 6
+  async byBloodRequestByBloodGroupCentrifuged({ startDate, endDate }: ReportQueryDto) {
+    const adjustedEndDate = new Date(new Date(endDate).setDate(new Date(endDate).getDate() + 1));
+
+    const qb = this.bloodRequestRepo.createQueryBuilder('bloodRequest')
+      .leftJoin('bloodRequest.patient', 'patient')
+      .leftJoin('bloodRequest.requestedBloodBags', 'requestedBloodBags')
+      .select([
+        'bloodRequest.rhFactor AS rhFactorGroup',
+        'bloodRequest.bloodType AS bloodType',
+        'SUM(CASE WHEN patient.patientGender = :male THEN 1 ELSE 0 END) AS maleCount',
+        'SUM(CASE WHEN patient.patientGender = :female THEN 1 ELSE 0 END) AS femaleCount',
+        'COUNT(bloodRequest.id) AS totalCount'
+      ])
+      .where('requestedBloodBags.centrifuged = true')
+      .andWhere('patient.patientGender IN (:...genders)', { genders: [Gender.MALE, Gender.FEMALE] })
+      .andWhere('bloodRequest.createdAt BETWEEN :startDate AND :adjustedEndDate', { startDate, adjustedEndDate }) // FILTER BY DATE
+      .groupBy('bloodRequest.rhFactor')
+      .addGroupBy('bloodRequest.bloodType')
+      .setParameters({ male: Gender.MALE, female: Gender.FEMALE });
+
+    // if (period === 'monthly' && month) {
+    //   qb.andWhere('YEAR(bloodRequest.createdAt) = :year AND MONTH(bloodRequest.createdAt) = :month', { year, month });
+    // } else if (period === ReportPeriod.YEARLY) {
+    //   qb.andWhere('YEAR(bloodRequest.createdAt) = :year', { year });
+    // } else if (period === ReportPeriod.QUARTERLY && quarter) {
+    //   const startMonth = (quarter - 1) * 3 + 1;
+    //   const endMonth = startMonth + 2;
+    //   qb.andWhere('YEAR(bloodRequest.createdAt) = :year AND MONTH(bloodRequest.createdAt) BETWEEN :startMonth AND :endMonth',
+    //     { year, startMonth, endMonth });
+    // }
+
+    // Fetching the requestedComponents separately
+    const componentsQb = this.bloodRequestRepo.createQueryBuilder('bloodRequest')
+      .leftJoin('bloodRequest.requestedBloodBags', 'requestedBloodBags')
+      .select('bloodRequest.requestedComponents')
+      .where('requestedBloodBags.centrifuged = true')
+      .andWhere('bloodRequest.createdAt BETWEEN :startDate AND :adjustedEndDate', { startDate, adjustedEndDate }) // FILTER BY DATE
+
+    const results = await qb.getRawMany();
+    const componentResults = await componentsQb.getRawMany();
+
+    // Prepare the report format
+    const report = {
+      positive: {},
+      negative: {},
+      componentCounts: {},
+      grandTotalMalesPositive: 0,
+      grandTotalFemalesPositive: 0,
+      grandTotalMalesNegative: 0,
+      grandTotalFemalesNegative: 0,
+      grandTotalComponents: 0,
+    };
+
+    results.forEach(row => {
+      const rhFactorGroup = row.rhFactorGroup;
+      const bloodType = row.bloodType;
+
+      if (!report[rhFactorGroup]) {
+        report[rhFactorGroup] = {};
+      }
+
+      if (!report[rhFactorGroup][bloodType]) {
+        report[rhFactorGroup][bloodType] = {
+          maleCount: 0,
+          femaleCount: 0,
+          total: 0,
+        };
+      }
+
+      report[rhFactorGroup][bloodType].maleCount += parseInt(row.maleCount);
+      report[rhFactorGroup][bloodType].femaleCount += parseInt(row.femaleCount);
+      report[rhFactorGroup][bloodType].total += parseInt(row.totalCount);
+
+      if (rhFactorGroup === RhFactor.POSITIVE) {
+        report.grandTotalMalesPositive += parseInt(row.maleCount);
+        report.grandTotalFemalesPositive += parseInt(row.femaleCount);
+      } else {
+        report.grandTotalMalesNegative += parseInt(row.maleCount);
+        report.grandTotalFemalesNegative += parseInt(row.femaleCount);
+      }
+    });
+
+    // Count requested components
+    componentResults.forEach(row => {
+      console.log(row)
+      const components = row.bloodRequest_requestedComponents?.split(',');
+      components?.forEach(component => {
+        if (!report.componentCounts[component]) {
+          report.componentCounts[component] = 0;
+        }
+        report.componentCounts[component] += 1;
+        report.grandTotalComponents += 1;
+      });
+    });
+
+    return report;
+  }
+
+  async byMunicipalButwal({ startDate, endDate }: ReportQueryDto, municipal: Municipal) {
+    const adjustedEndDate = new Date(new Date(endDate).setDate(new Date(endDate).getDate() + 1));
+
     const qb = this.bloodRequestRepo.createQueryBuilder('bloodRequest')
       .orderBy("bloodRequest.createdAt", "ASC")
       .leftJoin('bloodRequest.patient', 'patient')
@@ -357,6 +373,7 @@ export class ReportsService {
       .where(new Brackets(qb => {
         qb.andWhere('address.municipality = :municipality', { municipality: municipal });
       }))
+      .andWhere('bloodRequest.createdAt BETWEEN :startDate AND :adjustedEndDate', { startDate, adjustedEndDate })
       .select([
         'hospital.name',
         'bloodRequest.createdAt',
@@ -379,16 +396,16 @@ export class ReportsService {
       ])
 
 
-    if (period === 'monthly' && month) {
-      qb.andWhere('YEAR(bloodRequest.createdAt) = :year AND MONTH(bloodRequest.createdAt) = :month', { year, month });
-    } else if (period === ReportPeriod.YEARLY) {
-      qb.andWhere('YEAR(bloodRequest.createdAt) = :year', { year });
-    } else if (period === ReportPeriod.QUARTERLY && quarter) {
-      const startMonth = (quarter - 1) * 3 + 1;
-      const endMonth = startMonth + 2;
-      qb.andWhere('YEAR(bloodRequest.createdAt) = :year AND MONTH(bloodRequest.createdAt) BETWEEN :startMonth AND :endMonth',
-        { year, startMonth, endMonth });
-    }
+    // if (period === 'monthly' && month) {
+    //   qb.andWhere('YEAR(bloodRequest.createdAt) = :year AND MONTH(bloodRequest.createdAt) = :month', { year, month });
+    // } else if (period === ReportPeriod.YEARLY) {
+    //   qb.andWhere('YEAR(bloodRequest.createdAt) = :year', { year });
+    // } else if (period === ReportPeriod.QUARTERLY && quarter) {
+    //   const startMonth = (quarter - 1) * 3 + 1;
+    //   const endMonth = startMonth + 2;
+    //   qb.andWhere('YEAR(bloodRequest.createdAt) = :year AND MONTH(bloodRequest.createdAt) BETWEEN :startMonth AND :endMonth',
+    //     { year, startMonth, endMonth });
+    // }
 
     const result = await qb.getMany();
 
