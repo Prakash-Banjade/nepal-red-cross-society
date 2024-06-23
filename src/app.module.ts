@@ -32,6 +32,7 @@ import { BloodBagsModule } from './blood-bags/blood-bags.module';
 import { BagTypesModule } from './bag-types/bag-types.module';
 import { ServiceChargeModule } from './service-charge/service-charge.module';
 import { HospitalsModule } from './hospitals/hospitals.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -74,6 +75,7 @@ import { HospitalsModule } from './hospitals/hospitals.module';
     BagTypesModule,
     ServiceChargeModule,
     HospitalsModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [

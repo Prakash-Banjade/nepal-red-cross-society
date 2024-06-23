@@ -18,6 +18,7 @@ import { HospitalsService } from 'src/hospitals/hospitals.service';
 import { BloodRequestsRepository } from './repository/blood_request.repository';
 import { BloodRequestsChargeRepository } from './repository/blood_request_charge.repository';
 import { RequestedBloodBagRepository } from './repository/requestedBloodBag.repository';
+import { PatientsService } from './patients.service';
 
 @Injectable()
 export class BloodRequestService {
@@ -32,6 +33,7 @@ export class BloodRequestService {
     private readonly bloodRequestsRepository: BloodRequestsRepository,
     private readonly bloodRequestChargesRepository: BloodRequestsChargeRepository,
     private readonly requestedBloodBagRepository: RequestedBloodBagRepository,
+    private readonly patientService: PatientsService,
   ) { }
 
   async create(createBloodRequestDto: CreateBloodRequestDto, currentUser: RequestUser) {
@@ -40,6 +42,7 @@ export class BloodRequestService {
     createBloodRequestDto.inventoryIds = typeof createBloodRequestDto.inventoryIds === 'string' ? [createBloodRequestDto.inventoryIds] : createBloodRequestDto.inventoryIds;
 
     const hospital = await this.hospitalService.findOne(createBloodRequestDto.hospitalId);
+    const patient = await this.patientService.findOne(createBloodRequestDto.patientId);
 
     // VALIDATE BLOOD INVENTORIES
     await this.bloodInventoryService.checkIfBloodAvailableForRequest(createBloodRequestDto, currentUser);
@@ -48,15 +51,16 @@ export class BloodRequestService {
     const documentBack = getFileName(createBloodRequestDto.documentBack);
 
     // CREATE BILL NO.
-    const lastBloodRequest = await this.bloodRequestRepo.findOne({ where: { deletedAt: Not(IsNull()) }, order: { createdAt: 'DESC' }, select: { billNo: true } });
-    const billNo = lastBloodRequest ? lastBloodRequest.billNo + 1 : 1
+    const lastBloodRequest = await this.bloodRequestRepo.findOne({ where: { deletedAt: Not(IsNull()) }, order: { createdAt: 'DESC' }, select: { xmNo: true } });
+    const xmNo = lastBloodRequest ? lastBloodRequest.xmNo + 1 : 1
 
     const createdRequest = this.bloodRequestRepo.create({
       ...createBloodRequestDto,
       documentFront,
       documentBack,
-      billNo,
+      xmNo,
       hospital,
+      patient,
     });
 
     const savedRequest = await this.bloodRequestsRepository.saveBloodRequest(createdRequest); // TRANSACTION
@@ -73,11 +77,16 @@ export class BloodRequestService {
       price: 0,
     }, currentUser);
 
-    // CREATE REQUESTED BLOOD BAGS IN BLOOD REQUEST
+    // CREATE REQUESTED BLOOD BAGS IN BLOOD REQUEST AND GENERATE REQUESTED COMPONENTS LIST
+    let requestedComponents: string[] = []
     for (const inventoryId of createBloodRequestDto.inventoryIds) {
-      const { bloodBag } = await this.bloodInventoryService.findOne(inventoryId, currentUser);
+      const { bloodBag, component } = await this.bloodInventoryService.findOne(inventoryId, currentUser);
 
-      const requestedBloodBag = this.requestedBloodBagRepo.create({ bloodBag, bloodRequest: savedRequest });
+      const centrifuged = bloodBag?.bagType?.bloodComponents?.length > 0
+
+      requestedComponents.push(component);
+
+      const requestedBloodBag = this.requestedBloodBagRepo.create({ bloodBag, bloodRequest: savedRequest, centrifuged });
       await this.requestedBloodBagRepository.saveRequestedBloodBag(requestedBloodBag); // TRANSACTION
     }
 
@@ -121,26 +130,26 @@ export class BloodRequestService {
       .leftJoin('bloodRequest.requestedBloodBags', 'requestedBloodBags')
       .leftJoin('bloodRequest.hospital', 'hospital')
       .leftJoin('hospital.address', 'address')
+      .leftJoin('bloodRequest.patient', 'patient')
       .andWhere(new Brackets(qb => {
-        qb.where([
-          { patientName: ILike(`%${queryDto.search ?? ''}%`) },
-        ]);
+        // qb.where([
+        //   { patientName: ILike(`%${queryDto.search ?? ''}%`) },
+        // ]);
         queryDto.bloodType && qb.andWhere({ bloodType: queryDto.bloodType });
-        queryDto.rhFactor && qb.andWhere({ rhFactor: queryDto.rhFactor })
+        queryDto.rhFactor && qb.andWhere({ rhFactor: queryDto.rhFactor });
         queryDto.municipality && qb.andWhere("LOWER(address.municipality) LIKE LOWER(:municipality)", { municipality: `%${queryDto.municipality ?? ''}%` });
         queryDto.hospitalName && qb.andWhere("LOWER(hospital.name) LIKE LOWER(:hospitalName)", { hospitalName: `%${queryDto.hospitalName ?? ''}%` });
+        queryDto.search && qb.andWhere("LOWER(patient.patientName) LIKE LOWER(:patientName)", { patientName: ILike(`%${queryDto.search ?? ''}%`) });
       }))
       .select([
         'bloodRequest.id',
-        'bloodRequest.patientName',
         'bloodRequest.bloodType',
-        'bloodRequest.patientGender',
-        'bloodRequest.patientAge',
+        'bloodRequest.patient',
         'bloodRequest.rhFactor',
         'bloodRequest.createdAt',
         'bloodRequest.documentFront',
         'bloodRequest.documentBack',
-        'bloodRequest.billNo',
+        'bloodRequest.xmNo',
         'bloodRequest.hospital',
         'bloodRequestCharges.quantity',
         'bloodRequestCharges.serviceCharge',

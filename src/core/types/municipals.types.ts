@@ -17,7 +17,7 @@ export enum Municipal {
     SANGURIGADHI_RURAL_MUNICIPALITY = "Sangurigadhi",
     CHHATHAR_JORPATI_RURAL_MUNICIPALITY = "Chhathar Jorpati",
     PAKHRIBAS_MUNICIPALITY = "Pakhribas",
-    MAHALAXMI_MUNICIPALITY_DHANKUTA = "Mahalaxmi", // also in lalitpur district
+    MAHALAXMI_MUNICIPALITY_DHANKUTA = "Mahalaxmi (Dhankuta)", // also in lalitpur district
     DHANKUTA_MUNICIPALITY = "Dhankuta",
 
     // Ilam
@@ -82,8 +82,8 @@ export enum Municipal {
     // Okhaldhunga
     SIDDHICHARAN_MUNICIPALITY = "Siddhicharan",
     CHAMPADEVI_RURAL_MUNICIPALITY = "Champadevi",
-    SUNKOSHI_RURAL_MUNICIPALITY_OKHALDUNGA = "Sunkoshi", // also in Sindhuli district
-    LIKHU_RURAL_MUNICIPALITY_OKHALDUNGA = "Likhu", // also in Nuwakot district
+    SUNKOSHI_RURAL_MUNICIPALITY_OKHALDUNGA = "Sunkoshi (Okhaldunga)", // also in Sindhuli district
+    LIKHU_RURAL_MUNICIPALITY_OKHALDUNGA = "Likhu (Okhaldunga)", // also in Nuwakot district
     CHISANKHUGADHI_RURAL_MUNICIPALITY = "Chisankhugadhi",
     MOLUNG_RURAL_MUNICIPALITY = "Molung",
     KHIJIDEMBA_RURAL_MUNICIPALITY = "Khijidemba",
@@ -106,7 +106,7 @@ export enum Municipal {
     BHOTKHOLA_RURAL_MUNICIPALITY = "Bhotkhola",
     SABHAPOKHARI_RURAL_MUNICIPALITY = "Sabhapokhari",
     DHARMADEVI_MUNICIPALITY = "Dharmadevi",
-    MADI_MUNICIPALITY = "Madi",
+    MADI_MUNICIPALITY = "Madi (Sankhuwasabha)",
     PANCHAKHAPAN_MUNICIPALITY = "Panchakhapan",
     CHAINPUR_MUNICIPALITY = "Chainpur",
     KHANDBARI_MUNICIPALITY = "Khandbari",
@@ -183,7 +183,7 @@ export enum Municipal {
     LALBANDI_MUNICIPALITY = "Lalbandi",
     MALANGAWA_MUNICIPALITY = "Malangawa",
     KABILASI_MUNICIPALITY = "Kabilasi",
-    BAGMATI_MUNICIPALITY = "Bagmati",
+    BAGMATI_MUNICIPALITY = "Bagmati (Sarlahi)",
     HARIWAN_MUNICIPALITY = "Hariwan",
     BALARA_MUNICIPALITY = "Balara",
     HARIPURWA_MUNICIPALITY = "Haripurwa",
@@ -268,12 +268,12 @@ export enum Municipal {
     BODE_BARSAIN_MUNICIPALITY = "Bode Barsain",
 
     // Siraha
-    AURAHI_RURAL_MUNICIPALITY = "Aurahi",
+    AURAHI_RURAL_MUNICIPALITY = "Aurahi Rural Municipality",
     NARAHA_RURAL_MUNICIPALITY = "Naraha",
     ARNAMA_RURAL_MUNICIPALITY = "Arnama",
     BHAGAWANPUR_RURAL_MUNICIPALITY = "Bhagawanpur",
     NAWARAJPUR_RURAL_MUNICIPALITY = "Nawarajpur",
-    BISHNUPUR_RURAL_MUNICIPALITY_SIRAHA = "Bishnupur", // also in saptari
+    BISHNUPUR_RURAL_MUNICIPALITY_SIRAHA = "Bishnupur (Siraha)", // also in saptari
     BARIYARPATTI_RURAL_MUNICIPALITY = "Bariyarpatti",
     LAXMIPUR_PATARI_RURAL_MUNICIPALITY = "Laxmipur Patari",
     SAKHUWANANKARKATTI_RURAL_MUNICIPALITY = "Sakhuwanankarkatti",
@@ -325,7 +325,7 @@ export enum Municipal {
     MARIN_RURAL_MUNICIPALITY = "Marin",
     PHIKKAL_RURAL_MUNICIPALITY = "Phikkal",
     TINPATAN_RURAL_MUNICIPALITY = "Tinpatan",
-    SUNKOSHI_RURAL_MUNICIPALITY = "Sunkoshi",
+    SUNKOSHI_RURAL_MUNICIPALITY = "Sunkoshi Rural Municipality",
     GOLANJOR_RURAL_MUNICIPALITY = "Golanjor",
     GHANGLEKH_RURAL_MUNICIPALITY = "Ghanglekh",
     HARIHARPURGADHI_RURAL_MUNICIPALITY = "Hariharpurgadhi",
@@ -403,7 +403,7 @@ export enum Municipal {
     PANCHKHAL_MUNICIPALITY = "Panchkhal",
 
     // Lalitpur
-    BAGMATI_RURAL_MUNICIPALITY = "Bagmati",
+    BAGMATI_RURAL_MUNICIPALITY = "Bagmati (Lalitpur)",
     MAHANKAL_RURAL_MUNICIPALITY = "Mahankal",
     KONJYOSOM_RURAL_MUNICIPALITY = "Konjyosom",
     LALITPUR_METROPOLITAN_CITY = "Lalitpur Metropolitan City",
@@ -425,7 +425,7 @@ export enum Municipal {
     BIDUR_MUNICIPALITY = "Bidur",
 
     // Rasuwa
-    KALIKA_RURAL_MUNICIPALITY = "Kalika",
+    KALIKA_RURAL_MUNICIPALITY = "Kalika Rural Municipality",
     NAUKUNDA_RURAL_MUNICIPALITY = "Naukunda",
     UTTARGAYA_RURAL_MUNICIPALITY = "Uttargaya",
     GOSAIKUNDA_RURAL_MUNICIPALITY = "Gosaikunda",
@@ -434,7 +434,7 @@ export enum Municipal {
     // Sindhupalchok
     JUGAL_RURAL_MUNICIPALITY = "Jugal",
     BALEFI_RURAL_MUNICIPALITY = "Balefi",
-    SUNKOSHI_RURAL_MUNICIPALITY_SINDHUPALCHOK = "Sunkoshi",
+    SUNKOSHI_RURAL_MUNICIPALITY_SINDHUPALCHOK = "Sunkoshi (Sindhupalchok)",
     HELAMBU_RURAL_MUNICIPALITY = "Helambu",
     BHOTEKOSHI_RURAL_MUNICIPALITY = "Bhotekoshi",
     LISANGKHU_PAKHAR_RURAL_MUNICIPALITY = "Lisangkhu Pakhar",
@@ -449,7 +449,7 @@ export enum Municipal {
     BHARATPUR_METROPOLITAN_CITY = "Bharatpur Metropolitan City",
     KALIKA_MUNICIPALITY = "Kalika",
     KHAIRAHANI_MUNICIPALITY = "Khairahani",
-    MADI_MUNICIPALITY_CHITWAN = "Madi", // also in Sankhuwasabha district
+    MADI_MUNICIPALITY_CHITWAN = "Madi (Chitwan)", // also in Sankhuwasabha district
     RATNANAGAR_MUNICIPALITY = "Ratnanagar",
     RAPTI_MUNICIPALITY = "Rapti",
     ICHCHHAKAMANA_RURAL_MUNICIPALITY = "Ichchhakamana",
@@ -462,7 +462,7 @@ export enum Municipal {
     MANAHARI_RURAL_MUNICIPALITY = "Manahari",
     RAKSIRANG_RURAL_MUNICIPALITY = "Raksirang",
     BAKAIYA_RURAL_MUNICIPALITY = "Bakaiya",
-    BAGMATI_RURAL_MUNICIPALITY_MAKWANPUR = "Bagmati", // also in Lalitpur district
+    BAGMATI_RURAL_MUNICIPALITY_MAKWANPUR = "Bagmati Rural Municipality", // also in Lalitpur district
     KAILASH_RURAL_MUNICIPALITY = "Kailash",
     INDRASAROWAR_RURAL_MUNICIPALITY = "Indrasarowar",
 
@@ -525,10 +525,10 @@ export enum Municipal {
 
     // Myagdi
     MANGALA_RURAL_MUNICIPALITY = "Mangala",
-    MALIKA_RURAL_MUNICIPALITY_MYAGDI = "Malika", // also in Gulmi
+    MALIKA_RURAL_MUNICIPALITY_MYAGDI = "Malika (Myagdi)", // also in Gulmi
     RAGHUGANGA_RURAL_MUNICIPALITY = "Raghuganga",
     DHAULAGIRI_RURAL_MUNICIPALITY = "Dhaulagiri",
-    ANNAPURNA_RURAL_MUNICIPALITY_MYAGDI = "Annapurna", // also in kaski
+    ANNAPURNA_RURAL_MUNICIPALITY_MYAGDI = "Annapurna (Myagdi)", // also in kaski
     BENI_MUNICIPALITY = "Beni",
 
     // Nawalpur
@@ -555,7 +555,7 @@ export enum Municipal {
     BIRUWA_RURAL_MUNICIPALITY = "Biruwa",
     AANDHIKHOLA_RURAL_MUNICIPALITY = "Aandhikhola",
     PHEDIKHOLA_RURAL_MUNICIPALITY = "Phedikhola",
-    KALIGANDAKI_RURAL_MUNICIPALITY_SYANGJA = "Kaligandaki", // also in Gulmi
+    KALIGANDAKI_RURAL_MUNICIPALITY_SYANGJA = "Kaligandaki (Syangja)", // also in Gulmi
     ARJUNCHAUPARI_RURAL_MUNICIPALITY = "Arjunchaupari",
     PUTALIBAZAR_MUNICIPALITY = "Putalibazar",
     BHIRKOT_MUNICIPALITY = "Bhirkot",
@@ -653,8 +653,8 @@ export enum Municipal {
     // Dang
     BABAI_RURAL_MUNICIPALITY = "Babai",
     GADHAWA_RURAL_MUNICIPALITY = "Gadhawa",
-    RAPTI_RURAL_MUNICIPALITY = "Rapti",
-    RAJPUR_RURAL_MUNICIPALITY = "Rajpur",
+    RAPTI_RURAL_MUNICIPALITY = "Rapti Rural Municipality",
+    RAJPUR_RURAL_MUNICIPALITY = "Rajpur Rural Municipailty",
     DANGISHARAN_RURAL_MUNICIPALITY = "Dangisharan",
     SHANTINAGAR_RURAL_MUNICIPALITY = "Shantinagar",
     BANGLACHULI_RURAL_MUNICIPALITY = "Banglachuli",
@@ -674,7 +674,7 @@ export enum Municipal {
     SWORGADWARY_MUNICIPALITY = "Sworgadwary",
 
     // Rolpa
-    MADI_RURAL_MUNICIPALITY_ROLPA = "Madi", // Also in Kaski
+    MADI_RURAL_MUNICIPALITY_ROLPA = "Madi (Rolpa)", // Also in Kaski
     THAWANG_RURAL_MUNICIPALITY = "Thawang",
     SUNCHHAHARI_RURAL_MUNICIPALITY = "Sunchhahari",
     LUNGRI_RURAL_MUNICIPALITY = "Lungri",

@@ -4,32 +4,27 @@ import { Hospital } from "src/hospitals/entities/hospital.entity";
 import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne, OneToMany } from "typeorm";
 import { BloodRequestCharge } from "./blood-request-charge.entity";
 import { RequestedBloodBag } from "./requestedBloodBag.entity";
+import { Patient } from "./patient.entity";
 
 @Entity()
 export class BloodRequest extends BaseEntity {
     @Column({ type: 'int' })
-    billNo: number
+    xmNo: number
 
     @ManyToOne(() => Hospital, (hospital) => hospital.bloodRequests)
     hospital: Hospital
 
-    @Column({ type: 'varchar' })
-    patientName: string;
+    @ManyToOne(() => Patient, (patient) => patient.bloodRequests, { onDelete: 'RESTRICT' })
+    patient: Patient
 
-    @Column({ type: 'int' })
-    patientAge: number;
-
-    @Column({ type: 'enum', enum: Gender })
-    patientGender: Gender;
-
-    @Column({ type: 'varchar' })
-    inpatientNo: string;
-
-    @Column({ type: 'int' })
-    ward: number;
+    @Column({ type: 'varchar', nullable: true })
+    ward: string;
 
     @Column({ type: 'int', nullable: true })
     bedNo?: number;
+
+    @Column({ type: 'varchar', nullable: true })
+    disease?: string;
 
     @Column({ type: 'varchar', nullable: true })
     attendingConsultant?: string;
@@ -57,6 +52,9 @@ export class BloodRequest extends BaseEntity {
     @Column({ type: 'enum', enum: RhFactor })
     rhFactor: RhFactor;
 
+    @Column({ type: 'simple-array' })
+    requestedComponents: string[]
+
     @Column({ type: 'int', nullable: true })
     previouslyTransfused?: number;
 
@@ -74,4 +72,7 @@ export class BloodRequest extends BaseEntity {
 
     @Column({ type: 'text' })
     documentBack: string;
+
+    @Column({ type: 'varchar', default: 'Citizenship' })
+    permanentPaper?: string;
 }

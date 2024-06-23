@@ -11,19 +11,23 @@ import { HospitalsModule } from 'src/hospitals/hospitals.module';
 import { BloodRequestsRepository } from './repository/blood_request.repository';
 import { BloodRequestsChargeRepository } from './repository/blood_request_charge.repository';
 import { RequestedBloodBagRepository } from './repository/requestedBloodBag.repository';
+import { Patient } from './entities/patient.entity';
+import { PatientController } from './patient.controller';
+import { PatientsService } from './patients.service';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       BloodRequest,
       BloodRequestCharge,
-      RequestedBloodBag
+      RequestedBloodBag,
+      Patient
     ]),
     InventoryModule,
     ServiceChargeModule,
     HospitalsModule,
   ],
-  controllers: [BloodRequestController],
-  providers: [BloodRequestService, BloodRequestsChargeRepository, BloodRequestsRepository, RequestedBloodBagRepository],
+  controllers: [BloodRequestController, PatientController],
+  providers: [BloodRequestService, BloodRequestsChargeRepository, BloodRequestsRepository, RequestedBloodBagRepository, PatientsService],
 })
 export class BloodRequestModule { }

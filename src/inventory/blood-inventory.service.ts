@@ -166,7 +166,7 @@ export class BloodInventoryService {
 
     async findOne(id: string, currentUser: RequestUser) {
         const existingInventory = await this.bloodInventoryRepo.findOne({
-            relations: { branch: true, bloodBag: true },
+            relations: { branch: true, bloodBag: { bagType: { bloodComponents: true } } },
             where: { id, branch: { id: currentUser.branchId } },
         })
         if (!existingInventory) throw new NotFoundException('BloodInventory not found');

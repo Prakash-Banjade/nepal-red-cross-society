@@ -31,37 +31,15 @@ export class CreateBloodRequestDto {
     @IsNotEmpty()
     hospitalId: string;
 
-    @ApiProperty({ type: 'string' })
+    @ApiProperty({ type: 'string', format: 'uuid' })
+    @IsUUID()
+    patientId: string;
+
+    @ApiPropertyOptional({ type: String })
     @IsString()
     @IsNotEmpty()
-    patientName: string;
-
-    @ApiProperty({ type: Number })
-    @Transform(({ value }) => {
-        if (isNaN(parseInt(value))) throw new BadRequestException('Patient Age must be a number');
-        return parseInt(value);
-    })
-    @IsNotEmpty()
-    @IsNotEmpty()
-    patientAge: number;
-
-    @ApiProperty({ type: 'enum', enum: Gender })
-    @IsEnum(Gender)
-    patientGender: Gender;
-
-    @ApiProperty({ type: 'string' })
-    @IsString()
-    @IsNotEmpty()
-    inpatientNo: string;
-
-    @ApiProperty({ type: 'number' })
-    @Transform(({ value }) => {
-        if (isNaN(parseInt(value))) throw new BadRequestException('Ward must be a number');
-        return parseInt(value);
-    })
-    @IsNotEmpty()
-    @IsNotEmpty()
-    ward: number;
+    @IsOptional()
+    ward: string;
 
     @ApiPropertyOptional({ type: 'number' })
     @Transform(({ value }) => {
@@ -71,7 +49,12 @@ export class CreateBloodRequestDto {
     @IsOptional()
     bedNo?: number;
 
-    @ApiProperty({ type: 'string' })
+    @ApiPropertyOptional({ type: String })
+    @IsString()
+    @IsOptional()
+    disease: string
+
+    @ApiPropertyOptional({ type: 'string' })
     @IsString()
     @IsOptional()
     attendingConsultant?: string;
