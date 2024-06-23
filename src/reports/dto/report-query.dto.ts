@@ -1,8 +1,5 @@
-import { BadRequestException } from "@nestjs/common"
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger"
-import { Transform } from "class-transformer"
-import { IsDateString, IsEnum, IsNotEmpty, IsNumber, IsOptional, Max, Min } from "class-validator"
-import { ReportPeriod } from "src/core/types/global.types"
+import { ApiProperty } from "@nestjs/swagger"
+import { IsDateString, IsNotEmpty, } from "class-validator"
 
 export class ReportQueryDto {
     // @ApiProperty({ enum: ReportPeriod, default: ReportPeriod.MONTHLY })

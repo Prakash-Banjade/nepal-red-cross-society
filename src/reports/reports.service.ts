@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BloodType, DonationType, Gender, RhFactor } from 'src/core/types/fieldsEnum.types';
-import { ReportPeriod } from 'src/core/types/global.types';
 import { Donation } from 'src/donations/entities/donation.entity';
 import { Brackets, Repository } from 'typeorm';
 import { ReportQueryDto } from './dto/report-query.dto';
