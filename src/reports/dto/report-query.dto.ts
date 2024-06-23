@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger"
-import { IsDateString, IsNotEmpty, } from "class-validator"
+import { IsDateString, IsEnum, IsNotEmpty, } from "class-validator"
+import { Municipal } from "src/core/types/municipals.types";
 
 export class ReportQueryDto {
     // @ApiProperty({ enum: ReportPeriod, default: ReportPeriod.MONTHLY })
@@ -48,4 +49,10 @@ export class ReportQueryDto {
     @IsNotEmpty()
     endDate: string;
 
+}
+
+export class MunicipalReportQueryDto extends ReportQueryDto {
+    @ApiProperty({ enum: Municipal })
+    @IsEnum(Municipal)
+    municipal: Municipal
 }

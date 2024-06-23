@@ -1,8 +1,11 @@
 import { Controller, Get, Query, } from '@nestjs/common';
 import { ReportsService } from './reports.service';
-import { ReportQueryDto } from './dto/report-query.dto';
+import { MunicipalReportQueryDto, ReportQueryDto } from './dto/report-query.dto';
 import { Municipal } from 'src/core/types/municipals.types';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiBearerAuth()
+@ApiTags('Reports')
 @Controller('reports')
 export class ReportsController {
   constructor(private readonly reportsService: ReportsService) { }
@@ -33,7 +36,7 @@ export class ReportsController {
   }
 
   @Get('municipal')
-  async butwal(@Query() queryDto: ReportQueryDto & { municipal: Municipal }) {
-    return this.reportsService.byMunicipalButwal(queryDto, queryDto.municipal);
+  async butwal(@Query() queryDto: MunicipalReportQueryDto) {
+    return this.reportsService.byMunicipalButwal(queryDto);
   }
 }

@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { BloodType, DonationType, Gender, RhFactor } from 'src/core/types/fieldsEnum.types';
 import { Donation } from 'src/donations/entities/donation.entity';
 import { Brackets, Repository } from 'typeorm';
-import { ReportQueryDto } from './dto/report-query.dto';
+import { MunicipalReportQueryDto, ReportQueryDto } from './dto/report-query.dto';
 import { BloodRequest } from 'src/blood_request/entities/blood_request.entity';
 import { Municipal } from 'src/core/types/municipals.types';
 
@@ -361,7 +361,7 @@ export class ReportsService {
     return report;
   }
 
-  async byMunicipalButwal({ startDate, endDate }: ReportQueryDto, municipal: Municipal) {
+  async byMunicipalButwal({ startDate, endDate, municipal }: MunicipalReportQueryDto) {
     const adjustedEndDate = new Date(new Date(endDate).setDate(new Date(endDate).getDate() + 1));
 
     const qb = this.bloodRequestRepo.createQueryBuilder('bloodRequest')
