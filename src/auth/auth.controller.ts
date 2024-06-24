@@ -7,6 +7,7 @@ import { Public } from 'src/core/decorators/setPublicRoute.decorator';
 import { PasswordChangeRequestDto } from './dto/pwd-change-req.dto';
 import { ResetPasswordDto } from './dto/resetPassword.dto';
 import { Throttle } from '@nestjs/throttler';
+require('dotenv').config();
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -15,7 +16,7 @@ export class AuthController {
 
     cookieOptions: CookieOptions = {
         httpOnly: true,
-        secure: false,
+        secure: process.env.NODE_ENV === 'production',
         sameSite: 'none',
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 day
     }
@@ -27,31 +28,31 @@ export class AuthController {
     @Post('login')
     @ApiOperation({ description: 'Login with email and password. Returns access token.', summary: 'Login' })
     async signIn(@Body() signInDto: SignInDto, @Res({ passthrough: true }) res: Response, @Req() req: Request) {
-        const { access_token, refresh_token, payload } = await this.authService.signIn(signInDto);
+        const { access_token, payload } = await this.authService.signIn(signInDto);
 
-        res.cookie('refresh_token', refresh_token, this.cookieOptions);
+        res.cookie('access_token', access_token, this.cookieOptions);
 
-        const expiresIn = new Date(Date.now() + 1 * 60 * 1000);
+        // const expiresIn = new Date(Date.now() + 1 * 60 * 1000);
 
-        return { access_token, payload, expiresIn };
+        return { payload };
     }
 
-    @Public()
-    @Post('refresh')
-    @HttpCode(HttpStatus.OK)
-    @ApiOperation({ description: 'Refresh access token. Returns new access token.', summary: 'Refresh' })
-    async refreshToken(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-        const refresh_token = req.cookies?.refresh_token;
-        if (!refresh_token) throw new UnauthorizedException('No refresh token provided');
+    // @Public()
+    // @Post('refresh')
+    // @HttpCode(HttpStatus.OK)
+    // @ApiOperation({ description: 'Refresh access token. Returns new access token.', summary: 'Refresh' })
+    // async refreshToken(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    //     const refresh_token = req.cookies?.refresh_token;
+    //     if (!refresh_token) throw new UnauthorizedException('No refresh token provided');
 
-        const { new_access_token, new_refresh_token, payload } = await this.authService.refresh(refresh_token);
+    //     const { new_access_token, new_refresh_token, payload } = await this.authService.refresh(refresh_token);
 
-        res.cookie('refresh_token', new_refresh_token, this.cookieOptions);
+    //     res.cookie('refresh_token', new_refresh_token, this.cookieOptions);
 
-        const expiresIn = new Date(Date.now() + 1 * 60 * 1000);
+    //     const expiresIn = new Date(Date.now() + 1 * 60 * 1000);
 
-        return { access_token: new_access_token, expiresIn, payload };
-    }
+    //     return { access_token: new_access_token, expiresIn, payload };
+    // }
 
     // @Public()
     // @Post('register')
@@ -66,12 +67,12 @@ export class AuthController {
     async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
         // on client also delete the access_token
 
-        const refresh_token = req.cookies?.refresh_token;
-        if (!refresh_token) return res.sendStatus(204)
+        const access_token = req.cookies?.access_token;
+        if (!access_token) return res.sendStatus(204)
 
-        await this.authService.logout(refresh_token, res, this.cookieOptions);
+        // await this.authService.logout(access_token, res, this.cookieOptions);
 
-        res.clearCookie('refresh_token', this.cookieOptions);
+        res.clearCookie('access_token', this.cookieOptions);
         return;
     }
 
@@ -90,6 +91,6 @@ export class AuthController {
     resetPassword(@Body() { password, confirmPassword, token }: ResetPasswordDto) {
         if (password !== confirmPassword) throw new BadRequestException('Passwords do not match');
 
-        return this.authService.resetPassword(password, token);   
+        return this.authService.resetPassword(password, token);
     }
 }

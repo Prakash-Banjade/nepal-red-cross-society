@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   UnauthorizedException,
@@ -11,9 +10,7 @@ import { Repository } from 'typeorm';
 import { SignInDto } from './dto/signIn.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { RegisterDto } from './dto/register.dto';
-import { v4 as uuidv4 } from 'uuid';
-import { CookieOptions, Request, Response } from 'express';
+import { CookieOptions, Response } from 'express';
 import { AuthUser, RequestUser } from 'src/core/types/global.types';
 import crypto from 'crypto'
 import { PasswordChangeRequest } from './entities/password-change-request.entity';
@@ -61,13 +58,13 @@ export class AuthService {
 
     const access_token = await this.createAccessToken(payload);
 
-    const refresh_token = await this.createRefreshToken(foundUser.id);
+    // const refresh_token = await this.createRefreshToken(foundUser.id);
 
-    foundUser.refresh_token = refresh_token;
+    // foundUser.refresh_token = refresh_token;
 
     await this.usersRepository.save(foundUser);
 
-    return { access_token, refresh_token, payload, expiresIn: this.ACCESS_TOKEN_EXPIRE };
+    return { access_token, payload, };
   }
 
   async createAccessToken(payload: AuthUser) {
@@ -77,74 +74,74 @@ export class AuthService {
     });
   }
 
-  async createRefreshToken(userId: string) {
-    const tokenId = uuidv4();
-    return await this.jwtService.signAsync(
-      { id: userId, tokenId: tokenId },
-      { expiresIn: this.REFRESH_TOKEN_EXPIRE, secret: process.env.REFRESH_TOKEN_SECRET },
-    );
-  }
+  // async createRefreshToken(userId: string) {
+  //   const tokenId = uuidv4();
+  //   return await this.jwtService.signAsync(
+  //     { id: userId, tokenId: tokenId },
+  //     { expiresIn: this.REFRESH_TOKEN_EXPIRE, secret: process.env.REFRESH_TOKEN_SECRET },
+  //   );
+  // }
 
-  async refresh(refresh_token: string) {
-    // verifying the refresh token
-    const decoded = await this.jwtService.verifyAsync(refresh_token, {
-      secret: process.env.REFRESH_TOKEN_SECRET,
-    });
+  // async refresh(refresh_token: string) {
+  //   // verifying the refresh token
+  //   const decoded = await this.jwtService.verifyAsync(refresh_token, {
+  //     secret: process.env.REFRESH_TOKEN_SECRET,
+  //   });
 
-    if (!decoded) throw new ForbiddenException('Invalid token');
+  //   if (!decoded) throw new ForbiddenException('Invalid token');
 
-    // Is refresh token in db?
-    const foundUser = await this.usersRepository.findOne({
-      where: {
-        refresh_token,
-        id: decoded.id,
-      },
-      relations: { branch: true },
-    });
+  //   // Is refresh token in db?
+  //   const foundUser = await this.usersRepository.findOne({
+  //     where: {
+  //       refresh_token,
+  //       id: decoded.id,
+  //     },
+  //     relations: { branch: true },
+  //   });
 
-    if (!foundUser) throw new UnauthorizedException('Access Denied');
+  //   if (!foundUser) throw new UnauthorizedException('Access Denied');
 
-    // create new access token & refresh token
-    const payload: RequestUser = {
-      email: foundUser.email,
-      userId: foundUser.id,
-      name: foundUser.firstName + ' ' + foundUser.lastName,
-      role: foundUser.role,
-      branchId: foundUser.branch.id,
-      branchName: foundUser.branch.name
-    };
+  //   // create new access token & refresh token
+  //   const payload: RequestUser = {
+  //     email: foundUser.email,
+  //     userId: foundUser.id,
+  //     name: foundUser.firstName + ' ' + foundUser.lastName,
+  //     role: foundUser.role,
+  //     branchId: foundUser.branch.id,
+  //     branchName: foundUser.branch.name
+  //   };
 
-    const new_access_token = await this.createAccessToken(payload);
-    const new_refresh_token = await this.createRefreshToken(foundUser.id);
+  //   const new_access_token = await this.createAccessToken(payload);
+  //   const new_refresh_token = await this.createRefreshToken(foundUser.id);
 
-    // saving refresh_token with current user
-    foundUser.refresh_token = new_refresh_token;
-    await this.usersRepository.save(foundUser);
+  //   // saving refresh_token with current user
+  //   foundUser.refresh_token = new_refresh_token;
+  //   await this.usersRepository.save(foundUser);
 
-    return {
-      new_access_token,
-      new_refresh_token,
-      payload,
-    };
-  }
+  //   return {
+  //     new_access_token,
+  //     new_refresh_token,
+  //     payload,
+  //   };
+  // }
 
-  async logout(
-    refresh_token: string,
-    res: Response,
-    cookieOptions: CookieOptions,
-  ) {
-    // Is refresh token in db?
-    const foundUser = await this.usersRepository.findOneBy({ refresh_token });
+  // async logout(
+  //   refresh_token: string,
+  //   res: Response,
+  //   cookieOptions: CookieOptions,
+  // ) {
+  //   // Is refresh token in db?
+  //   const foundUser = await this.usersRepository.findOneBy({ refresh_token });
 
-    if (!foundUser) {
-      res.clearCookie('refresh_token', cookieOptions);
-      return res.sendStatus(204);
-    }
+  //   if (!foundUser) {
+  //     res.clearCookie('refresh_token', cookieOptions);
+  //     return res.sendStatus(204);
+  //   }
 
-    // delete refresh token in db
-    foundUser.refresh_token = null;
-    await this.usersRepository.save(foundUser);
-  }
+  //   // delete refresh token in db
+  //   foundUser.refresh_token = null;
+  //   await this.usersRepository.save(foundUser);
+  // }
 
   async forgetPassword(email: string) {
     const foundUser = await this.usersRepository.findOneBy({ email });
