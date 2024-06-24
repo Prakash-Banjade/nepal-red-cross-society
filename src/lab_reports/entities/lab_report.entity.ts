@@ -11,7 +11,7 @@ export class LabReport extends BaseEntity {
     @Column({ type: 'text' })
     issuedBy: string;
 
-    @OneToOne(() => Donation, (donation) => donation.labReport)
+    @OneToOne(() => Donation, (donation) => donation.labReport, { onDelete: 'CASCADE' })
     @JoinColumn()
     donation: Donation;
 
@@ -20,4 +20,7 @@ export class LabReport extends BaseEntity {
 
     @OneToMany(() => TestResult, (testResult) => testResult.labReport, { nullable: true })
     testResults: TestResult[];
+
+    @Column({ type: "simple-array", nullable: true })
+    failedReason: string[] // failed reasons during centrifugation
 }

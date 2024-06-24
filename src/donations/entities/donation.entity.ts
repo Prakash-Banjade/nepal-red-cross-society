@@ -36,10 +36,6 @@ export class Donation extends BaseEntity {
     @Column({ type: "enum", enum: DonationStatus, default: DonationStatus.PENDING })
     status: DonationStatus
 
-    // donation with failed status will have failedReason
-    @Column({ type: "simple-array", nullable: true })
-    failedReason: string[]
-
     @Column({ type: "varchar", nullable: true })
     verifiedBy: string
 
@@ -58,10 +54,6 @@ export class Donation extends BaseEntity {
         if (this.donationType === DonationType.INDIVIDUAL) {
             this.organization = null;
             this.donation_event = null;
-        }
-
-        if (this.status !== DonationStatus.FAILED) {
-            this.failedReason = null;
         }
 
         if (this.verifiedBy === null) {

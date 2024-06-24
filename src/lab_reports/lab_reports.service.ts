@@ -37,11 +37,13 @@ export class LabReportsService {
       date: createLabReportDto.date,
       issuedBy: createLabReportDto.issuedBy,
       donation: donation,
+      failedReason: createLabReportDto.failedReason || [],
     })
 
     const savedLabReport = await this.labReportRepo.save(labReport);
 
-    const isSucceed = await this.evaluateTestResults(createLabReportDto, savedLabReport); // also save test results
+    let isSucceed = await this.evaluateTestResults(createLabReportDto, savedLabReport); // also save test results
+    if (createLabReportDto.failedReason && createLabReportDto.failedReason?.length > 0) isSucceed = false
 
     // change donation status and verifiedBy
     donation.status = isSucceed ? DonationStatus.SUCCESS : DonationStatus.FAILED;
@@ -73,7 +75,7 @@ export class LabReportsService {
     // remove blood inventory items with same blood bag no that were created after donation
     if (oldInventory && isSucceed) await this.bloodInventoryRepo.remove(oldInventory)
 
-    let componentIds: string[] = []
+    let components: string[] = []
 
     if (isSucceed) { // create components only if the lab report is positive
       // creating blood inventory based on the components the blood is break down into
@@ -96,7 +98,7 @@ export class LabReportsService {
         })
 
         await this.bloodInventoryRepo.save(createdBloodInventoryItem)
-        componentIds.push(componentId)
+        components.push(component.componentName)
       }
     } else {
       for (const inventory of oldInventory) {
@@ -105,7 +107,7 @@ export class LabReportsService {
       }
     }
 
-    labReport.separatedComponents = componentIds
+    labReport.separatedComponents = components;
 
     await this.labReportRepo.save(labReport);
 

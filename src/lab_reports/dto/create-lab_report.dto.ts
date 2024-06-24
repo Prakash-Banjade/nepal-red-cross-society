@@ -1,7 +1,7 @@
 import { BadRequestException } from "@nestjs/common";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsDefined, IsEnum, IsNotEmpty, IsNotEmptyObject, IsObject, IsString, IsUUID } from "class-validator";
+import { IsDefined, IsEnum, IsNotEmpty, IsNotEmptyObject, IsObject, IsOptional, IsString, IsUUID } from "class-validator";
 import { BloodType, RhFactor, TestCaseStatus } from "src/core/types/fieldsEnum.types";
 
 class TestCase {
@@ -53,4 +53,9 @@ export class CreateLabReportDto {
     @IsUUID("all", { message: 'Invalid component ids. Component ids must be UUIDs', each: true })
     @IsNotEmpty()
     componentIds: string[]
+
+    @ApiPropertyOptional({ type: [String], description: 'Array of failed reasons in string', isArray: true })
+    @IsString({ each: true })
+    @IsOptional()
+    failedReason?: string[]
 }
