@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { IsDateString, IsEnum, IsNotEmpty, } from "class-validator"
+import { IsGreaterThanOrEqualToStartDate } from "src/core/decorators/is-greater-than-or-equal-to-start-date.decorator";
 import { Municipal } from "src/core/types/municipals.types";
 
 export class ReportQueryDto {
@@ -47,6 +48,9 @@ export class ReportQueryDto {
     @ApiProperty({ type: Date })
     @IsDateString()
     @IsNotEmpty()
+    @IsGreaterThanOrEqualToStartDate('startDate', {
+        message: 'endDate must be greater than or equal to startDate',
+    })
     endDate: string;
 
 }

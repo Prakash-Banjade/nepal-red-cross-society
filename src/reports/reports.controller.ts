@@ -36,7 +36,17 @@ export class ReportsController {
   }
 
   @Get('municipal')
-  async butwal(@Query() queryDto: MunicipalReportQueryDto) {
+  async byMunicipal(@Query() queryDto: MunicipalReportQueryDto) {
     return this.reportsService.byMunicipalButwal(queryDto);
+  }
+
+  @Get('patient')
+  async byPatient(@Query() queryDto: ReportQueryDto) {
+    return this.reportsService.byPatient(queryDto);
+  }
+
+  @Get('centrifugedComponents')
+  async byCentrifugedComponents(@Query() queryDto: ReportQueryDto) {
+    return this.reportsService.byCentrifugedComponents(queryDto);
   }
 }

@@ -6,12 +6,14 @@ import { Brackets, Repository } from 'typeorm';
 import { MunicipalReportQueryDto, ReportQueryDto } from './dto/report-query.dto';
 import { BloodRequest } from 'src/blood_request/entities/blood_request.entity';
 import { Municipal } from 'src/core/types/municipals.types';
+import { LabReport } from 'src/lab_reports/entities/lab_report.entity';
 
 @Injectable()
 export class ReportsService {
   constructor(
     @InjectRepository(Donation) private readonly donationRepo: Repository<Donation>,
     @InjectRepository(BloodRequest) private readonly bloodRequestRepo: Repository<BloodRequest>,
+    @InjectRepository(LabReport) private readonly labReportRepo: Repository<LabReport>,
   ) { }
 
   async byOrganization({ startDate, endDate }: ReportQueryDto) {
@@ -418,6 +420,86 @@ export class ReportsService {
     })
 
     return { report: refinedResult };
+  }
+
+  async byPatient({ startDate, endDate }: ReportQueryDto) {
+    const adjustedEndDate = new Date(new Date(endDate).setDate(new Date(endDate).getDate() + 1));
+    const qb = this.bloodRequestRepo.createQueryBuilder('bloodRequest')
+      .leftJoin('bloodRequest.patient', 'patient')
+      .leftJoin('bloodRequest.requestedBloodBags', 'requestedBloodBags')
+      .select([
+        'bloodRequest.xmNo AS xmNo',
+        'bloodRequest.createdAt AS createdAt',
+        'patient.patientName AS patientName',
+        'patient.patientAge AS age',
+        'patient.patientGender AS gender',
+        'CONCAT(bloodRequest.bloodType, " ", CASE WHEN bloodRequest.rhFactor = "positive" THEN "+ve" ELSE "-ve" END) AS bloodGroup',
+        'COUNT(requestedBloodBags.id) AS requestedBloodBagsCount',
+        'bloodRequest.totalAmount AS totalAmount',
+        '(COUNT(requestedBloodBags.id) * bloodRequest.totalAmount) AS grandTotalAmount'
+      ])
+      .where('bloodRequest.createdAt BETWEEN :startDate AND :adjustedEndDate', { startDate, adjustedEndDate })
+      .groupBy('bloodRequest.xmNo')
+      .addGroupBy('bloodRequest.createdAt')
+      .addGroupBy('patient.patientName')
+      .addGroupBy('patient.patientAge')
+      .addGroupBy('patient.patientGender')
+      .addGroupBy('bloodRequest.bloodType')
+      .addGroupBy('bloodRequest.rhFactor')
+      .addGroupBy('bloodRequest.totalAmount');
+
+    const results = await qb.getRawMany();
+
+    return results.map(row => ({
+      xmNo: row.xmNo,
+      createdAt: row.createdAt,
+      patientName: row.patientName,
+      age: row.age,
+      gender: row.gender,
+      bloodGroup: row.bloodGroup,
+      quantity: parseInt(row.requestedBloodBagsCount),
+      rate: parseInt(row.totalAmount),
+      total: parseInt(row.grandTotalAmount)
+    }));
+  }
+
+  async byCentrifugedComponents({ startDate, endDate }: ReportQueryDto) {
+    const adjustedEndDate = new Date(new Date(endDate).setDate(new Date(endDate).getDate() + 1));
+
+    const rawQuery = `
+      SELECT
+        component,
+        COUNT(component) AS componentCount
+      FROM (
+        SELECT
+          subLabReport.id,
+          SUBSTRING_INDEX(SUBSTRING_INDEX(subLabReport.separatedComponents, ',', numbers.n), ',', -1) AS component
+        FROM lab_report subLabReport
+        JOIN (
+          SELECT 1 AS n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5
+          UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9 UNION ALL SELECT 10
+          UNION ALL SELECT 11 UNION ALL SELECT 12 UNION ALL SELECT 13 UNION ALL SELECT 14 UNION ALL SELECT 15
+          UNION ALL SELECT 16 UNION ALL SELECT 17 UNION ALL SELECT 18 UNION ALL SELECT 19 UNION ALL SELECT 20
+        ) numbers
+        ON CHAR_LENGTH(subLabReport.separatedComponents) - CHAR_LENGTH(REPLACE(subLabReport.separatedComponents, ',', '')) + 1 >= numbers.n
+        WHERE subLabReport.date BETWEEN ? AND ?
+        AND subLabReport.separatedComponents IS NOT NULL
+      ) components
+      GROUP BY component
+    `;
+
+    const results = await this.labReportRepo.query(rawQuery, [startDate, adjustedEndDate]);
+
+    // Calculate the total number of separated components
+    const totalCount = results?.reduce((acc, row) => acc + parseInt(row.componentCount, 10), 0);
+
+    return {
+      components: results?.map(row => ({
+        component: row.component,
+        count: parseInt(row.componentCount, 10)
+      })),
+      totalCount
+    };
   }
 }
 
