@@ -40,17 +40,17 @@ export class DonationsController {
     return this.donationsService.findOne(id);
   }
 
-  @Patch('verify')
-  @ChekcAbilities({ action: Action.UPDATE, subject: 'all' })
-  verifyDonation(@Body('id') id: string, @Body() doantionVerifyDto: DonationVerifyDto) {
-    return this.donationsService.verifyDonation(id, doantionVerifyDto.verifiedby);
-  }
+  // @Patch('verify')
+  // @ChekcAbilities({ action: Action.UPDATE, subject: 'all' })
+  // verifyDonation(@Body('id') id: string, @Body() doantionVerifyDto: DonationVerifyDto) {
+  //   return this.donationsService.verifyDonation(id, doantionVerifyDto.verifiedby);
+  // }
 
-  @Patch(':id/reject')
-  @ChekcAbilities({ action: Action.UPDATE, subject: 'all' })
-  rejectDonation(@Param('id', ParseUUIDPipe) id: string, @Body() donationRejectDto: DonationRejectDto) {
-    return this.donationsService.rejectDonation(id, donationRejectDto.failedReasons);
-  }
+  // @Patch(':id/reject')
+  // @ChekcAbilities({ action: Action.UPDATE, subject: 'all' })
+  // rejectDonation(@Param('id', ParseUUIDPipe) id: string, @Body() donationRejectDto: DonationRejectDto) {
+  //   return this.donationsService.rejectDonation(id, donationRejectDto.failedReasons);
+  // }
 
   @Patch(':id')
   @ApiConsumes('multipart/form-data')

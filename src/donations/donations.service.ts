@@ -191,19 +191,19 @@ export class DonationsService {
     })
   }
 
-  async verifyDonation(id: string, verifiedBy: string) {
-    const foundDonation = await this.findOne(id);
+  // async verifyDonation(id: string, verifiedBy: string) {
+  //   const foundDonation = await this.findOne(id);
 
-    foundDonation.verifiedBy = verifiedBy;
+  //   foundDonation.verifiedBy = verifiedBy;
 
-    return await this.donationRepo.save(foundDonation);
-  }
+  //   return await this.donationRepo.save(foundDonation);
+  // }
 
-  async rejectDonation(id: string, failedReason: string[]) {
-    const foundDonation = await this.findOne(id);
-    foundDonation.failedReason = failedReason;
-    return await this.donationRepo.save(foundDonation);
-  }
+  // async rejectDonation(id: string, failedReason: string[]) {
+  //   const foundDonation = await this.findOne(id);
+  //   foundDonation.failedReason = failedReason;
+  //   return await this.donationRepo.save(foundDonation);
+  // }
 
   private async retrieveDependencies(donationDto: CreateDonationDto | UpdateDonationDto, donation?: Donation) {
     const donor = donationDto.donor ? await this.donorsService.findDonorWithDonations(donationDto.donor) : donation?.donor ? donation.donor : null;
