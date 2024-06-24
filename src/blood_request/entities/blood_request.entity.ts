@@ -35,13 +35,13 @@ export class BloodRequest extends BaseEntity {
     @Column({ type: 'int' })
     totalAmount: number
 
-    @BeforeInsert()
-    @BeforeUpdate()
-    calculateTotalAmount() {
-        if (this.bloodRequestCharges) {
-            this.totalAmount = this.bloodRequestCharges.reduce((acc, curr) => acc + curr.amount, 0)
-        }
-    }
+    // @BeforeInsert()
+    // @BeforeUpdate()
+    // calculateTotalAmount() {
+    //     if (this.bloodRequestCharges) {
+    //         this.totalAmount = this.bloodRequestCharges.reduce((acc, curr) => acc + curr.amount, 0)
+    //     }
+    // }
 
     @OneToMany(() => RequestedBloodBag, (requestedBloodBag) => requestedBloodBag.bloodRequest, { nullable: true }) // they are mandatory due as payload in create request, just to prevent not null constraint nullable is true
     requestedBloodBags: RequestedBloodBag[]
@@ -58,11 +58,11 @@ export class BloodRequest extends BaseEntity {
     @Column({ type: 'int', nullable: true })
     previouslyTransfused?: number;
 
-    @Column({ type: 'boolean' })
-    reactionToPreviousBlood: boolean
+    @Column({ type: 'boolean', nullable: true })
+    reactionToPreviousBlood?: boolean
 
-    @Column({ type: 'boolean' })
-    reactionToPreviousPlasma: boolean
+    @Column({ type: 'boolean', nullable: true })
+    reactionToPreviousPlasma?: boolean
 
     @Column({ type: 'varchar', nullable: true })
     doctor?: string;

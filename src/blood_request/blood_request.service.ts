@@ -50,7 +50,7 @@ export class BloodRequestService {
     const documentFront = getFileName(createBloodRequestDto.documentFront);
     const documentBack = getFileName(createBloodRequestDto.documentBack);
 
-    // CREATE BILL NO.
+    // CREATE X/M NO.
     const lastBloodRequest = await this.bloodRequestRepo.findOne({ where: { deletedAt: Not(IsNull()) }, order: { createdAt: 'DESC' }, select: { xmNo: true } });
     const xmNo = lastBloodRequest ? lastBloodRequest.xmNo + 1 : 1
 
@@ -63,10 +63,12 @@ export class BloodRequestService {
       patient,
     });
 
-    const savedRequest = await this.bloodRequestsRepository.saveBloodRequest(createdRequest); // TRANSACTION
-
     // CREATE BLOOD REQUEST CHARGES
-    await this.createBloodRequestCharge(savedRequest, createBloodRequestDto);
+    const totalCharge = await this.createBloodRequestCharge(createdRequest, createBloodRequestDto);
+
+    createdRequest.totalAmount = totalCharge;
+
+    const savedRequest = await this.bloodRequestsRepository.saveBloodRequest(createdRequest); // TRANSACTION
 
     // CREATE BLOOD ISSUE STATEMENTS
     await this.bloodInventoryService.createIssueStatements({
@@ -97,6 +99,7 @@ export class BloodRequestService {
 
   async createBloodRequestCharge(bloodRequest: BloodRequest, bloodRequestDto: CreateBloodRequestDto) {
     try {
+      let totalAmount = 0;
       const array = JSON.parse(bloodRequestDto.charges);
       const chargeArray = array.map((charge: { quantity: number, serviceCharge: string }) => new Charge(charge))
 
@@ -109,7 +112,11 @@ export class BloodRequestService {
         })
 
         await this.bloodRequestChargesRepository.saveCharge(bloodRequestCharge); // TRANSACTION
+
+        totalAmount += charge.quantity * serviceCharge.publicRate;
       }
+
+      return totalAmount
 
     } catch (e) {
       throw new BadRequestException('Invalid service charge');
