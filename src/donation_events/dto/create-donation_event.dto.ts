@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsDateString, IsNotEmpty, IsNumber, IsOptional, IsPhoneNumber, IsString, IsUUID } from 'class-validator';
 import { FileSystemStoredFile, HasMimeType, IsFile } from 'nestjs-form-data';
 import { CreateAddressDto } from 'src/address/dto/create-address.dto';
 
@@ -37,12 +37,12 @@ export class CreateDonationEventDto extends CreateAddressDto {
   contactPerson: string;
 
   @ApiProperty({ type: 'string', description: 'Event primary contact number' })
-  @IsString()
+  @IsPhoneNumber('NP')
   @IsNotEmpty()
   primaryContact: string;
 
   @ApiProperty({ type: 'string', description: 'Event secondary contact number' })
-  @IsString()
+  @IsPhoneNumber('NP')
   @IsNotEmpty()
   secondaryContact: string;
 
