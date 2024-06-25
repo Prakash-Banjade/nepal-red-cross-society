@@ -17,7 +17,7 @@ export class AuthController {
     cookieOptions: CookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'none',
+        sameSite: 'lax',
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 day
     }
 
@@ -34,7 +34,7 @@ export class AuthController {
 
         // const expiresIn = new Date(Date.now() + 1 * 60 * 1000);
 
-        return { payload };
+        return { payload, access_token };
     }
 
     // @Public()
