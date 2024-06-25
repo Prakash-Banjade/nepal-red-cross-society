@@ -33,6 +33,7 @@ import { BagTypesModule } from './bag-types/bag-types.module';
 import { ServiceChargeModule } from './service-charge/service-charge.module';
 import { HospitalsModule } from './hospitals/hospitals.module';
 import { ReportsModule } from './reports/reports.module';
+import { CronModule } from './cron/cron.module';
 
 @Module({
   imports: [
@@ -76,6 +77,7 @@ import { ReportsModule } from './reports/reports.module';
     ServiceChargeModule,
     HospitalsModule,
     ReportsModule,
+    CronModule,
   ],
   controllers: [AppController],
   providers: [
