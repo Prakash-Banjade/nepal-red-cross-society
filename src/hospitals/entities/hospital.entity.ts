@@ -17,6 +17,6 @@ export class Hospital extends BaseEntity {
     @Column({ type: 'text', nullable: true })
     secondaryContact?: string
 
-    @OneToMany(() => BloodRequest, bloodRequest => bloodRequest.hospital, { nullable: true })
+    @OneToMany(() => BloodRequest, bloodRequest => bloodRequest.hospital, { nullable: true, onDelete: 'RESTRICT' })
     bloodRequests: BloodRequest[]
 }
