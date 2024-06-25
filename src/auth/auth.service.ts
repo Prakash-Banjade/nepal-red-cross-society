@@ -27,7 +27,7 @@ export class AuthService {
   ) { }
 
   REFRESH_TOKEN_EXPIRE = '7d';
-  ACCESS_TOKEN_EXPIRE = '1m';
+  ACCESS_TOKEN_EXPIRE = '7d';
 
   async signIn(signInDto: SignInDto) {
     const foundUser = await this.usersRepository.findOne({
