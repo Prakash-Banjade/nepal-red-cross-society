@@ -84,21 +84,6 @@ export class CreateBloodRequestDto {
     })
     price!: number
 
-    @ApiPropertyOptional({ type: 'int' })
-    @Transform(({ value }) => parseInt(value))
-    @IsOptional()
-    previouslyTransfused?: number;
-
-    @ApiProperty({ type: 'boolean', default: false })
-    @Transform(({ value }) => value === 'true')
-    @IsNotEmpty()
-    reactionToPreviousBlood: boolean
-
-    @ApiProperty({ type: 'boolean', default: false })
-    @Transform(({ value }) => value === 'true')
-    @IsNotEmpty()
-    reactionToPreviousPlasma: boolean
-
     @ApiProperty({ type: 'string' })
     @IsString()
     @IsNotEmpty()
@@ -107,11 +92,13 @@ export class CreateBloodRequestDto {
 
     @ApiProperty({ type: 'string', format: 'binary' })
     @IsFile()
+    @IsOptional()
     // @HasMimeType(['image/jpeg', 'image/png'])
     documentFront: FileSystemStoredFile;
 
     @ApiProperty({ type: 'string', format: 'binary' })
     @IsFile()
+    @IsOptional()
     // @HasMimeType(['image/jpeg', 'image/png'])
     documentBack: FileSystemStoredFile;
 }

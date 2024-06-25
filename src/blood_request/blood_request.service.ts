@@ -51,7 +51,7 @@ export class BloodRequestService {
     const documentBack = getFileName(createBloodRequestDto.documentBack);
 
     // CREATE X/M NO.
-    const lastBloodRequest = await this.bloodRequestRepo.findOne({ where: { deletedAt: Not(IsNull()) }, order: { createdAt: 'DESC' }, select: { xmNo: true } });
+    const lastBloodRequest = await this.bloodRequestRepo.createQueryBuilder('bloodRequest').orderBy('bloodRequest.createdAt', 'DESC').limit(1).getOne()
     const xmNo = lastBloodRequest ? lastBloodRequest.xmNo + 1 : 1
 
     const createdRequest = this.bloodRequestRepo.create({
@@ -65,10 +65,8 @@ export class BloodRequestService {
 
     // CREATE BLOOD REQUEST CHARGES
     const totalCharge = await this.createBloodRequestCharge(createdRequest, createBloodRequestDto);
-
     createdRequest.totalAmount = totalCharge;
 
-    const savedRequest = await this.bloodRequestsRepository.saveBloodRequest(createdRequest); // TRANSACTION
 
     // CREATE BLOOD ISSUE STATEMENTS
     await this.bloodInventoryService.createIssueStatements({
@@ -88,9 +86,12 @@ export class BloodRequestService {
 
       requestedComponents.push(component);
 
-      const requestedBloodBag = this.requestedBloodBagRepo.create({ bloodBag, bloodRequest: savedRequest, centrifuged });
+      const requestedBloodBag = this.requestedBloodBagRepo.create({ bloodBag, bloodRequest: createdRequest, centrifuged });
       await this.requestedBloodBagRepository.saveRequestedBloodBag(requestedBloodBag); // TRANSACTION
     }
+
+    createdRequest.requestedComponents = requestedComponents;
+    const savedRequest = await this.bloodRequestsRepository.saveBloodRequest(createdRequest); // TRANSACTION
 
     return {
       message: 'Blood request created successfully',
@@ -137,7 +138,7 @@ export class BloodRequestService {
       .leftJoin('bloodRequest.requestedBloodBags', 'requestedBloodBags')
       .leftJoin('bloodRequest.hospital', 'hospital')
       .leftJoin('hospital.address', 'address')
-      .leftJoin('bloodRequest.patient', 'patient')
+      .leftJoinAndSelect('bloodRequest.patient', 'patient')
       .andWhere(new Brackets(qb => {
         // qb.where([
         //   { patientName: ILike(`%${queryDto.search ?? ''}%`) },
@@ -145,15 +146,17 @@ export class BloodRequestService {
         queryDto.bloodType && qb.andWhere({ bloodType: queryDto.bloodType });
         queryDto.rhFactor && qb.andWhere({ rhFactor: queryDto.rhFactor });
         queryDto.municipality && qb.andWhere("LOWER(address.municipality) LIKE LOWER(:municipality)", { municipality: `%${queryDto.municipality ?? ''}%` });
-        queryDto.hospitalName && qb.andWhere("LOWER(hospital.name) LIKE LOWER(:hospitalName)", { hospitalName: `%${queryDto.hospitalName ?? ''}%` });
-        queryDto.search && qb.andWhere("LOWER(patient.patientName) LIKE LOWER(:patientName)", { patientName: ILike(`%${queryDto.search ?? ''}%`) });
+        qb.andWhere(new Brackets(qb => {
+          qb.orWhere("LOWER(hospital.name) LIKE LOWER(:hospitalName)", { hospitalName: `%${queryDto.search ?? ''}%` })
+            .orWhere("LOWER(patient.patientName) LIKE LOWER(:patientName)", { patientName: `%${queryDto.search ?? ''}%` })
+        }))
       }))
       .select([
         'bloodRequest.id',
         'bloodRequest.bloodType',
-        'bloodRequest.patient',
         'bloodRequest.rhFactor',
         'bloodRequest.createdAt',
+        'bloodRequest.totalAmount',
         'bloodRequest.documentFront',
         'bloodRequest.documentBack',
         'bloodRequest.xmNo',
@@ -165,6 +168,12 @@ export class BloodRequestService {
         'hospital.id',
         'hospital.name',
         'address.municipality',
+        'patient.patientName',
+        'patient.patientAge',
+        'patient.patientGender',
+        'patient.id',
+        'patient.inpatientNo',
+        'patient.contact'
       ])
 
     return paginatedData(queryDto, queryBuilder);
@@ -173,7 +182,7 @@ export class BloodRequestService {
   async findOne(id: string) {
     const existingRequest = await this.bloodRequestRepo.findOne({
       where: { id },
-      relations: { requestedBloodBags: true, bloodRequestCharges: true, hospital: true },
+      relations: { requestedBloodBags: true, bloodRequestCharges: true, hospital: true, patient: true },
     });
     if (!existingRequest) throw new BadRequestException('Request not found');
 

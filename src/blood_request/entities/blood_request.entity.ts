@@ -1,7 +1,7 @@
 import { BaseEntity } from "src/core/entities/base.entity";
-import { BloodItems, BloodType, Gender, RhFactor } from "src/core/types/fieldsEnum.types";
+import { BloodType, RhFactor } from "src/core/types/fieldsEnum.types";
 import { Hospital } from "src/hospitals/entities/hospital.entity";
-import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne, OneToMany } from "typeorm";
+import { Column, Entity, ManyToOne, OneToMany } from "typeorm";
 import { BloodRequestCharge } from "./blood-request-charge.entity";
 import { RequestedBloodBag } from "./requestedBloodBag.entity";
 import { Patient } from "./patient.entity";
@@ -11,7 +11,7 @@ export class BloodRequest extends BaseEntity {
     @Column({ type: 'int' })
     xmNo: number
 
-    @ManyToOne(() => Hospital, (hospital) => hospital.bloodRequests)
+    @ManyToOne(() => Hospital, (hospital) => hospital.bloodRequests, { onDelete: 'RESTRICT' })
     hospital: Hospital
 
     @ManyToOne(() => Patient, (patient) => patient.bloodRequests, { onDelete: 'RESTRICT' })
@@ -35,14 +35,6 @@ export class BloodRequest extends BaseEntity {
     @Column({ type: 'int' })
     totalAmount: number
 
-    // @BeforeInsert()
-    // @BeforeUpdate()
-    // calculateTotalAmount() {
-    //     if (this.bloodRequestCharges) {
-    //         this.totalAmount = this.bloodRequestCharges.reduce((acc, curr) => acc + curr.amount, 0)
-    //     }
-    // }
-
     @OneToMany(() => RequestedBloodBag, (requestedBloodBag) => requestedBloodBag.bloodRequest, { nullable: true }) // they are mandatory due as payload in create request, just to prevent not null constraint nullable is true
     requestedBloodBags: RequestedBloodBag[]
 
@@ -55,22 +47,13 @@ export class BloodRequest extends BaseEntity {
     @Column({ type: 'simple-array' })
     requestedComponents: string[]
 
-    @Column({ type: 'int', nullable: true })
-    previouslyTransfused?: number;
-
-    @Column({ type: 'boolean', nullable: true })
-    reactionToPreviousBlood?: boolean
-
-    @Column({ type: 'boolean', nullable: true })
-    reactionToPreviousPlasma?: boolean
-
     @Column({ type: 'varchar', nullable: true })
     doctor?: string;
 
-    @Column({ type: 'text' })
+    @Column({ type: 'text', nullable: true })
     documentFront: string;
 
-    @Column({ type: 'text' })
+    @Column({ type: 'text', nullable: true })
     documentBack: string;
 
     @Column({ type: 'varchar', default: 'Citizenship' })
