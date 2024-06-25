@@ -27,7 +27,7 @@ export class Donation extends BaseEntity {
     donationType: DonationType
 
     // based on the donation type the organization will be defined, if donation type is individual, organization will be null else defined
-    @ManyToOne(() => Organization, (organization) => organization.donations, { nullable: true })
+    @ManyToOne(() => Organization, (organization) => organization.donations, { nullable: true, onDelete: 'RESTRICT' })
     organization: Organization
 
     @OneToOne(() => BloodBag, blood_bag => blood_bag.donation)
