@@ -44,6 +44,8 @@ export class BloodRequestService {
     const patient = await this.patientService.findOne(createBloodRequestDto.patientId);
     // VALIDATE PATIENT BLOOD TYPE AND RH FACTOR
     if (patient.bloodType !== createBloodRequestDto.bloodType || patient.rhFactor !== createBloodRequestDto.rhFactor) throw new BadRequestException('Patient blood type or rh factor does not match');
+    patient.previouslyTransfused += 1
+    await this.bloodRequestsRepository.savePatient(patient)
 
 
     const hospital = await this.hospitalService.findOne(createBloodRequestDto.hospitalId);

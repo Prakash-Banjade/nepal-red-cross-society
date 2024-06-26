@@ -4,6 +4,7 @@ import { Request } from 'express';
 import { BaseRepository } from 'src/core/repository/base.repository';
 import { DataSource } from 'typeorm';
 import { BloodRequest } from '../entities/blood_request.entity';
+import { Patient } from '../entities/patient.entity';
 
 @Injectable({ scope: Scope.REQUEST })
 export class BloodRequestsRepository extends BaseRepository {
@@ -13,5 +14,9 @@ export class BloodRequestsRepository extends BaseRepository {
 
     async saveBloodRequest(bloodRequest: BloodRequest) {
         return await this.getRepository<BloodRequest>(BloodRequest).save(bloodRequest);
+    }
+
+    async savePatient(patient: Patient) {
+        return await this.getRepository<Patient>(Patient).save(patient);
     }
 }
