@@ -32,7 +32,7 @@ export class BloodRequest extends BaseEntity {
     @OneToMany(() => BloodRequestCharge, (bloodRequestCharge) => bloodRequestCharge.bloodRequest, { nullable: true }) // they are mandatory due as payload in create request, just to prevent not null constraint nullable is true
     bloodRequestCharges: BloodRequestCharge[]
 
-    @Column({ type: 'int' })
+    @Column({ type: 'int', nullable: true }) // this field will have value, just to prevent not null contstraint, nullable is true
     totalAmount: number
 
     @OneToMany(() => RequestedBloodBag, (requestedBloodBag) => requestedBloodBag.bloodRequest, { nullable: true }) // they are mandatory due as payload in create request, just to prevent not null constraint nullable is true
@@ -44,8 +44,11 @@ export class BloodRequest extends BaseEntity {
     @Column({ type: 'enum', enum: RhFactor })
     rhFactor: RhFactor;
 
-    @Column({ type: 'simple-array' })
-    requestedComponents: string[]
+    @Column({ type: 'simple-array', nullable: true }) // this field will have value, just to prevent not null contstraint, nullable is true
+    requestedComponents: string[] // format: ['componentName-quantity']
+
+    @Column({ type: 'simple-array', nullable: true }) // this field will have value, just to prevent not null contstraint, nullable is true
+    currentCharges: string[] // format: ['particular-quantity-rate']
 
     @Column({ type: 'varchar', nullable: true })
     doctor?: string;

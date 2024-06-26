@@ -41,8 +41,12 @@ export class BloodRequestService {
     // transform inventoryIds to array, it can be single string also so convert it into array
     createBloodRequestDto.inventoryIds = typeof createBloodRequestDto.inventoryIds === 'string' ? [createBloodRequestDto.inventoryIds] : createBloodRequestDto.inventoryIds;
 
-    const hospital = await this.hospitalService.findOne(createBloodRequestDto.hospitalId);
     const patient = await this.patientService.findOne(createBloodRequestDto.patientId);
+    // VALIDATE PATIENT BLOOD TYPE AND RH FACTOR
+    if (patient.bloodType !== createBloodRequestDto.bloodType || patient.rhFactor !== createBloodRequestDto.rhFactor) throw new BadRequestException('Patient blood type or rh factor does not match');
+
+
+    const hospital = await this.hospitalService.findOne(createBloodRequestDto.hospitalId);
 
     // VALIDATE BLOOD INVENTORIES
     await this.bloodInventoryService.checkIfBloodAvailableForRequest(createBloodRequestDto, currentUser);
@@ -62,11 +66,12 @@ export class BloodRequestService {
       hospital,
       patient,
     });
+    const savedRequest = await this.bloodRequestsRepository.saveBloodRequest(createdRequest); // TRANSACTION
 
     // CREATE BLOOD REQUEST CHARGES
-    const totalCharge = await this.createBloodRequestCharge(createdRequest, createBloodRequestDto);
-    createdRequest.totalAmount = totalCharge;
-
+    const { totalAmount, currentCharges } = await this.createBloodRequestCharge(savedRequest, createBloodRequestDto);
+    createdRequest.totalAmount = totalAmount;
+    createdRequest.currentCharges = currentCharges;
 
     // CREATE BLOOD ISSUE STATEMENTS
     await this.bloodInventoryService.createIssueStatements({
@@ -84,14 +89,16 @@ export class BloodRequestService {
 
       const centrifuged = bloodBag?.bagType?.bloodComponents?.length > 0
 
-      requestedComponents.push(component);
+      requestedComponents.push(`${component}-${bloodBag?.bagNo}`);
 
-      const requestedBloodBag = this.requestedBloodBagRepo.create({ bloodBag, bloodRequest: createdRequest, centrifuged });
+      const requestedBloodBag = this.requestedBloodBagRepo.create({ bloodBag, bloodRequest: savedRequest, centrifuged });
       await this.requestedBloodBagRepository.saveRequestedBloodBag(requestedBloodBag); // TRANSACTION
     }
 
     createdRequest.requestedComponents = requestedComponents;
-    const savedRequest = await this.bloodRequestsRepository.saveBloodRequest(createdRequest); // TRANSACTION
+
+    await this.bloodRequestsRepository.saveBloodRequest(createdRequest);
+
 
     return {
       message: 'Blood request created successfully',
@@ -101,6 +108,7 @@ export class BloodRequestService {
   async createBloodRequestCharge(bloodRequest: BloodRequest, bloodRequestDto: CreateBloodRequestDto) {
     try {
       let totalAmount = 0;
+      let currentCharges: string[] = [];
       const array = JSON.parse(bloodRequestDto.charges);
       const chargeArray = array.map((charge: { quantity: number, serviceCharge: string }) => new Charge(charge))
 
@@ -115,9 +123,10 @@ export class BloodRequestService {
         await this.bloodRequestChargesRepository.saveCharge(bloodRequestCharge); // TRANSACTION
 
         totalAmount += charge.quantity * serviceCharge.publicRate;
+        currentCharges = [...currentCharges, `${serviceCharge.particular}-${charge.quantity}-${serviceCharge.publicRate}`];
       }
 
-      return totalAmount
+      return { totalAmount, currentCharges }
 
     } catch (e) {
       throw new BadRequestException('Invalid service charge');
@@ -182,7 +191,7 @@ export class BloodRequestService {
   async findOne(id: string) {
     const existingRequest = await this.bloodRequestRepo.findOne({
       where: { id },
-      relations: { requestedBloodBags: true, bloodRequestCharges: true, hospital: true, patient: true },
+      relations: { requestedBloodBags: true, bloodRequestCharges: true, hospital: { address: true }, patient: true },
     });
     if (!existingRequest) throw new BadRequestException('Request not found');
 
