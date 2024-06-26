@@ -1,8 +1,8 @@
 import { BadRequestException } from "@nestjs/common";
 import { ApiProperty, ApiPropertyOptional, OmitType, PartialType } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
-import { IsDateString, IsEnum, IsNotEmpty, IsOptional, IsPhoneNumber, IsString } from "class-validator";
-import { FileSystemStoredFile, IsFile } from "nestjs-form-data";
+import { IsDateString, IsEnum, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, ValidateIf } from "class-validator";
+import { FileSystemStoredFile } from "nestjs-form-data";
 import { District } from "src/core/types/districts.types";
 import { BloodType, Gender, RhFactor } from "src/core/types/fieldsEnum.types";
 
@@ -64,21 +64,22 @@ export class CreatePatientDto {
 
     @ApiProperty({ type: 'string' })
     @IsString()
-    @IsOptional()
+    @IsNotEmpty({ message: 'Either none or all of the fields: Citizenship Number, Issued From, Issued Date must be provided' })
+    @ValidateIf((o) => (o.issuedFrom?.length > 0 || o.issueDate?.length > 0))
     citizenshipNo?: string;
 
     @ApiProperty({ type: 'enum', enum: District, description: 'District' })
-    @IsEnum(District)
-    @IsOptional()
+    @IsEnum(District, { message: 'Either none or all of the fields: Citizenship Number, Issued From, Issued Date must be provided' })
+    @ValidateIf((o) => (o.citizenshipNo?.length > 0 || o.issueDate?.length > 0))
     issuedFrom?: District;
 
     @ApiProperty({ type: Date })
     @IsDateString()
-    @IsOptional()
+    @IsNotEmpty({ message: 'Either none or all of the fields: Citizenship Number, Issued From, Issued Date must be provided' })
+    @ValidateIf((o) => (o.citizenshipNo?.length > 0 || o.issuedFrom?.length > 0))
     issueDate?: string;
 
     @ApiProperty({ type: 'string', format: 'binary', description: 'Permanent Paper' })
-    @IsFile()
     @IsOptional()
     permanentPaper?: FileSystemStoredFile;
 
