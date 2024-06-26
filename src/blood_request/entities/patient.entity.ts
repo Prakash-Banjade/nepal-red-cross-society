@@ -42,7 +42,7 @@ export class Patient extends BaseEntity {
     @Column({ type: 'enum', enum: District, nullable: true })
     issuedFrom: District
 
-    @Column({ type: 'int', nullable: true })
+    @Column({ type: 'int', nullable: true, default: 0 })
     previouslyTransfused?: number;
 
     @Column({ type: 'boolean', nullable: true })
