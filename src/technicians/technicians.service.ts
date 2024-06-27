@@ -5,15 +5,11 @@ import { Technician } from './entities/technician.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, ILike, In, IsNull, Not, Or, Repository, SelectQueryBuilder } from 'typeorm';
 import { DonationEvent } from 'src/donation_events/entities/donation_event.entity';
-import { Address } from 'src/address/entities/address.entity';
-import { PageDto } from 'src/core/dto/page.dto.';
-import { PageOptionsDto } from 'src/core/dto/pageOptions.dto';
 import paginatedData from 'src/core/utils/paginatedData';
-import { PageMetaDto } from 'src/core/dto/pageMeta.dto';
 import { AddressService } from 'src/address/address.service';
 import { extractAddress } from 'src/core/utils/extractAddress';
 import getFileName from 'src/core/utils/getImageUrl';
-import { Deleted, QueryDto } from 'src/core/dto/queryDto';
+import { Deleted } from 'src/core/dto/queryDto';
 import { TechnicianQueryDto } from './dto/technician-query.dto';
 
 @Injectable()
@@ -27,6 +23,9 @@ export class TechniciansService {
   ) { }
 
   async create(createTechnicianDto: CreateTechnicianDto) {
+    const existingTechnician = await this.technicianRepo.findOneBy({ phone: createTechnicianDto.phone });
+    if (existingTechnician) throw new BadRequestException('Technician with this phone already exists');
+
     // evaluate address
     const address = await this.addressService.create(extractAddress(createTechnicianDto));
 
