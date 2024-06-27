@@ -18,7 +18,7 @@ export class PatientController {
 
     @Post()
     @ApiConsumes('multipart/form-data')
-    @Throttle({ default: { limit: 5, ttl: 60000 } })
+    @Throttle({ default: { limit: 5, ttl: 20000 } })
     @UseInterceptors(TransactionInterceptor)
     @FormDataRequest({ storage: FileSystemStoredFile })
     @ChekcAbilities({ action: Action.CREATE, subject: 'all' })
