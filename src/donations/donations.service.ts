@@ -106,9 +106,12 @@ export class DonationsService {
       .leftJoinAndSelect('donation.donation_event', 'donation_event')
       .where({ deletedAt })
       .andWhere(new Brackets(qb => {
-        if (queryDto.search) qb.orWhere("LOWER(bloodBag.bagNo) LIKE LOWER(:bagNo)", { bagNo: `%${queryDto.search ?? ''}%` });
-        if (queryDto.search) qb.orWhere("LOWER(donor.firstName) LIKE LOWER(:donorFirstName)", { donorFirstName: `%${queryDto.search ?? ''}%` });
-        if (queryDto.search) qb.orWhere("LOWER(donor.lastName) LIKE LOWER(:donorLastName)", { donorLastName: `%${queryDto.search ?? ''}%` });
+        if (queryDto.search) {
+          qb.orWhere("LOWER(bloodBag.bagNo) LIKE LOWER(:bagNo)", { bagNo: `%${queryDto.search ?? ''}%` });
+          qb.orWhere("LOWER(donor.firstName) LIKE LOWER(:donorFirstName)", { donorFirstName: `%${queryDto.search ?? ''}%` });
+          qb.orWhere("LOWER(donor.lastName) LIKE LOWER(:donorLastName)", { donorLastName: `%${queryDto.search ?? ''}%` });
+          qb.orWhere("LOWER(organization.name) LIKE LOWER(:organizationName)", { organizationName: `%${queryDto.search ?? ''}%` });
+        }
       }))
       .andWhere(new Brackets(qb => {
         if (queryDto.status) qb.andWhere({ status: ILike(`%${queryDto.status ?? ''}%`) })
@@ -117,7 +120,7 @@ export class DonationsService {
         if (queryDto.rhFactor) qb.andWhere("LOWER(donor.rhFactor) LIKE LOWER(:donorRhFactor)", { donorRhFactor: `%${queryDto.rhFactor ?? ''}%` });
         if (queryDto.rhFactor) qb.andWhere("LOWER(organization.name) LIKE LOWER(:organizationName)", { organizationName: `%${queryDto.organizationName ?? ''}%` });
       }))
-      
+
 
     return paginatedData(queryDto, queryBuilder);
   }
