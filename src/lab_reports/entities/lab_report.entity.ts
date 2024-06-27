@@ -16,11 +16,11 @@ export class LabReport extends BaseEntity {
     donation: Donation;
 
     @Column({ type: 'simple-array', nullable: true })
-    separatedComponents: string[]
+    separatedComponents: string[] // format [componentId#componentName]
 
     @OneToMany(() => TestResult, (testResult) => testResult.labReport, { nullable: true })
     testResults: TestResult[];
 
     @Column({ type: "simple-array", nullable: true })
-    failedReason: string[] // failed reasons during centrifugation
+    failedReasons: string[] // failed reasons during centrifugation
 }

@@ -10,6 +10,7 @@ import { InventoryItem } from 'src/inventory/entities/inventory-item.entity';
 import { DonorsModule } from 'src/donors/donors.module';
 import { BloodInventory } from 'src/inventory/entities/blood_inventory.entity';
 import { BloodComponent } from 'src/bag-types/entities/blood-component.entity';
+import { LabReportRepository } from './repository/lab-reports.repository';
 
 @Module({
   imports: [
@@ -25,7 +26,7 @@ import { BloodComponent } from 'src/bag-types/entities/blood-component.entity';
     DonorsModule,
   ],
   controllers: [LabReportsController],
-  providers: [LabReportsService],
+  providers: [LabReportsService, LabReportRepository],
   exports: [LabReportsService],
 })
 export class LabReportsModule { }

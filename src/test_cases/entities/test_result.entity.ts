@@ -12,9 +12,9 @@ export class TestResult extends BaseEntity {
     @ManyToOne(() => TestCase, (testCase) => testCase.testResults)
     testCase: TestCase;
 
-    @Column({ type: 'text' })
+    @Column({ type: 'text', nullable: true })
     obtainedResult: string;
 
-    @Column({ type: 'enum', enum: TestCaseStatus, default: TestCaseStatus.FAIL })
+    @Column({ type: 'enum', enum: TestCaseStatus, default: TestCaseStatus.REACTIVE })
     status: TestCaseStatus;
 }

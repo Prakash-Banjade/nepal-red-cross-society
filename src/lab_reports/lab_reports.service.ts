@@ -9,13 +9,14 @@ import { TestCase } from 'src/test_cases/entities/test_case.entity';
 import { TestResult } from 'src/test_cases/entities/test_result.entity';
 import { Deleted, QueryDto } from 'src/core/dto/queryDto';
 import paginatedData from 'src/core/utils/paginatedData';
-import { BloodInventoryStatus, DonationStatus, InventoryTransaction, TestCaseStatus } from 'src/core/types/fieldsEnum.types';
+import { BloodInventoryStatus, DonationStatus, DonationType, InventoryTransaction, TestCaseStatus } from 'src/core/types/fieldsEnum.types';
 import { DonorsService } from 'src/donors/donors.service';
 import { UpdateDonorDto } from 'src/donors/dto/update-donor.dto';
 import { BloodInventory } from 'src/inventory/entities/blood_inventory.entity';
 import { RequestUser } from 'src/core/types/global.types';
 import { BranchService } from 'src/branch/branch.service';
 import { BloodComponent } from 'src/bag-types/entities/blood-component.entity';
+import { LabReportRepository } from './repository/lab-reports.repository';
 
 @Injectable()
 export class LabReportsService {
@@ -27,7 +28,8 @@ export class LabReportsService {
     @InjectRepository(BloodInventory) private readonly bloodInventoryRepo: Repository<BloodInventory>,
     @InjectRepository(BloodComponent) private readonly bloodComponentRepo: Repository<BloodComponent>,
     private readonly donorService: DonorsService,
-    private readonly branchService: BranchService
+    private readonly branchService: BranchService,
+    private readonly labReportRepository: LabReportRepository,
   ) { }
 
   async create(createLabReportDto: CreateLabReportDto, currentUser: RequestUser) {
@@ -37,19 +39,19 @@ export class LabReportsService {
       date: createLabReportDto.date,
       issuedBy: createLabReportDto.issuedBy,
       donation: donation,
-      failedReason: createLabReportDto.failedReason || [],
+      failedReasons: createLabReportDto.failedReasons || [],
     })
 
-    const savedLabReport = await this.labReportRepo.save(labReport);
+    const savedLabReport = await this.labReportRepository.saveReport(labReport);
 
     let isSucceed = await this.evaluateTestResults(createLabReportDto, savedLabReport); // also save test results
-    if (createLabReportDto.failedReason && createLabReportDto.failedReason?.length > 0) isSucceed = false
+    if (createLabReportDto.failedReasons && createLabReportDto.failedReasons?.length > 0) isSucceed = false
 
     // change donation status and verifiedBy
     donation.status = isSucceed ? DonationStatus.SUCCESS : DonationStatus.FAILED;
     donation.verifiedBy = createLabReportDto.issuedBy
 
-    await this.donationRepo.save(donation);
+    await this.labReportRepository.saveDonation(donation);
 
     // update blood inventory item with corresponding blood bag no only if the test result is positive
     isSucceed && await this.updateBloodInventory(donation, isSucceed, createLabReportDto, currentUser, savedLabReport);
@@ -88,7 +90,7 @@ export class LabReportsService {
           rhFactor: labReportDto.rhFactor,
           branch,
           date: labReportDto.date,
-          source: `Event: ${donation.donation_event?.name}`,
+          source: donation?.donationType === DonationType.INDIVIDUAL ? `${donation?.donor?.firstName} ${donation?.donor?.lastName}` : `Event: ${donation.donation_event?.name}`,
           destination: `${branch.name} Blood Bank`,
           price: 0,
           status: isSucceed ? BloodInventoryStatus.USABLE : BloodInventoryStatus.WASTE,
@@ -97,19 +99,19 @@ export class LabReportsService {
           component: component.componentName,
         })
 
-        await this.bloodInventoryRepo.save(createdBloodInventoryItem)
-        components.push(component.componentName)
+        await this.labReportRepository.saveBloodInventory(createdBloodInventoryItem)
+        components.push(`${component.id}#${component.componentName}`)
       }
     } else {
       for (const inventory of oldInventory) {
         inventory.status = BloodInventoryStatus.WASTE
-        await this.bloodInventoryRepo.save(inventory)
+        await this.labReportRepository.saveBloodInventory(inventory)
       }
     }
 
     labReport.separatedComponents = components;
 
-    await this.labReportRepo.save(labReport);
+    await this.labReportRepository.saveReport(labReport);
 
   }
 
@@ -148,7 +150,7 @@ export class LabReportsService {
       donation: existingDonation
     });
 
-    const savedLabReport = await this.labReportRepo.save(existingLabReport);
+    const savedLabReport = await this.labReportRepository.saveReport(existingLabReport);
 
     const isSucceed = await this.evaluateTestResults_update(updateLabReportDto, savedLabReport.id);
 
@@ -156,7 +158,7 @@ export class LabReportsService {
 
     existingDonation.verifiedBy = updateLabReportDto?.issuedBy || existingDonation.verifiedBy
 
-    await this.donationRepo.save(existingDonation);
+    await this.labReportRepository.saveDonation(existingDonation);
 
     // update blood inventory item with corresponding blood bag no
     await this.updateBloodInventory(existingDonation, isSucceed, updateLabReportDto, currentUser, savedLabReport);
@@ -207,17 +209,19 @@ export class LabReportsService {
       const obtainedResult = createLabReportDto.testCases.find(t => t.testCase === testCase.id).obtainedResult;
       const status = createLabReportDto.testCases.find(t => t.testCase === testCase.id).status
 
-      await this.testResultRepo.save({
+      const testResult = this.testResultRepo.create({
         labReport,
         testCase,
         obtainedResult,
         status,
       })
 
-      statusArr.push(status === TestCaseStatus.PASS);
+      await this.labReportRepository.saveTestResult(testResult);
+
+      statusArr.push(status === TestCaseStatus.NONREACTIVE);
     }
 
-    return statusArr.every(status => !!status);
+    return (statusArr.every(status => !!status) && !createLabReportDto?.failedReasons?.length);
 
   }
 
@@ -239,11 +243,11 @@ export class LabReportsService {
         obtainedResult,
         status,
       })
-      await this.testResultRepo.save(foundTestResult);
+      await this.labReportRepository.saveTestResult(foundTestResult);
 
-      statusArr.push(status === TestCaseStatus.PASS);
+      statusArr.push(status === TestCaseStatus.NONREACTIVE);
     }
 
-    return statusArr.every(status => !!status);
+    return (statusArr.every(status => !!status) && !updateLabReportDto?.failedReasons?.length);
   }
 }

@@ -1,7 +1,7 @@
 import { BadRequestException } from "@nestjs/common";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsDefined, IsEnum, IsNotEmpty, IsNotEmptyObject, IsObject, IsOptional, IsString, IsUUID } from "class-validator";
+import { ArrayMinSize, IsArray, IsDateString, IsDefined, IsEnum, IsNotEmpty, IsNotEmptyObject, IsObject, IsOptional, IsString, IsUUID, ValidateIf } from "class-validator";
 import { BloodType, RhFactor, TestCaseStatus } from "src/core/types/fieldsEnum.types";
 
 class TestCase {
@@ -12,17 +12,18 @@ class TestCase {
 
     @ApiProperty({ type: 'string', description: 'Obtained result' })
     @IsString()
-    @IsNotEmpty()
-    obtainedResult: string;
+    @IsOptional()
+    obtainedResult?: string;
 
     @ApiProperty({ type: 'enum', enum: TestCaseStatus, description: 'Test Case Status' })
-    @IsEnum(TestCaseStatus)
+    @IsEnum(TestCaseStatus, { message: 'Invalid test case status. Test case status must be either ' + Object.values(TestCaseStatus).join(', ') })
     @IsNotEmpty()
     status: TestCaseStatus;
 }
 
 export class CreateLabReportDto {
     @ApiProperty({ format: 'date-time' })
+    @IsDateString()
     @IsNotEmpty()
     date: string;
 
@@ -51,11 +52,17 @@ export class CreateLabReportDto {
 
     @ApiProperty({ type: [String], description: 'Array of component ids', format: 'uuidv4', isArray: true })
     @IsUUID("all", { message: 'Invalid component ids. Component ids must be UUIDs', each: true })
-    @IsNotEmpty()
-    componentIds: string[]
+    @IsArray()
+    @ArrayMinSize(1, { message: 'Component ids cannot be empty' })
+    @ValidateIf(o => !o.failedReasons?.length)
+    @IsNotEmpty({ each: true })
+    componentIds: string[] = [];
 
     @ApiPropertyOptional({ type: [String], description: 'Array of failed reasons in string', isArray: true })
     @IsString({ each: true })
-    @IsOptional()
-    failedReason?: string[]
+    @IsNotEmpty({ each: true })
+    @IsArray()
+    @ArrayMinSize(1, { message: 'Failed reasons cannot be empty' })
+    @ValidateIf(o => !o.componentIds?.length)
+    failedReasons: string[]
 }

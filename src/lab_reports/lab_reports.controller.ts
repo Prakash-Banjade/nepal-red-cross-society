@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, ParseUUIDPipe, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, ParseUUIDPipe, Query, UseInterceptors } from '@nestjs/common';
 import { LabReportsService } from './lab_reports.service';
 import { CreateLabReportDto } from './dto/create-lab_report.dto';
 import { UpdateLabReportDto } from './dto/update-lab_report.dto';
@@ -10,6 +10,7 @@ import { ApiPaginatedResponse } from 'src/core/decorators/apiPaginatedResponse.d
 import { QueryDto } from 'src/core/dto/queryDto';
 import { Throttle } from '@nestjs/throttler';
 import { CurrentUser } from 'src/core/decorators/user.decorator';
+import { TransactionInterceptor } from 'src/core/interceptors/transaction.interceptor';
 
 @ApiTags('Lab Reports')
 @Controller('lab-reports')
@@ -19,6 +20,7 @@ export class LabReportsController {
   @Post()
   @ApiConsumes('multipart/form-data')
   @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @UseInterceptors(TransactionInterceptor)
   @FormDataRequest({ storage: FileSystemStoredFile })
   @ChekcAbilities({ action: Action.CREATE, subject: 'all' })
   create(@Body() createLabReportDto: CreateLabReportDto, @CurrentUser() currentUser: RequestUser) {
@@ -40,6 +42,7 @@ export class LabReportsController {
 
   @Patch(':id')
   @ApiConsumes('multipart/form-data')
+  @UseInterceptors(TransactionInterceptor)
   @Throttle({ default: { limit: 1, ttl: 2000 } })
   @ChekcAbilities({ action: Action.UPDATE, subject: 'all' })
   @FormDataRequest({ storage: FileSystemStoredFile })
