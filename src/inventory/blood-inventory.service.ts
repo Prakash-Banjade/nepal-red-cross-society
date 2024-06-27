@@ -100,7 +100,7 @@ export class BloodInventoryService {
             .where("branch.id = :branchId", { branchId: currentUser.branchId })
             .andWhere(new Brackets(qb => {
                 qb.andWhere({ component: ILike(component) })
-                qb.andWhere({ status: BloodInventoryStatus.USABLE })
+                qb.andWhere({ status: availableInventoryDto.status })
                 qb.andWhere({ transactionType: InventoryTransaction.ISSUED })
                 qb.andWhere({ bloodType })
                 qb.andWhere({ rhFactor })
@@ -117,7 +117,7 @@ export class BloodInventoryService {
             .where("branch.id = :branchId", { branchId: currentUser.branchId })
             .andWhere(new Brackets(qb => {
                 qb.andWhere({ component: ILike(component) })
-                qb.andWhere({ status: BloodInventoryStatus.USABLE })
+                qb.andWhere({ status: availableInventoryDto.status })
                 qb.andWhere({ transactionType: InventoryTransaction.RECEIVED })
                 qb.andWhere({ bloodType })
                 qb.andWhere({ rhFactor })
@@ -125,6 +125,10 @@ export class BloodInventoryService {
 
         if (issuedBloodBagNumbersArray.length > 0) {
             receivedStatementsQuery = receivedStatementsQuery.andWhere("bloodBag.bagNo NOT IN (:...issuedBloodBagNumbers)", { issuedBloodBagNumbers: issuedBloodBagNumbersArray });
+        }
+
+        if (availableInventoryDto?.paginated === 'true') {
+            return paginatedData(availableInventoryDto, receivedStatementsQuery);
         }
 
         const receivedStatements = await receivedStatementsQuery.getMany();

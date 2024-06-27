@@ -139,4 +139,14 @@ export class AvailableInventoryDto extends QueryDto {
     @IsNotEmpty()
     @IsOptional()
     component!: string;
+
+    @ApiPropertyOptional({ type: 'enum', enum: BloodInventoryStatus })
+    @IsEnum(BloodInventoryStatus)
+    @IsOptional()
+    status?: BloodInventoryStatus = BloodInventoryStatus.USABLE
+
+    @ApiPropertyOptional({ type: String, description: 'Paginated' })
+    @IsOptional()
+    @IsString()
+    paginated?: string = 'false'
 }
