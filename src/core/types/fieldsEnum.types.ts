@@ -25,8 +25,8 @@ export enum RhFactor {
 }
 
 export enum TestCaseStatus {
-    PASS = 'pass',
-    FAIL = 'fail',
+    REACTIVE = 'reactive',
+    NONREACTIVE = 'nonreactive',
 }
 
 export enum Caste {
