@@ -1,8 +1,9 @@
 import { BaseEntity } from "src/core/entities/base.entity";
 import { BloodType, Gender, RhFactor } from "src/core/types/fieldsEnum.types";
-import { Column, Entity, OneToMany } from "typeorm";
+import { Column, Entity, OneToMany, OneToOne } from "typeorm";
 import { BloodRequest } from "./blood_request.entity";
 import { District } from "src/core/types/districts.types";
+import { Address } from "src/address/entities/address.entity";
 
 @Entity()
 export class Patient extends BaseEntity {
@@ -26,6 +27,9 @@ export class Patient extends BaseEntity {
 
     @Column({ type: 'varchar', nullable: true })
     contact?: string;
+
+    @OneToOne(() => Address, (address) => address.patient)
+    address: Address
 
     @Column({ type: 'varchar', nullable: true })
     permanentPaper?: string;

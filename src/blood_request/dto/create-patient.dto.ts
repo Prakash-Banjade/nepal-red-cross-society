@@ -3,10 +3,11 @@ import { ApiProperty, ApiPropertyOptional, OmitType, PartialType } from "@nestjs
 import { Transform } from "class-transformer";
 import { IsDateString, IsEnum, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, ValidateIf } from "class-validator";
 import { FileSystemStoredFile } from "nestjs-form-data";
+import { CreateAddressDto } from "src/address/dto/create-address.dto";
 import { District } from "src/core/types/districts.types";
 import { BloodType, Gender, RhFactor } from "src/core/types/fieldsEnum.types";
 
-export class CreatePatientDto {
+export class CreatePatientDto extends CreateAddressDto {
     @ApiProperty({ type: 'string' })
     @IsString()
     @IsNotEmpty()

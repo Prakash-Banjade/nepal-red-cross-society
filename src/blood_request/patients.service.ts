@@ -7,11 +7,14 @@ import paginatedData from "src/core/utils/paginatedData";
 import { Deleted } from "src/core/dto/queryDto";
 import { PatientQueryDto } from "./dto/patientQueryDto";
 import getFileName from "src/core/utils/getImageUrl";
+import { AddressService } from "src/address/address.service";
+import { extractAddress } from "src/core/utils/extractAddress";
 
 @Injectable()
 export class PatientsService {
     constructor(
         @InjectRepository(Patient) private readonly patientRepo: Repository<Patient>,
+        private readonly addressService: AddressService
     ) { }
 
     async create(createPatientDto: CreatePatientDto) {
@@ -25,10 +28,12 @@ export class PatientsService {
         if (duplicatePatient) throw new ConflictException('Duplicate Patient. Same inpatient no or contact already exists');
 
         const permanentPaper = createPatientDto.permanentPaper ? getFileName(createPatientDto.permanentPaper) : null;
+        const address = await this.addressService.create(extractAddress(createPatientDto));
 
         return await this.patientRepo.save({
             ...createPatientDto,
             permanentPaper,
+            address,
         });
     }
 
@@ -40,6 +45,7 @@ export class PatientsService {
             .orderBy("patient.createdAt", queryDto.order)
             .skip(queryDto.search ? undefined : queryDto.skip)
             .take(queryDto.search ? undefined : queryDto.take)
+            .leftJoinAndSelect('patient.address', 'address')
             .withDeleted()
             .where({ deletedAt })
             .andWhere(new Brackets(qb => {
@@ -54,7 +60,7 @@ export class PatientsService {
     }
 
     async findOne(id: string) {
-        const existing = await this.patientRepo.findOne({ where: { id } });
+        const existing = await this.patientRepo.findOne({ where: { id }, relations: { address: true } });
         if (!existing) throw new BadRequestException('Patient not found');
 
         return existing;
@@ -73,6 +79,8 @@ export class PatientsService {
         if (duplicatePatient.id !== existing.id) throw new ConflictException('Duplicate details. Same inpatient no or contact already exists');
 
         const permanentPaper = updatePatientDto.permanentPaper ? getFileName(updatePatientDto.permanentPaper) : existing.permanentPaper;
+        updatePatientDto.country && await this.addressService.update(existing.address.id, extractAddress(updatePatientDto))
+
 
         Object.assign(existing, {
             ...updatePatientDto,

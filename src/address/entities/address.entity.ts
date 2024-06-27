@@ -11,6 +11,7 @@ import { DonationEvent } from "src/donation_events/entities/donation_event.entit
 import { Province } from "src/core/types/provinces.types";
 import { District } from "src/core/types/districts.types";
 import { Hospital } from "src/hospitals/entities/hospital.entity";
+import { Patient } from "src/blood_request/entities/patient.entity";
 
 @Entity()
 export class Address extends BaseEntity {
@@ -51,6 +52,10 @@ export class Address extends BaseEntity {
     @OneToOne(() => Hospital, (hospital) => hospital.address, { nullable: true, onDelete: 'CASCADE' })
     @JoinColumn()
     hospital: Hospital
+
+    @OneToOne(() => Patient, (patient) => patient.address, { nullable: true, onDelete: 'CASCADE' })
+    @JoinColumn()
+    patient: Patient
 
     @BeforeInsert()
     @BeforeUpdate()
