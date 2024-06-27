@@ -177,9 +177,10 @@ export class DonationEventsService {
         }
       }
     */
-   const branch = await this.branchService.findOne(currentUser.branchId);
-   
+    const branch = await this.branchService.findOne(currentUser.branchId);
+
     const inventoryItemsArray = this.jsonParse(inventoryItems)
+    // this.isInventoryItemsProvided(inventoryItemsArray)
     const existingEvent = await this.findOne(id);
     let createdBloodBagNo: string[] = []
 
@@ -196,9 +197,9 @@ export class DonationEventsService {
       if (key === CONSTANTS.BLOOD_BAG_KEY) { // checking quantity of blood bags
         for (const [key, quantity] of Object.entries(value as Record<string, number>)) {
           // if (!(key in bloodBagCount) || !bloodBagCount[key][BloodBagStatus.USABLE] || bloodBagCount[key][BloodBagStatus.USABLE] < quantity) throw new BadRequestException('Not enough blood bags of type ' + key);
-          if (key in bloodBagCount && bloodBagCount[key] < quantity) throw new BadRequestException('Not enough blood bags of type ' + key);
+          if (key in bloodBagCount && quantity && bloodBagCount[key] < quantity) throw new BadRequestException('Not enough blood bags of type ' + key);
         }
-      } else {
+      } else if (value) {
         const inventory = await this.inventoryService.getInventoryByName(key, currentUser)
         if (typeof value === 'number' && inventory.quantity < value) throw new BadRequestException('Not enough ' + key);
       }
@@ -206,6 +207,8 @@ export class DonationEventsService {
 
     // generate inventory issue statement for inventory items
     for (const [key, value] of Object.entries(inventoryItemsArray)) {
+      if (!value || key === '') continue;
+      
       const inventory = await this.inventoryService.getInventoryByName(key === CONSTANTS.BLOOD_BAG_KEY ? CONSTANTS.BLOOD_BAG : key, currentUser)
       if (key === CONSTANTS.BLOOD_BAG_KEY) { // checking quantity of blood bags
         for (const [key, quantity] of Object.entries(value as Record<string, number>)) {
@@ -288,6 +291,18 @@ export class DonationEventsService {
       eventName: existingEvent.name,
     }
   }
+
+  // private isInventoryItemsProvided(inventoryItems: Record<string, number | Record<string, number>>) {
+  //   for (const [key, value] of Object.entries(inventoryItems)) {
+  //     if (key === CONSTANTS.BLOOD_BAG_KEY) {
+  //       for (const [key, value] of Object.entries(value as Record<string, number>)) {
+  //         if (value <= 0) return false
+  //       }
+  //     } else {
+  //       if (value <= 0) return false
+  //     }
+  //   }
+  // }
 
   async remove(ids: string[]) {
     const foundDonationEvents = await this.donationEventsRepo.find({
