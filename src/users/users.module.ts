@@ -4,6 +4,7 @@ import { UsersController } from './users.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { CaslModule } from 'src/casl/casl.module';
+import { UserRepository } from './repository/user.repository';
 
 @Module({
   imports: [
@@ -13,7 +14,7 @@ import { CaslModule } from 'src/casl/casl.module';
     CaslModule,
   ],
   controllers: [UsersController],
-  providers: [UsersService],
+  providers: [UsersService, UserRepository],
   exports: [UsersService],
 })
 export class UsersModule { }

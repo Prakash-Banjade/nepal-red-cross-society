@@ -10,16 +10,18 @@ import paginatedData from 'src/core/utils/paginatedData';
 import { RequestUser } from 'src/core/types/global.types';
 import { UserQueryDto } from './entities/user-query.dto';
 import { BranchService } from 'src/branch/branch.service';
+import { UserRepository } from './repository/user.repository';
 
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectRepository(User) private usersRepository: Repository<User>,
-    private readonly branchService: BranchService
+    @InjectRepository(User) private userRepo: Repository<User>,
+    private readonly branchService: BranchService,
+    private readonly userRepository: UserRepository,
   ) { }
 
   async create(createUserDto: CreateUserDto) {
-    const foundUser = await this.usersRepository.findOneBy({
+    const foundUser = await this.userRepo.findOneBy({
       email: createUserDto.email,
     });
 
@@ -32,13 +34,13 @@ export class UsersService {
     // evaluate branch
     const branch = await this.branchService.findOne(createUserDto.branch);
 
-    const createdUser = this.usersRepository.create({
+    const createdUser = this.userRepo.create({
       ...createUserDto,
       image,
       branch
     });
 
-    await this.usersRepository.save(createdUser);
+    await this.userRepository.saveUser(createdUser);
 
     return {
       message: 'User created',
@@ -51,7 +53,7 @@ export class UsersService {
   }
 
   async findAll(queryDto: UserQueryDto) {
-    const queryBuilder = this.usersRepository.createQueryBuilder('user');
+    const queryBuilder = this.userRepo.createQueryBuilder('user');
     const deletedAt = queryDto.deleted === Deleted.ONLY ? Not(IsNull()) : queryDto.deleted === Deleted.NONE ? IsNull() : Or(IsNull(), Not(IsNull()));
 
     queryBuilder
@@ -85,7 +87,7 @@ export class UsersService {
   }
 
   async findOne(id: string) {
-    const existingUser = await this.usersRepository.findOne({
+    const existingUser = await this.userRepo.findOne({
       where: { id },
       relations: {
         branch: true
@@ -113,18 +115,18 @@ export class UsersService {
       branch
     });
 
-    return await this.usersRepository.save(existingUser);
+    return await this.userRepo.save(existingUser);
   }
 
   async remove(ids: string[], user: RequestUser) {
     if (ids?.length && ids.includes(user.userId)) throw new BadRequestException('You cannot delete yourself');
 
-    const foundUsers = await this.usersRepository.find({
+    const foundUsers = await this.userRepo.find({
       where: {
         id: In(ids)
       }
     });
-    await this.usersRepository.remove(foundUsers);
+    await this.userRepo.remove(foundUsers);
 
     return {
       success: true,

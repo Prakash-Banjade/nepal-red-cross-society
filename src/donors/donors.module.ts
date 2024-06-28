@@ -3,18 +3,19 @@ import { DonorsService } from './donors.service';
 import { DonorsController } from './donors.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Donor } from './entities/donor.entity';
-import { Address } from 'src/address/entities/address.entity';
 import { AddressModule } from 'src/address/address.module';
 import { UsersModule } from 'src/users/users.module';
+import { DonorRepository } from './repository/donor.repository';
+import { User } from 'src/users/entities/user.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Donor]),
+    TypeOrmModule.forFeature([Donor, User]),
     AddressModule,
     UsersModule,
   ],
   controllers: [DonorsController],
-  providers: [DonorsService],
+  providers: [DonorsService, DonorRepository],
   exports: [
     {
       useClass: DonorsService,

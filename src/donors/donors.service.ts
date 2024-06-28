@@ -10,18 +10,20 @@ import paginatedData from 'src/core/utils/paginatedData';
 import { extractAddress } from 'src/core/utils/extractAddress';
 import { Deleted } from 'src/core/dto/queryDto';
 import { UsersService } from 'src/users/users.service';
-import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import generator from 'generate-password-ts';
 import { MailService } from 'src/mail/mail.service';
 import { DonorQueryDto } from './dto/donor-query-dto';
+import { DonorRepository } from './repository/donor.repository';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class DonorsService {
   constructor(
     @InjectRepository(Donor) private donorRepo: Repository<Donor>,
+    @InjectRepository(User) private userRepo: Repository<User>,
     private readonly addressService: AddressService,
-    private readonly userService: UsersService,
     private readonly mailService: MailService,
+    private readonly donorRepository: DonorRepository,
   ) { }
 
   async create(createDonorDto: CreateDonorDto) {
@@ -47,9 +49,9 @@ export class DonorsService {
       account: savedUser
     });
 
-    await this.mailService.sendUserCredentials(savedUser, password); // sending credentials via email
+    const createdDonor = await this.donorRepository.saveDonor(donor);
 
-    const createdDonor = await this.donorRepo.save(donor);
+    await this.mailService.sendUserCredentials(savedUser, password); // sending credentials via email
 
     return {
       success: true,
@@ -62,17 +64,17 @@ export class DonorsService {
   }
 
   async createUserAccount(createDonorDto: CreateDonorDto, password: string) {
-    const user = await this.userService.create({
+    const image = createDonorDto.image ? getFileName(createDonorDto.image) : null
+
+    const user = this.userRepo.create({
       firstName: createDonorDto.firstName,
       lastName: createDonorDto.lastName,
       email: createDonorDto.email,
-      image: createDonorDto.image,
+      image,
       password,
     });
 
-    const savedUser = await this.userService.findOne(user.user.id); // this approach can be improved as we can directly send the created user after creating
-
-    return savedUser;
+    return await this.donorRepository.saveUser(user);
   }
 
   async findAll(queryDto: DonorQueryDto) {

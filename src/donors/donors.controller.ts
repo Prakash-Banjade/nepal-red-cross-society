@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, ParseUUIDPipe, HttpCode, HttpStatus, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, ParseUUIDPipe, HttpCode, HttpStatus, Query, UseInterceptors } from '@nestjs/common';
 import { DonorsService } from './donors.service';
 import { CreateDonorDto } from './dto/create-donor.dto';
 import { UpdateDonorDto } from './dto/update-donor.dto';
@@ -10,6 +10,7 @@ import { Action, RequestUser } from 'src/core/types/global.types';
 import { DonorQueryDto } from './dto/donor-query-dto';
 import { Throttle } from '@nestjs/throttler';
 import { CurrentUser } from 'src/core/decorators/user.decorator';
+import { TransactionInterceptor } from 'src/core/interceptors/transaction.interceptor';
 
 @ApiTags('Donors')
 @Controller('donors')
@@ -17,6 +18,7 @@ export class DonorsController {
   constructor(private readonly donorsService: DonorsService) { }
 
   @Post()
+  @UseInterceptors(TransactionInterceptor)
   @ApiConsumes('multipart/form-data')
   @Throttle({ default: { limit: 5, ttl: 60000 } })
   @ChekcAbilities({ action: Action.CREATE, subject: 'all' })
