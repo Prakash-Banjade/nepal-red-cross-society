@@ -5,6 +5,7 @@ import { Column, Entity, ManyToOne, OneToMany } from "typeorm";
 import { BloodRequestCharge } from "./blood-request-charge.entity";
 import { RequestedBloodBag } from "./requestedBloodBag.entity";
 import { Patient } from "./patient.entity";
+import { User } from "src/users/entities/user.entity";
 
 @Entity()
 export class BloodRequest extends BaseEntity {
@@ -18,7 +19,7 @@ export class BloodRequest extends BaseEntity {
     patient: Patient
 
     @Column({ type: 'varchar', nullable: true })
-    ward: string;
+    ward?: string;
 
     @Column({ type: 'int', nullable: true })
     bedNo?: number;
@@ -61,4 +62,7 @@ export class BloodRequest extends BaseEntity {
 
     @Column({ type: 'varchar', default: 'Citizenship' })
     permanentPaper?: string;
+
+    @ManyToOne(() => User, (user) => user.bloodRequests, { nullable: true })
+    createdBy: User
 }

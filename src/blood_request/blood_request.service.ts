@@ -19,6 +19,7 @@ import { BloodRequestsRepository } from './repository/blood_request.repository';
 import { BloodRequestsChargeRepository } from './repository/blood_request_charge.repository';
 import { RequestedBloodBagRepository } from './repository/requestedBloodBag.repository';
 import { PatientsService } from './patients.service';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class BloodRequestService {
@@ -34,10 +35,12 @@ export class BloodRequestService {
     private readonly bloodRequestChargesRepository: BloodRequestsChargeRepository,
     private readonly requestedBloodBagRepository: RequestedBloodBagRepository,
     private readonly patientService: PatientsService,
+    private readonly userService: UsersService,
   ) { }
 
   async create(createBloodRequestDto: CreateBloodRequestDto, currentUser: RequestUser) {
     const branch = await this.branchService.findOne(currentUser.branchId);
+    const user = await this.userService.findOne(currentUser.userId);
     // transform inventoryIds to array, it can be single string also so convert it into array
     createBloodRequestDto.inventoryIds = typeof createBloodRequestDto.inventoryIds === 'string' ? [createBloodRequestDto.inventoryIds] : createBloodRequestDto.inventoryIds;
 
@@ -67,6 +70,7 @@ export class BloodRequestService {
       xmNo,
       hospital,
       patient,
+      createdBy: user,
     });
     const savedRequest = await this.bloodRequestsRepository.saveBloodRequest(createdRequest); // TRANSACTION
 
@@ -104,6 +108,9 @@ export class BloodRequestService {
 
     return {
       message: 'Blood request created successfully',
+      bloodRequest: {
+        id: savedRequest.id,
+      }
     }
   }
 
@@ -193,7 +200,7 @@ export class BloodRequestService {
   async findOne(id: string) {
     const existingRequest = await this.bloodRequestRepo.findOne({
       where: { id },
-      relations: { requestedBloodBags: true, bloodRequestCharges: true, hospital: { address: true }, patient: true },
+      relations: { requestedBloodBags: true, bloodRequestCharges: true, hospital: { address: true }, patient: true, createdBy: true },
     });
     if (!existingRequest) throw new BadRequestException('Request not found');
 
