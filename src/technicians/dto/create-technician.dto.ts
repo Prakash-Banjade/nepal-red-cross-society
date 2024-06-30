@@ -36,7 +36,7 @@ export class CreateTechnicianDto extends CreateAddressDto {
 
   @ApiPropertyOptional({ type: 'file', format: 'binary', description: 'Technician image' })
   @IsOptional()
-  @IsFile({ message: 'Invalid image. Image must be either jpeg or png.' })
-  @HasMimeType(['image/jpeg', 'image/png'])
+  // @IsFile({ message: 'Invalid image. Image must be either jpeg or png.' })
+  // @HasMimeType(['image/jpeg', 'image/png'])
   image: FileSystemStoredFile;
 }

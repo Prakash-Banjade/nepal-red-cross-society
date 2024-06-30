@@ -4,12 +4,7 @@ import { IsOptional, IsString } from 'class-validator';
 import { FileSystemStoredFile } from 'nestjs-form-data';
 
 export class UpdateTechnicianDto extends PartialType(OmitType(CreateTechnicianDto, ['image'])) {
-    @ApiPropertyOptional({ type: String, description: 'Donation Event id' })
-    @IsOptional()
-    @IsString()
-    donationEvent?: string;
-
-    @ApiPropertyOptional({ type: 'file', format: 'binary', description: 'Donor image' })
+    @ApiPropertyOptional({ type: 'file', format: 'binary', description: 'Technician image' })
     @IsOptional()
     image?: FileSystemStoredFile | string;
 }
