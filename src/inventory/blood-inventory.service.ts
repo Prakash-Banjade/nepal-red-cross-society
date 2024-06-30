@@ -11,10 +11,8 @@ import { BranchService } from 'src/branch/branch.service';
 import { BloodInventoryQueryDto } from './dto/blood-inventory-query.dto';
 import { BloodInventoryStatus, BloodType, InventoryTransaction, RhFactor } from 'src/core/types/fieldsEnum.types';
 import { Branch } from 'src/branch/entities/branch.entity';
-import { BloodRequest } from 'src/blood_request/entities/blood_request.entity';
-import { CONSTANTS, initialBloodInventoryCount } from 'src/CONSTANTS';
+import { initialBloodInventoryCount } from 'src/CONSTANTS';
 import { CreateBloodRequestDto } from 'src/blood_request/dto/create-blood_request.dto';
-import { RequestedBloodBag } from 'src/blood_request/entities/requestedBloodBag.entity';
 import { BagTypesService } from 'src/bag-types/bag-types.service';
 import { BloodInventoryRepository } from './repository/blood-inventory.repository';
 
@@ -23,7 +21,6 @@ export class BloodInventoryService {
     constructor(
         @InjectRepository(BloodInventory) private readonly bloodInventoryRepo: Repository<BloodInventory>,
         @Inject(forwardRef(() => BloodBagsService)) private readonly bloodBagService: BloodBagsService,
-        @InjectRepository(RequestedBloodBag) private readonly requestedBloodBagRepo: Repository<RequestedBloodBag>,
         private readonly branchService: BranchService,
         private readonly bagTypeService: BagTypesService,
         private readonly bloodInventoryRepository: BloodInventoryRepository,
