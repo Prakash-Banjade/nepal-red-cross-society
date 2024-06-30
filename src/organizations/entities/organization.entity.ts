@@ -1,7 +1,7 @@
 import { Address } from "src/address/entities/address.entity";
 import { Donation } from "src/donations/entities/donation.entity";
 import { BaseEntity } from "src/core/entities/base.entity";
-import { Column, Entity, OneToMany, OneToOne } from "typeorm";
+import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany, OneToOne } from "typeorm";
 import { DonationEvent } from "src/donation_events/entities/donation_event.entity";
 
 @Entity()
@@ -32,4 +32,15 @@ export class Organization extends BaseEntity {
 
     @OneToMany(() => DonationEvent, (donationEvent) => donationEvent.organization, { nullable: true })
     donationEvents: DonationEvent[]
+
+
+    @BeforeInsert()
+    @BeforeUpdate()
+    validateEmail() {
+        if (this.email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(this.email)) throw new Error('Invalid email');
+        }
+
+    }
 }
