@@ -34,6 +34,7 @@ import { ServiceChargeModule } from './service-charge/service-charge.module';
 import { HospitalsModule } from './hospitals/hospitals.module';
 import { ReportsModule } from './reports/reports.module';
 import { CronModule } from './cron/cron.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { CronModule } from './cron/cron.module';
       ttl: 60000, // 10 requests per minute
       limit: 30,
     }]),
+    // ScheduleModule.forRoot(),
     UsersModule,
     AuthModule,
     CaslModule,
