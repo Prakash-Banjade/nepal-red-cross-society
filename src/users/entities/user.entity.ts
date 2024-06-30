@@ -1,9 +1,10 @@
 import { BaseEntity } from "src/core/entities/base.entity";
-import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne, OneToOne } from "typeorm";
+import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne, OneToMany, OneToOne } from "typeorm";
 import * as bcrypt from 'bcrypt';
 import { Roles } from "src/core/types/global.types";
 import { Donor } from "src/donors/entities/donor.entity";
 import { Branch } from "src/branch/entities/branch.entity";
+import { BloodRequest } from "src/blood_request/entities/blood_request.entity";
 
 @Entity()
 export class User extends BaseEntity {
@@ -56,5 +57,9 @@ export class User extends BaseEntity {
     setBranch() {
         if (this.role === Roles.USER) this.branch = null
     }
+
+    // WATCHING ACTIVITIES
+    @OneToMany(() => BloodRequest, (bloodRequest) => bloodRequest.createdBy, { nullable: true })
+    bloodRequests: BloodRequest[]
 
 }
