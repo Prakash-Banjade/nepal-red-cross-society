@@ -87,9 +87,6 @@ export class TechniciansService {
   async update(id: string, updateTechnicianDto: UpdateTechnicianDto) {
     const existingTechnician = await this.findOne(id);
 
-    // evaluating donation event
-    const donationEvent = updateTechnicianDto.donationEvent ? await this.donationEventRepo.findOneBy({ id: updateTechnicianDto.donationEvent }) : null;
-
     // evaluating image
     const image = updateTechnicianDto.image ? getFileName(updateTechnicianDto.image) : null;
 
@@ -98,7 +95,6 @@ export class TechniciansService {
 
     Object.assign(existingTechnician, {
       ...updateTechnicianDto,
-      donationEvent,
       image,
     })
 
