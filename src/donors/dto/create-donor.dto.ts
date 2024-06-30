@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { Transform } from "class-transformer";
 import { IsDateString, IsEmail, IsEnum, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, Length, ValidateIf } from "class-validator";
 import { FileSystemStoredFile, HasMimeType, IsFile } from "nestjs-form-data";
 import { CreateAddressDto } from "src/address/dto/create-address.dto";
@@ -19,10 +20,10 @@ export class CreateDonorDto extends CreateAddressDto {
     @IsEnum(Gender, { message: 'Invalid gender. Gender must be either male or female or other.' })
     gender!: Gender;
 
-    @ApiProperty({ description: 'Donor email', format: 'Email', example: 'techiesakar@gmail.com' })
+    @ApiPropertyOptional({ description: 'Donor email', format: 'Email', example: 'techiesakar@gmail.com' })
     @IsEmail()
-    @IsNotEmpty()
-    email!: string;
+    @IsOptional()
+    email?: string;
 
     @ApiPropertyOptional({ type: 'enum', enum: Race, description: 'Donor race', default: Race.NONE })
     @IsEnum(Race, { message: 'Invalid race. Race must be either mahila, janajati, adiwashi, dalit.' })

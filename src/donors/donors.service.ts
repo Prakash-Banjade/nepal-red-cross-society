@@ -3,7 +3,7 @@ import { CreateDonorDto } from './dto/create-donor.dto';
 import { UpdateDonorDto } from './dto/update-donor.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Donor } from './entities/donor.entity';
-import { Brackets, ILike, In, IsNull, Not, Or, Repository } from 'typeorm';
+import { Brackets, Equal, ILike, In, IsNull, Not, Or, Repository } from 'typeorm';
 import { AddressService } from 'src/address/address.service';
 import getFileName from 'src/core/utils/getImageUrl';
 import paginatedData from 'src/core/utils/paginatedData';
@@ -27,8 +27,13 @@ export class DonorsService {
   ) { }
 
   async create(createDonorDto: CreateDonorDto) {
-    const existingDonor = await this.donorRepo.findOneBy({ email: createDonorDto.email });
-    if (existingDonor) throw new BadRequestException('Donor with this email already exists');
+    const existingDonor = await this.donorRepo.findOne({
+      where: [
+        { email: Equal(createDonorDto.email) },
+        { phone: Equal(createDonorDto.phone) },
+      ]
+    });
+    if (existingDonor) throw new BadRequestException('Donor with this email or phone already exists');
 
     // evaluating address
     const address = await this.addressService.create(extractAddress(createDonorDto));
@@ -39,7 +44,7 @@ export class DonorsService {
     // creating donor's user account
     const password = this.generateRandomPassword();
 
-    const savedUser = await this.createUserAccount(createDonorDto, password);
+    const savedUser = createDonorDto?.email ? await this.createUserAccount(createDonorDto, password) : null;
 
     const donor = this.donorRepo.create({
       ...createDonorDto,
@@ -51,7 +56,7 @@ export class DonorsService {
 
     const createdDonor = await this.donorRepository.saveDonor(donor);
 
-    await this.mailService.sendUserCredentials(savedUser, password); // sending credentials via email
+    savedUser && await this.mailService.sendUserCredentials(savedUser, password); // sending credentials via email
 
     return {
       success: true,
