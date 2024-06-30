@@ -21,8 +21,8 @@ export class Donor extends BaseEntity {
     @Column({ type: 'enum', enum: Gender })
     gender: Gender;
 
-    @Column({ type: 'varchar' })
-    email: string;
+    @Column({ type: 'varchar', nullable: true })
+    email?: string;
 
     @OneToOne(() => User, (user) => user.donor, { nullable: true, onDelete: 'SET NULL' })
     @JoinColumn()
@@ -97,11 +97,11 @@ export class Donor extends BaseEntity {
     @BeforeInsert()
     @BeforeUpdate()
     validateEmail() {
-        if (!this.email) throw new Error('Email required');
+        if (this.email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-        if (!emailRegex.test(this.email)) throw new BadRequestException('Invalid email');
+            if (!emailRegex.test(this.email)) throw new BadRequestException('Invalid email');
+        }
     }
 
     @BeforeSoftRemove()
