@@ -2,7 +2,7 @@ import { BadRequestException } from "@nestjs/common";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Transform, Type } from "class-transformer";
 import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateNested } from "class-validator";
-import { FileSystemStoredFile, IsFile } from "nestjs-form-data";
+import { FileSystemStoredFile, HasMimeType, IsFile } from "nestjs-form-data";
 import { BloodType, Gender, RhFactor } from "src/core/types/fieldsEnum.types";
 
 export class Charge {
@@ -37,9 +37,8 @@ export class CreateBloodRequestDto {
 
     @ApiPropertyOptional({ type: String })
     @IsString()
-    @IsNotEmpty()
     @IsOptional()
-    ward: string;
+    ward?: string;
 
     @ApiPropertyOptional({ type: 'number' })
     @Transform(({ value }) => {
@@ -92,13 +91,13 @@ export class CreateBloodRequestDto {
 
     @ApiProperty({ type: 'string', format: 'binary' })
     @IsFile()
-    @IsOptional()
-    // @HasMimeType(['image/jpeg', 'image/png'])
+    // @IsOptional()
+    @HasMimeType(['image/jpeg', 'image/png'])
     documentFront: FileSystemStoredFile;
 
     @ApiProperty({ type: 'string', format: 'binary' })
     @IsFile()
-    @IsOptional()
-    // @HasMimeType(['image/jpeg', 'image/png'])
+    // @IsOptional()
+    @HasMimeType(['image/jpeg', 'image/png'])
     documentBack: FileSystemStoredFile;
 }
